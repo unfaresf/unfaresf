@@ -14,6 +14,7 @@
     </header>
     <NuxtPage />
   </UContainer>
+  <UModals />
   <UNotifications />
 </template>
 

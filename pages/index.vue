@@ -16,7 +16,7 @@
           <span>{{ formatDistanceToNow(new Date(row.createdAt)) }}</span>
         </template>
         <template #actions-data="{ row }">
-          <UButton color="green" variant="soft" icon="i-heroicons-check-circle" @click="post(row)" class="mr-2" :disabled="disabledRows.has(row.id)" />
+          <UButton color="green" variant="soft" icon="i-heroicons-check-circle" @click="openPostModel(row)" class="mr-2" :disabled="disabledRows.has(row.id)" />
           <UButton color="red" variant="ghost" icon="i-heroicons-x-circle" @click="dismiss(row)" :disabled="disabledRows.has(row.id)" />
         </template>
       </UTable>
@@ -46,16 +46,18 @@
 import { type UnfareReport } from '../db/schema';
 import { watch } from 'vue';
 import { formatDistanceToNow } from "date-fns";
+import { Post } from '#components';
+
+definePageMeta({
+  middleware: ['auth']
+});
 
 const toast = useToast();
 const limit = 20;
 const unreviewedPage = ref(0);
 const unreviewedReports = ref<UnfareReport[]>([]);
 const disabledRows = ref(new Set);
-
-definePageMeta({
-  middleware: ['auth']
-});
+const modal = useModal()
 
 async function dismiss(row:UnfareReport) {
   try {
@@ -77,8 +79,16 @@ async function dismiss(row:UnfareReport) {
   }
 }
 
-async function post(row:any) {
-  console.log(row)
+async function openPostModel(row:UnfareReport) {
+  modal.open(Post, {
+    report: row,
+    async onClose() {
+      return modal.close();
+    },
+    async onSuccess() {
+      return modal.close();
+    },
+  });
 }
 
 const { data:d1, status:reportsStatus, refresh } = await useLazyFetch<UnfareReport[]>("/api/reports", {
