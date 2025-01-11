@@ -1,0 +1,14 @@
+version: "3"
+services:
+  unfare-approver:
+    build:
+      context: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./db/data:/mnt/db
+    env_file:
+      - path: ./.env
+        required: true
+    environment:
+      DB_FILE_NAME: /mnt/db/local.db
