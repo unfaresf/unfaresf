@@ -16,6 +16,7 @@ export default defineWebAuthnRegisterEventHandler({
     }
 
     const { inviteId, userName } = signUpBody;
+
     if (!uuidValidate(inviteId)) {
       throw createError({ statusCode: 400, message: 'Invalid invite' });
     }
@@ -24,9 +25,10 @@ export default defineWebAuthnRegisterEventHandler({
       and(
         eq(invites.id, `${inviteId}`),
         eq(invites.used, false),
-        between(invites.createdAt, sql`datetime('now','-24 hour')`, sql`datetime('now')`),
+        between(invites.createdAt, sql`(unixepoch() - 86400)`, sql`unixepoch()`),
       )
     );
+
     const { signUpKey } = useRuntimeConfig();
     if (!dbInvites.length && signUpKey !== inviteId) {
       throw createError({ statusCode: 400, message: 'Invalid invite' });
