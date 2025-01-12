@@ -11,7 +11,7 @@ export default defineNuxtConfig({
     signUpKey: process.env.SIGN_UP_KEY,
     mastodonToken: process.env.MASTODON_TOKEN,
     mastodonUrl: process.env.MASTODON_URL,
-    mastodonDryRun: process.env.MASTODON_DRY_RUN === 'true',
+    mastodonDryRun: process.env.MASTODON_DRY_RUN == 'true',
   },
   devtools: { enabled: true },
   modules: ["@nuxt/ui", "nuxt-auth-utils", "nuxt-cron", "nuxt-rate-limit", "nuxt-authorization"],

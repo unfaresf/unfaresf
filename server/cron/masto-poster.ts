@@ -5,7 +5,9 @@ import { broadcasts as broadcastsTable } from "../../db/schema";
 import { sql, isNull, or } from 'drizzle-orm';
 
 export default defineCronHandler('everyMinute', async () => {
+  console.debug('running masto-poster');
   const config = useRuntimeConfig();
+  console.debug(`masto-poster dry run: ${config.mastodonDryRun}`);
 
   const masto = createRestAPIClient({
     url: config.mastodonUrl,
@@ -27,6 +29,8 @@ export default defineCronHandler('everyMinute', async () => {
     console.error(err);
     return
   }
+
+  console.debug(`Posting ${unpublishedBroadcasts.length} items`);
 
   const tootings = unpublishedBroadcasts.map(async cast => {
     const platformList = cast.platforms === null ? 'mastodon' : `${cast.platforms},mastodon`;
