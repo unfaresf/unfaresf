@@ -86,6 +86,7 @@ async function openPostModel(row:UnfareReport) {
       return modal.close();
     },
     async onSuccess() {
+      await refresh();
       return modal.close();
     },
   });

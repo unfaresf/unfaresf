@@ -25,27 +25,51 @@
 <script lang="ts" setup>
 import { z } from 'zod';
 import type { FormSubmitEvent } from '#ui/types'
-import { type UnfareReport } from '../db/schema';
+import type { UnfareReport } from '../db/schema';
 
+const emit = defineEmits(['success', 'close']);
 const props = defineProps<{
   report: UnfareReport,
 }>();
-const emit = defineEmits(['success', 'close'])
 const post = reactive({
   message: undefined,
 });
+const toast = useToast();
+const posting = ref(false);
 
 const postSchema = z.object({
   message: z.string().min(8).max(400).trim()
 });
-type Schema = z.output<typeof postSchema>
+type PostSchema = z.output<typeof postSchema>
 
-async function onSubmit(event: FormSubmitEvent<Schema>) {
-  console.log(event.data);
-  emit('success');
+async function onSubmit(event: FormSubmitEvent<PostSchema>) {
+  posting.value = true;
+  try {
+    await $fetch("/api/broadcast", {
+      method: 'POST',
+      body: {
+        message: event.data.message
+      }
+    });
+    await $fetch(`/api/reports/${props.report.id}`, {
+      method: 'PUT',
+      body: {
+        approved: true
+      }
+    });
+    post.message = undefined;
+    emit('success');
+  } catch (err:any) {
+    toast.add({
+      color: 'red',
+      title: err.data?.message || err.message,
+    });
+  } finally {
+    posting.value = false;
+  }
 }
 
-async function onClose(event: FormSubmitEvent<Schema>) {
+async function onClose(event: FormSubmitEvent<PostSchema>) {
   event.preventDefault();
   emit('close');
 }

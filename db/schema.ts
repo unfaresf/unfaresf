@@ -64,3 +64,14 @@ export const reports = sqliteTable("reports", {
 export const reportInsertSchema = createInsertSchema(reports);
 export type SelectReport = InferSelectModel<typeof reports>;
 export type InsertReport = InferInsertModel<typeof reports>;
+
+export const broadcasts = sqliteTable("broadcasts", {
+  id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
+  createdAt: integer("created_at", { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  message: text({ length: 1024 }).notNull(),
+  platforms: text(),
+});
+
+export const broadcastInsertSchema = createInsertSchema(broadcasts);
+export type SelectBroadcast = InferSelectModel<typeof broadcasts>;
+export type InsertBroadcast = InferInsertModel<typeof broadcasts>;
