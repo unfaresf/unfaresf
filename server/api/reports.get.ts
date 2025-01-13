@@ -1,9 +1,10 @@
-import { isNull, isNotNull, desc } from 'drizzle-orm';
-import { DB as db } from "../sqlite-service"
+import { desc } from 'drizzle-orm';
+import { DB as db } from "../sqlite-service";
 import { reports as reportsTable } from "../../db/schema";
+import { listReports } from "../../shared/utils/abilities";
 
 export default defineEventHandler(async (event) => {
-  await requireUserSession(event);
+  await authorize(event, listReports);
 
   const qp = getQuery(event);
   const offset = Number(qp.page) || 0;
