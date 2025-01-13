@@ -37,7 +37,7 @@ async function submit() {
     toast.add({
       color: 'red',
       title: err.data?.message || err.message,
-    })
+    });
   }
 }
 </script>
