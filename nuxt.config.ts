@@ -30,7 +30,7 @@ export default defineNuxtConfig({
         intervalSeconds: 60,
       },
       '/api/reports': {
-        maxRequests: 10,
+        maxRequests: 20,
         intervalSeconds: 60,
       },
     },
