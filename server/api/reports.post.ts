@@ -1,29 +1,26 @@
 import { DB as db } from "../sqlite-service"
 import { reports as reportsTable, reportInsertSchema } from "../../db/schema";
-import { v4 as uuidv4 } from 'uuid';
 import { createReports } from "../../shared/utils/abilities";
 
 export default defineEventHandler(async (event) => {
   await authorize(event, createReports);
 
   const defaultRepost = {
-    sourceId: uuidv4(),
     source: 'internal',
   };
-  const body = await readBody(event)
+  const body = await readValidatedBody(event, reportInsertSchema.pick({
+    route: true,
+    stop: true,
+    direction: true,
+    passenger: true,
+  }).parse);
   const report = {
     ...defaultRepost,
-    message: body.message,
+    ...body
   };
-  if (report.message.length === 0) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Message missing"
-    });
-  }
-  const parsedReport = reportInsertSchema.parse(report);
+
   try {
-    return db.insert(reportsTable).values(parsedReport);
+    return db.insert(reportsTable).values(report);
   } catch (e: any) {
     throw createError({
       statusCode: 400,

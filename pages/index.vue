@@ -15,6 +15,9 @@
         :columns="[{ key: 'actions' },{ key: 'message', label: 'Message' }, { key: 'source', label: 'Source' },{ key: 'createdAt', label: 'Created' }]"
         :rows="unreviewedReports.result"
       >
+        <template #message-data="{ row }">
+          <BroadcastSummary :report="row"></BroadcastSummary>
+        </template>
         <template #createdAt-data="{ row }">
           <span>{{ formatDistanceToNow(new Date(row.createdAt)) }}</span>
         </template>
