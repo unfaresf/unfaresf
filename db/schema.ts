@@ -45,18 +45,24 @@ export type UnfareReport = {
   createdAt: number;
   sourceId: string;
   source: string;
-  message: string;
-  approved: boolean;
+  message?: string;
   reviewedAt?: number;
+  route?: string;
+  stop?: string;
+  direction?: string;
+  passenger?: boolean;
 }
 export const reports = sqliteTable("reports", {
   id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
   createdAt: integer("created_at", { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
   sourceId: text().notNull(),
   source: text({ length: 64 }).notNull(),
-  message: text({ length: 1024 }).notNull(),
-  approved: integer({ mode: 'boolean' }).notNull().default(false),
+  message: text({ length: 1024 }),
   reviewedAt: integer("reviewed_at", { mode: 'timestamp' }),
+  route: text({ length: 512 }),
+  stop: text({ length: 512 }),
+  direction: text({ length: 512 }),
+  passenger: integer({ mode: 'boolean' }),
 }, table => [
   uniqueIndex("source_unq_idx").on(table.source, table.sourceId)
 ]);

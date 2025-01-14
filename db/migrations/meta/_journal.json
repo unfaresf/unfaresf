@@ -15,6 +15,27 @@
       "when": 1736719228199,
       "tag": "0001_high_starhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1736859145323,
+      "tag": "0002_productive_toro",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1736859347602,
+      "tag": "0003_aromatic_fallen_one",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1736859850795,
+      "tag": "0004_needy_maginty",
+      "breakpoints": true
     }
   ]
 }
