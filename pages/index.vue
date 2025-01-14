@@ -16,7 +16,7 @@
         :rows="unreviewedReports.result"
       >
         <template #message-data="{ row }">
-          <span>{{ formatMessage(row) }}</span>
+          <BroadcastSummary :report="row"></BroadcastSummary>
         </template>
         <template #createdAt-data="{ row }">
           <span>{{ formatDistanceToNow(new Date(row.createdAt)) }}</span>
@@ -93,11 +93,6 @@ async function openPostModel(row:UnfareReport) {
       return modal.close();
     },
   });
-}
-
-function formatMessage(report:UnfareReport) {
-  if (report.message) return report.message
-  return `${report.route} ${report.direction} ${report.stop} ${report.passenger ? 'onboard' : 'offboard'}`
 }
 
 type ReportsGetResp = {
