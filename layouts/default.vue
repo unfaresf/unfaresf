@@ -39,11 +39,11 @@ const authedLinks = computed(() => {
     {
       label: user.value?.userName,
       icon: 'i-heroicons-home',
-      to: '/'
+      to: '/reports'
     }, {
       label: 'Report',
       icon: 'i-heroicons-document',
-      to: '/report'
+      to: '/'
     }, {
       label: 'Invite',
       icon: 'i-heroicons-envelope-open',

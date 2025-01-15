@@ -39,7 +39,7 @@ async function signIn() {
   await authenticate(signInUserName.value)
     .then(fetch)
     .then(async () => {
-      await navigateTo('/');
+      await navigateTo('/reports');
     })
     .catch(err => {
       toast.add({
