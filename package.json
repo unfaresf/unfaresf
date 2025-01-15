@@ -32,6 +32,7 @@
     "@simplewebauthn/browser": "^11.0.0",
     "@simplewebauthn/server": "^11.0.0",
     "better-sqlite3": "^11.7.0",
+    "consola": "^3.4.0",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.38.3",
     "drizzle-zod": "^0.6.1",

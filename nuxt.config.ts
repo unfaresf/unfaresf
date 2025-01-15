@@ -12,6 +12,9 @@ export default defineNuxtConfig({
     mastodonToken: process.env.MASTODON_TOKEN,
     mastodonUrl: process.env.MASTODON_URL,
     mastodonDryRun: process.env.MASTODON_DRY_RUN == 'true',
+    public: {
+      logLevel: Number(process.env.LOG_LEVEL) || 3,
+    }
   },
   devtools: { enabled: true },
   modules: ["@nuxt/ui", "nuxt-auth-utils", "nuxt-cron", "nuxt-rate-limit", "nuxt-authorization"],

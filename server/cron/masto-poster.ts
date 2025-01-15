@@ -3,11 +3,12 @@ import { createRestAPIClient } from "masto";
 import { DB as db } from "../sqlite-service";
 import { broadcasts as broadcastsTable } from "../../db/schema";
 import { sql, isNull, or } from 'drizzle-orm';
+import unfareLogger from '../../shared/utils/unfareLogger';
 
 export default defineCronHandler('everyMinute', async () => {
-  console.debug('running masto-poster');
+  unfareLogger.debug('running masto-poster');
   const config = useRuntimeConfig();
-  console.debug(`masto-poster dry run: ${config.mastodonDryRun}`);
+  unfareLogger.debug(`dry run: ${config.mastodonDryRun}`);
 
   const masto = createRestAPIClient({
     url: config.mastodonUrl,
@@ -26,11 +27,11 @@ export default defineCronHandler('everyMinute', async () => {
         )
       );
   } catch (err) {
-    console.error(err);
+    unfareLogger.error(err);
     return
   }
 
-  console.debug(`Posting ${unpublishedBroadcasts.length} items`);
+  unfareLogger.debug(`Posting ${unpublishedBroadcasts.length} items`);
 
   const tootings = unpublishedBroadcasts.map(async cast => {
     const platformList = cast.platforms === null ? 'mastodon' : `${cast.platforms},mastodon`;
@@ -39,16 +40,16 @@ export default defineCronHandler('everyMinute', async () => {
     };
 
     if (config.mastodonDryRun) {
-      console.log(`toot: ${JSON.stringify(broadcastObj)}`);
-      console.log(`DB update: ${platformList}`);
+      unfareLogger.log(`toot: ${JSON.stringify(broadcastObj)}`);
+      unfareLogger.log(`DB update: ${platformList}`);
     } else {
       await masto.v1.statuses.create(broadcastObj);
-      console.debug(`toot: ${JSON.stringify(broadcastObj)}`);
+      unfareLogger.debug(`toot: ${JSON.stringify(broadcastObj)}`);
       await db.update(broadcastsTable).set({platforms: platformList});
-      console.debug(`DB update: ${platformList}`);
+      unfareLogger.debug(`DB update: ${platformList}`);
     }
   });
 
   const settledP = await Promise.allSettled(tootings);
-  settledP.filter(r => r.status === 'rejected').forEach(r => console.error(r.reason));
+  settledP.filter(r => r.status === 'rejected').forEach(r => unfareLogger.error(r.reason));
 });
