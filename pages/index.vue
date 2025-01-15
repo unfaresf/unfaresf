@@ -2,115 +2,70 @@
   <UContainer>
     <UCard class="mt-10">
       <template #header>
-        <div class="flex">
-          <h2>New Reports</h2>
-          <USelect v-model="reviewed" :options="reviewedStatuses" option-attribute="name" class="ml-auto"/>
-        </div>
+        <h2 class="text-xl mb-4">Report Sighting</h2>
+        <p>What service (Muni, BART, etc...), what line, where are they now and which way are they heading.</p>
       </template>
-      <UTable
-        :loading="reportsStatus === 'pending'"
-        :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Loading...' }"
-        :empty-state="{ icon: 'i-heroicons-circle-stack-20-solid', label: 'No reports' }"
-        class="w-full"
-        :columns="[{ key: 'actions' },{ key: 'message', label: 'Message' }, { key: 'source', label: 'Source' },{ key: 'createdAt', label: 'Created' }]"
-        :rows="unreviewedReports.result"
-      >
-        <template #message-data="{ row }">
-          <BroadcastSummary :report="row"></BroadcastSummary>
-        </template>
-        <template #createdAt-data="{ row }">
-          <span>{{ formatDistanceToNow(new Date(row.createdAt)) }}</span>
-        </template>
-        <template #actions-data="{ row }">
-          <UButton color="green" variant="soft" icon="i-heroicons-check-circle" @click="openPostModel(row)" class="mr-2" :disabled="disabledRows.has(row.id)" />
-          <UButton color="red" variant="ghost" icon="i-heroicons-x-circle" @click="dismiss(row)" :disabled="disabledRows.has(row.id)" />
-        </template>
-      </UTable>
-      <template #footer>
-        <UPagination
-          v-if="unreviewedReports.count > limit"
-          v-model="page"
-          :page-count="limit"
-          :total="unreviewedReports.count"
-          class="justify-center"
-        />
-      </template>
+      <UForm class="flex flex-col gap-2 max-w-prose"  @submit="submit" :state="formState" :schema="reportSchema">
+        <UFormGroup label="Route" name="route" help="Route name, e.g. 38 Geary or Bart Green line" required>
+          <UInput v-model="formState.route" autocomplete="false" placeholder="22 Fillmore" />
+        </UFormGroup>
+        <UFormGroup label="Stop" name="stop" help="Current stop, e.g. Geary Blvd & 36th Ave or 16th & Mission" required>
+          <UInput v-model="formState.stop" autocomplete="false" placeholder="Geary Blvd & 45th Ave " />
+        </UFormGroup>
+        <UFormGroup label="Direction" name="direction" help="Cardinal direction of inspectors, e.g. west or south" required>
+          <USelect v-model="formState.direction" :options="['North', 'South', 'East', 'West']" />
+        </UFormGroup>
+        <UFormGroup label="Passenger" name="passenger" help="Are inspectors currently in the transit vehical?" required>
+          <UToggle v-model="formState.passenger" />
+        </UFormGroup>
+        <UButton type="submit" label="Report Sighting" class="ml-auto" :disabled="submitting"/>
+      </UForm>
     </UCard>
   </UContainer>
 </template>
 
 <script lang="ts" setup>
-import { type UnfareReport } from '../db/schema';
-import { formatDistanceToNow } from "date-fns";
-import { Post } from '#components';
+import { z } from "zod";
+import type { FormSubmitEvent } from '#ui/types'
 
-definePageMeta({
-  middleware: ['auth']
-});
-
-const reviewedStatuses = [{
-  name: 'Reviewed',
-  value: 'true'
-}, {
-  name: 'Unreviewed',
-  value: 'false'
-}];
-const reviewed = ref(reviewedStatuses[1].value);
-const limit = ref(10);
-const page = ref(1);
-const disabledRows = ref(new Set);
-const modal = useModal();
 const toast = useToast();
+const initialFormState = {
+  route: undefined,
+  stop: undefined,
+  direction: undefined,
+  passenger: false,
+};
+const formState = reactive({...initialFormState});
+const submitting = ref(false);
 
-async function dismiss(row:UnfareReport) {
+const reportSchema = z.object({
+  route: z.string().trim().nonempty("Must include route name").max(512),
+  stop: z.string().trim().nonempty("Must include stop location").max(512),
+  direction: z.enum(["North", "South", "East", "West"]),
+  passenger: z.boolean(),
+}).required();
+
+type reportPostSchema = z.output<typeof reportSchema>
+
+async function submit(event: FormSubmitEvent<reportPostSchema>) {
+  submitting.value = true;
   try {
-    disabledRows.value.add(row.id);
-    await $fetch(`/api/reports/${row.id}`, {
-      method: 'PUT',
-      body: {
-        approved: false
-      }
+    await $fetch('/api/reports', {
+      method: 'POST',
+      body: event.data
     });
-    await refresh();
-  } catch (err:any) {
+    Object.assign(formState, initialFormState);
+    toast.add({
+      color: 'green',
+      title: 'Report successful'
+    })
+  } catch (err: any) {
     toast.add({
       color: 'red',
       title: err.data?.message || err.message,
     });
   } finally {
-    disabledRows.value.delete(row.id);
+    submitting.value = false;
   }
 }
-
-async function openPostModel(row:UnfareReport) {
-  modal.open(Post, {
-    report: row,
-    async onClose() {
-      return modal.close();
-    },
-    async onSuccess() {
-      await refresh();
-      return modal.close();
-    },
-  });
-}
-
-type ReportsGetResp = {
-  count: number,
-  result: UnfareReport[]
-}
-const { data:unreviewedReports, status:reportsStatus, refresh } = await useLazyFetch<ReportsGetResp>("/api/reports", {
-  query: { page: page, limit: limit, reviewed: reviewed },
-  default: () => ({count: 0, result: []}),
-  watch: [reviewed, page],
-  onResponseError({ response }) {
-    toast.add({
-      color: 'red',
-      title: response.statusText
-    });
-  }
-});
-watch(reviewed, () => {
-  page.value = 1;
-});
 </script>
