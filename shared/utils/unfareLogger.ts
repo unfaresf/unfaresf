@@ -1,4 +1,4 @@
-import { consola } from "consola/basic";
+import { consola } from "consola";
 
 const config = useRuntimeConfig();
 consola.level = config.public.logLevel
