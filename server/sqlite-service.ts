@@ -1,7 +1,12 @@
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
 
-const sqlite = new Database(process.env.DB_FILE_NAME!);
+const config = useRuntimeConfig();
+
+const sqlite = new Database(config.dbFileName!);
 const DB = drizzle({ client: sqlite });
 
-export { DB };
+const gtfsSqlite = new Database(config.gtfsDbFilePath!);
+const gtfsDB = drizzle({ client: gtfsSqlite });
+
+export { DB, gtfsDB };

@@ -1,0 +1,10 @@
+{
+  "agencies": [
+    {
+      "path": "gtfs-data/sf-gtfs"
+    }
+  ],
+  "ignoreDuplicates": true,
+  "ignoreErrors": true,
+  "sqlitePath": "db/data/gtfs.db"
+}

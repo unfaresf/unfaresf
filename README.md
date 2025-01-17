@@ -78,4 +78,8 @@ yarn preview
 bun run preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+Download GTFS
+```shell
+curl -o sf-gtfs.zip "http://api.511.org/transit/datafeeds?api_key=API_KEY&operator_id=RG"
+```

@@ -16,3 +16,6 @@ export const listBroadcasts = defineAbility(() => true);
 
 // health check endpoint
 export const getHealth = defineAbility({ allowGuest: true }, (user: User | null) => true);
+
+// gtfs data fetch endpoints
+export const getGtfs = defineAbility({ allowGuest: true }, (user: User | null) => true);
