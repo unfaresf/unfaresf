@@ -12,6 +12,8 @@ export default defineNuxtConfig({
     mastodonToken: process.env.MASTODON_TOKEN,
     mastodonUrl: process.env.MASTODON_URL,
     mastodonDryRun: process.env.MASTODON_DRY_RUN == 'true',
+    gtfsDbFilePath: process.env.GTFS_DB_FILE_PATH,
+    dbFileName: process.env.DB_FILE_NAME,
     public: {
       logLevel: Number(process.env.LOG_LEVEL) || 3,
     }

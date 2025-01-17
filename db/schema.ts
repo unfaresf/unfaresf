@@ -1,6 +1,7 @@
 import { type InferSelectModel, type InferInsertModel, sql, relations } from "drizzle-orm";
 import { integer, sqliteTable, text, primaryKey, index } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from 'drizzle-zod';
+import { string } from "zod";
 
 export const users = sqliteTable("users", {
   id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
@@ -57,10 +58,11 @@ export const reports = sqliteTable("reports", {
   source: text({ length: 64 }).notNull(),
   uri: text({ length: 2048 }).unique(),
   reviewedAt: integer("reviewed_at", { mode: 'timestamp' }),
-  route: text({ length: 512 }),
-  stop: text({ length: 512 }),
-  direction: text({ length: 512 }),
+  route: text({ mode: 'json' }).$type<{ routeId: string; routeShortName: string; routeLongName: string; agencyId: string; agencyName: string; }>(),
+  stop: text({ mode: 'json' }).$type<{ stopId: string; stopCode: string; stopName: string; stopLat: string; stopLon: string; }>(),
+  direction: text({ mode: 'json' }).$type<{ routeId: string; directionId: number|null; direction: string; }>(),
   passenger: integer({ mode: 'boolean' }),
+  message: text({ length: 1000 }),
 }, table => [
   index("source_idx").on(table.source),
   index("reviewed_at_idx").on(table.reviewedAt),

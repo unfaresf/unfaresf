@@ -14,7 +14,8 @@
     "preview": "nuxi preview",
     "postinstall": "nuxi prepare",
     "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
-    "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts"
+    "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
+    "gtfs:migrate": "drizzle-kit migrate --config=drizzle-gtfs.config.ts"
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",
@@ -36,6 +37,7 @@
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.38.3",
     "drizzle-zod": "^0.6.1",
+    "gtfs": "^4.15.12",
     "masto": "^6.10.2",
     "uuid": "^11.0.4",
     "zod": "^3.24.1"
