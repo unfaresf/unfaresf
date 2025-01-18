@@ -40,7 +40,7 @@
 </template>
 
 <script lang="ts" setup>
-import { type UnfareReport } from '../db/schema';
+import { type SelectReport } from '../db/schema';
 import { formatDistanceToNow } from "date-fns";
 import { Post } from '#components';
 
@@ -62,7 +62,7 @@ const disabledRows = ref(new Set);
 const modal = useModal();
 const toast = useToast();
 
-async function dismiss(row:UnfareReport) {
+async function dismiss(row:SelectReport) {
   try {
     disabledRows.value.add(row.id);
     await $fetch(`/api/reports/${row.id}`, {
@@ -82,7 +82,7 @@ async function dismiss(row:UnfareReport) {
   }
 }
 
-async function openPostModel(row:UnfareReport) {
+async function openPostModel(row:SelectReport) {
   modal.open(Post, {
     report: row,
     async onClose() {
@@ -97,7 +97,7 @@ async function openPostModel(row:UnfareReport) {
 
 type ReportsGetResp = {
   count: number,
-  result: UnfareReport[]
+  result: SelectReport[]
 }
 const { data:unreviewedReports, status:reportsStatus, refresh } = await useLazyFetch<ReportsGetResp>("/api/reports", {
   query: { page: page, limit: limit, reviewed: reviewed },

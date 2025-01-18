@@ -7,7 +7,7 @@
       </template>
 
       <p class="p-2 rounded bg-gray-100 text-gray-600 text-sm mb-4"><BroadcastSummary :report="props.report"></BroadcastSummary></p>
-
+SelectReport
       <UForm id="post-form" :schema="postSchema" :state="post" class="space-y-4" @submit="onSubmit">
         <UFormGroup label="Message" name="message" help="Tweet, toot, txt, etc...">
           <UTextarea v-model="post.message" />
@@ -25,11 +25,11 @@
 <script lang="ts" setup>
 import { z } from 'zod';
 import type { FormSubmitEvent } from '#ui/types'
-import type { UnfareReport } from '../db/schema';
+import type { SelectReport } from '../db/schema';
 
 const emit = defineEmits(['success', 'close']);
 const props = defineProps<{
-  report: UnfareReport,
+  report: SelectReport,
 }>();
 const post = reactive({
   message: undefined,
