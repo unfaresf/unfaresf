@@ -1,7 +1,6 @@
 import { type InferSelectModel, type InferInsertModel, sql, relations } from "drizzle-orm";
 import { integer, sqliteTable, text, primaryKey, index } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from 'drizzle-zod';
-import { string } from "zod";
 
 export const users = sqliteTable("users", {
   id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
@@ -41,17 +40,6 @@ export const inviteInsertSchema = createInsertSchema(invites);
 export type SelectInvite = InferSelectModel<typeof invites>;
 export type InsertInvite = InferInsertModel<typeof invites>;
 
-export type UnfareReport = {
-  id: number;
-  createdAt: number;
-  source: string;
-  reviewedAt?: number;
-  route?: string;
-  stop?: string;
-  direction?: string;
-  passenger?: boolean;
-  uri?: string;
-}
 export const reports = sqliteTable("reports", {
   id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
   createdAt: integer("created_at", { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
