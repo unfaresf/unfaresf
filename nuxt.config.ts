@@ -19,7 +19,14 @@ export default defineNuxtConfig({
     }
   },
   devtools: { enabled: true },
-  modules: ["@nuxt/ui", "nuxt-auth-utils", "nuxt-cron", "nuxt-rate-limit", "nuxt-authorization"],
+  modules: [
+    "@nuxt/ui",
+    "nuxt-auth-utils",
+    "nuxt-cron",
+    "nuxt-rate-limit",
+    "nuxt-authorization",
+    "@nuxtjs/device",
+  ],
   compatibilityDate: "2024-12-25",
   devServer: {
     https: true,

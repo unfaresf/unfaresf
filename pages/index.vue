@@ -17,6 +17,9 @@
             option-attribute="routeShortName"
             by="routeId"
             trailing
+            :popper="{
+              placement: isMobile ? 'top' : 'bottom'
+            }"
           >
             <template #label>
               <p v-if="formState.route">{{ formState.route.routeShortName }} - <span class="lowercase">{{ formState.route.routeLongName }}</span></p>
@@ -40,11 +43,14 @@
             option-attribute="stopName"
             by="stopId"
             trailing
+            :popper="{
+              placement: isMobile ? 'top' : 'bottom'
+            }"
           >
             <template #label>
               <p v-if="formState.stop">{{ formState.stop.stopName }}</p>
             </template>
-            <template #option="{ option: stop }">
+            <template #option="{ option: stop }" :loading="loadingDirections">
               <p>{{ stop.stopName }}</p>
             </template>
             <template #empty>
@@ -55,7 +61,7 @@
         <UFormGroup label="Direction" name="direction" help="Cardinal direction of inspectors, e.g. west or south" required>
           <USelectMenu v-model="formState.direction" :options="directionOptions" option-attribute="direction" />
         </UFormGroup>
-        <UFormGroup label="Passenger" name="passenger" help="Are inspectors currently in the transit vehical?">
+        <UFormGroup label="Inspectors onboard" name="passenger" help="Enable if inspectors are currently onboard.">
           <UToggle v-model="formState.passenger" />
         </UFormGroup>
         <UButton type="submit" label="Report Sighting" class="ml-auto" :disabled="submitting"/>
@@ -68,12 +74,14 @@
 import { z } from "zod";
 import type { FormSubmitEvent, Form} from '#ui/types';
 
+const { isMobile } = useDevice();
 const toast = useToast();
 const initialFormState = { passenger: false };
 const formState = reactive<Partial<ReportPostSchema>>(initialFormState);
 const submitting = ref(false);
 const loadingRoutes = ref(false);
 const loadingStops = ref(false);
+const loadingDirections = ref(false);
 const stopOptions = ref<StopPost[]>([]);
 const directionOptions = ref<DirectionPost[]>([]);
 const form = ref<Form<ReportPostSchema>>();
@@ -156,15 +164,18 @@ async function searchStops(q?:string) {
         routeId: formState.route?.routeId
       }
     });
-  } catch(err:any) {
-    return []
   } finally {
     loadingStops.value = false;
   }
 }
 
 async function getDirections(routeId:string) {
-  return $fetch<DirectionPost[]>(`/api/gtfs/directions/${routeId}`);
+  loadingDirections.value = true;
+  try {
+    return $fetch<DirectionPost[]>(`/api/gtfs/directions/${routeId}`);
+  } finally {
+    loadingDirections.value = false;
+  }
 }
 
 watch(() => formState.route, async newRoute => {
