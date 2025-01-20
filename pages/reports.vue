@@ -16,7 +16,7 @@
         :rows="unreviewedReports.result"
       >
         <template #message-data="{ row }">
-          <BroadcastSummary :report="row"></BroadcastSummary>
+          <ReportSummary :report="row"></ReportSummary>
         </template>
         <template #createdAt-data="{ row }">
           <span>{{ formatDistanceToNow(new Date(row.createdAt)) }}</span>

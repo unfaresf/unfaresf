@@ -10,6 +10,7 @@ const gtfsGetStopsQuerySchema = z.object({
 });
 
 export default defineEventHandler(async (event) => {
+  // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
   await authorize(event, getGtfs);
   const { routeId, q } = await getValidatedQuery(event, gtfsGetStopsQuerySchema.parse);
   try {

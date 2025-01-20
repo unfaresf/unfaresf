@@ -6,13 +6,14 @@
     "node": "22"
   },
   "scripts": {
-    "build": "nuxi build",
+    "build": "nuxt build",
     "start": "node .output/server/index.mjs",
-    "dev": "nuxi dev --no-fork",
-    "dev:inspect": "nuxi dev --inspect",
-    "generate": "nuxi generate",
-    "preview": "nuxi preview",
-    "postinstall": "nuxi prepare",
+    "dev": "nuxt dev --no-fork",
+    "dev:inspect": "nuxt dev --inspect",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "typecheck": "nuxt typecheck",
     "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
     "gtfs:migrate": "drizzle-kit migrate --config=drizzle-gtfs.config.ts"
@@ -28,7 +29,9 @@
     "nuxt-authorization": "^0.3.2",
     "nuxt-cron": "^1.8.0",
     "nuxt-rate-limit": "^1.2.0",
-    "vue": "latest"
+    "typescript": "^5.7.3",
+    "vue": "latest",
+    "vue-tsc": "^2.1.10"
   },
   "dependencies": {
     "@simplewebauthn/browser": "^11.0.0",

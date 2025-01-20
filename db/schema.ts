@@ -46,7 +46,7 @@ export const reports = sqliteTable("reports", {
   source: text({ length: 64 }).notNull(),
   uri: text({ length: 2048 }).unique(),
   reviewedAt: integer("reviewed_at", { mode: 'timestamp' }),
-  route: text({ mode: 'json' }).$type<{ routeId: string; routeShortName: string; routeLongName: string; agencyId: string; agencyName: string; }>(),
+  route: text({ mode: 'json' }).$type<{ routeId: string; routeShortName: string; routeLongName: string; agencyId: string; agencyName: string; direction: string; }>(),
   stop: text({ mode: 'json' }).$type<{ stopId: string; stopCode: string; stopName: string; stopLat: string; stopLon: string; }>(),
   direction: text({ mode: 'json' }).$type<{ routeId: string; directionId: number|null; direction: string; }>(),
   passenger: integer({ mode: 'boolean' }),

@@ -3,6 +3,7 @@ import { reports as reportsTable, reportInsertSchema } from "../../db/schema";
 import { createReports } from "../../shared/utils/abilities";
 
 export default defineEventHandler(async (event) => {
+  // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
   await authorize(event, createReports);
 
   const defaultRepost = {
@@ -11,14 +12,12 @@ export default defineEventHandler(async (event) => {
   const body = await readValidatedBody(event, reportInsertSchema.pick({
     route: true,
     stop: true,
-    direction: true,
     passenger: true,
   }).parse);
   const report = {
     ...defaultRepost,
     ...body
   };
-
   try {
     return db.insert(reportsTable).values(report);
   } catch (e: any) {

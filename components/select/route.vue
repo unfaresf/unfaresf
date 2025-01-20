@@ -15,10 +15,10 @@
       }"
     >
       <template #label>
-        <p v-if="route">{{ route.routeShortName }} - <span class="lowercase">{{ route.routeLongName }}</span></p>
+        <p v-if="route">{{ route.routeShortName }} {{ route.direction }} - <span class="lowercase">{{ route.routeLongName }}</span></p>
       </template>
       <template #option="{ option: route }">
-        <p>{{ route.routeShortName }} - <span class="lowercase font-bold">{{ route.routeLongName }}</span> <span class="italic lowercase">{{ route.agencyName }}</span></p>
+        <p>{{ route.routeShortName }} {{ route.direction }} - <span class="lowercase font-bold">{{ route.routeLongName }}</span> <span class="italic lowercase">{{ route.agencyName }}</span></p>
       </template>
       <template #empty>
         No routes
@@ -30,29 +30,31 @@
 <script lang="ts">
 import { z } from "zod";
 
-export const routePostSchema = z.object({
+export const routeSchema = z.object({
   routeId: z.string(),
   routeShortName: z.string(),
   routeLongName: z.string(),
   agencyId: z.string(),
-  agencyName: z.string()
+  agencyName: z.string(),
+  direction: z.string(),
 });
-export type RoutePost = z.infer<typeof routePostSchema>;
+
+export type RouteRequest = z.infer<typeof routeSchema>;
 </script>
 
 <script setup lang="ts">
 const loading = ref(false);
 const { isMobile } = useDevice();
-const route = ref<RoutePost>();
+const route = ref<RouteRequest>();
 const emit = defineEmits<{
-  (e: 'onChange', route: RoutePost): void
+  (e: 'onChange', route: RouteRequest): void
 }>()
 
 async function search(q:string) {
   if (!q.length) return [];
   try {
     loading.value = true
-    return $fetch<RoutePost[]>('/api/gtfs/routes/search', { params: { q } });
+    return $fetch<RouteRequest[]>('/api/gtfs/routes/search', { params: { q } });
   } catch(err:any) {
     return []
   } finally {
