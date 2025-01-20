@@ -30,33 +30,31 @@
 <script lang="ts">
 import { z } from "zod";
 
-export const routePostSchema = z.object({
+export const routeSchema = z.object({
   routeId: z.string(),
   routeShortName: z.string(),
   routeLongName: z.string(),
   agencyId: z.string(),
-  agencyName: z.string()
-});
-export const routeGetSchema = routePostSchema.extend({
+  agencyName: z.string(),
   direction: z.string(),
 });
-export type RoutePost = z.infer<typeof routePostSchema>;
-export type RouteGet = z.infer<typeof routeGetSchema>;
+
+export type RouteRequest = z.infer<typeof routeSchema>;
 </script>
 
 <script setup lang="ts">
 const loading = ref(false);
 const { isMobile } = useDevice();
-const route = ref<RouteGet>();
+const route = ref<RouteRequest>();
 const emit = defineEmits<{
-  (e: 'onChange', route: RouteGet): void
+  (e: 'onChange', route: RouteRequest): void
 }>()
 
 async function search(q:string) {
   if (!q.length) return [];
   try {
     loading.value = true
-    return $fetch<RouteGet[]>('/api/gtfs/routes/search', { params: { q } });
+    return $fetch<RouteRequest[]>('/api/gtfs/routes/search', { params: { q } });
   } catch(err:any) {
     return []
   } finally {

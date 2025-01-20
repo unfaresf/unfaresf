@@ -6,7 +6,7 @@
         <p class="text-xs text-gray-500">What operator, from where, which line, headed which direction.</p>
       </template>
 
-      <p class="p-2 rounded bg-gray-100 text-gray-600 text-sm mb-4"><BroadcastSummary :report="props.report"></BroadcastSummary></p>
+      <p class="p-2 rounded bg-gray-100 text-gray-600 text-sm mb-4"><ReportSummary :report="props.report"></ReportSummary></p>
 SelectReport
       <UForm id="post-form" :schema="postSchema" :state="post" class="space-y-4" @submit="onSubmit">
         <UFormGroup label="Message" name="message" help="Tweet, toot, txt, etc...">

@@ -6,7 +6,7 @@
         <p>What service (Muni, BART, etc...), what line, where are they now and which way are they heading.</p>
       </template>
       <UForm class="flex flex-col gap-2 max-w-prose" ref="form" @submit="onSubmit" :state="formState" :schema="reportSchema">
-        <SelectRoute @on-change="(newRoute:RoutePost) => formState.route = newRoute" />
+        <SelectRoute @on-change="(newRoute:RouteRequest) => formState.route = newRoute" />
         <SelectStop :route-id="formState.route?.routeId" @on-change="(newStop:StopPost) => formState.stop = newStop" />
         <UFormGroup label="Inspectors onboard" name="passenger" help="Enable if inspectors are currently onboard.">
           <UToggle v-model="formState.passenger" />
@@ -20,7 +20,7 @@
 <script lang="ts" setup>
 import { z } from "zod";
 import type { FormSubmitEvent, Form} from '#ui/types';
-import { type RoutePost, routePostSchema } from "../components/select/route.vue";
+import { type RouteRequest, routeSchema } from "../components/select/route.vue";
 import { type StopPost, stopPostSchema } from "../components/select/stop.vue";
 
 const toast = useToast();
@@ -30,7 +30,7 @@ const submitting = ref(false);
 const form = ref<Form<ReportPostSchema>>();
 
 const reportSchema = z.object({
-  route: routePostSchema,
+  route: routeSchema,
   stop: stopPostSchema,
   passenger: z.boolean(),
 }).required();
