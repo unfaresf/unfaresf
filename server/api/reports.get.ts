@@ -17,6 +17,7 @@ const reportsPutRouteQuerySchema = z.object({
 });
 
 export default defineEventHandler(async (event) => {
+  // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
   await authorize(event, listReports);
   const { reviewed, page, limit } = await getValidatedQuery(event, reportsPutRouteQuerySchema.parse);
   const reviewedFilter = reviewed === undefined ? undefined : reviewed ? isNotNull(reportsTable.reviewedAt) : isNull(reportsTable.reviewedAt);

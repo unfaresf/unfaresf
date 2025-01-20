@@ -3,6 +3,7 @@ import { reports as reportsTable, reportInsertSchema } from "../../db/schema";
 import { createReports } from "../../shared/utils/abilities";
 
 export default defineEventHandler(async (event) => {
+  // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
   await authorize(event, createReports);
 
   const defaultRepost = {

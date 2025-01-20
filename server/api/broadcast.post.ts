@@ -8,6 +8,7 @@ const broadcastPostBodySchema = z.object({
 });
 
 export default defineEventHandler(async (event) => {
+  // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
   await authorize(event, createBroadcasts);
 
   const { message } = await readValidatedBody(event, broadcastPostBodySchema.parse);
