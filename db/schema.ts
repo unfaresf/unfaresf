@@ -70,3 +70,12 @@ export const broadcasts = sqliteTable("broadcasts", {
 export const broadcastInsertSchema = createInsertSchema(broadcasts);
 export type SelectBroadcast = InferSelectModel<typeof broadcasts>;
 export type InsertBroadcast = InferInsertModel<typeof broadcasts>;
+
+export const challenges = sqliteTable("challenges", {
+  id: text().primaryKey(),
+  challenge: text().notNull(),
+});
+
+export const challengesInsertSchema = createInsertSchema(challenges);
+export type SelectChallenge = InferSelectModel<typeof challenges>;
+export type InsertChallenge = InferInsertModel<typeof challenges>;
