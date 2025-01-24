@@ -1,6 +1,6 @@
 version: "3"
 services:
-  unfare-approver:
+  unfaresf:
     build:
       context: .
     ports:
