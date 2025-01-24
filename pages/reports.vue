@@ -21,9 +21,11 @@
         <template #createdAt-data="{ row }">
           <span>{{ formatDistanceToNow(new Date(row.createdAt)) }}</span>
         </template>
-        <template #actions-data="{ row }" v-if="reviewed === 'false'">
-          <UButton color="green" variant="soft" icon="i-heroicons-check-circle" @click="openPostModel(row)" class="mr-2" :disabled="disabledRows.has(row.id)" />
-          <UButton color="red" variant="ghost" icon="i-heroicons-x-circle" @click="dismiss(row)" :disabled="disabledRows.has(row.id)" />
+        <template #actions-data="{ row }">
+          <div v-if="!row.reviewedAt">
+            <UButton color="green" variant="soft" icon="i-heroicons-check-circle" @click="openPostModel(row)" class="mr-2" :disabled="disabledRows.has(row.id)" />
+            <UButton color="red" variant="ghost" icon="i-heroicons-x-circle" @click="dismiss(row)" :disabled="disabledRows.has(row.id)" />
+          </div>
         </template>
       </UTable>
       <template #footer>
