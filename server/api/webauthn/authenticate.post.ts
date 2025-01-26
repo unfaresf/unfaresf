@@ -23,18 +23,6 @@ export default defineWebAuthnAuthenticateEventHandler({
 
     return challenge.challenge;
   },
-  async allowCredentials(event, userName) {
-    const rows = await db
-      .select({ id: credentials.id })
-      .from(credentials)
-      .leftJoin(users, eq(credentials.userId, users.id))
-      .where(eq(users.userName, userName))
-
-    if (!rows.length)
-      throw createError({ statusCode: 400, message: 'User not found' })
-
-    return rows
-  },
   async getCredential(event, credentialId) {
     const rows = await db
       .select()

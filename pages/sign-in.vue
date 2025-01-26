@@ -6,14 +6,6 @@
           class="flex flex-col gap-2"
           @submit.prevent="signIn"
         >
-          <UFormGroup
-            label="User Name"
-            required
-          >
-            <UInput
-              v-model="signInUserName"
-            />
-          </UFormGroup>
           <UButton
             type="submit"
             color="black"
@@ -31,12 +23,11 @@ const { authenticate } = useWebAuthn()
 const toast = useToast()
 
 const logging = ref(false);
-const signInUserName = ref('');
 
 async function signIn() {
   if (logging.value) return
   logging.value = true
-  await authenticate(signInUserName.value)
+  await authenticate()
     .then(fetch)
     .then(async () => {
       await navigateTo('/reports');
