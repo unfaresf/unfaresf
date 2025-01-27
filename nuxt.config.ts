@@ -14,6 +14,7 @@ export default defineNuxtConfig({
     mastodonDryRun: process.env.MASTODON_DRY_RUN == 'true',
     gtfsDbFilePath: process.env.GTFS_DB_FILE_PATH,
     dbFileName: process.env.DB_FILE_NAME,
+    agencyAltNames: process.env.AGENCY_ALT_NAMES,
     public: {
       logLevel: Number(process.env.LOG_LEVEL) || 3,
     }
