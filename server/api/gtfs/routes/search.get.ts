@@ -4,6 +4,33 @@ import { gtfsDB } from "../../../sqlite-service";
 import { routes, agency, directions } from "../../../../db/gtfs-migrations/schema";
 import { like, eq, or, and, inArray } from "drizzle-orm";
 
+// https://github.com/coollabsio/coolify/issues/1919#issuecomment-2026080171
+function unescapeJsonString(possiblyEscapedJsonString:string):Record<string, string>{
+  let correctedString = possiblyEscapedJsonString;
+
+  // Check and conditionally remove leading and trailing single quotes
+  if (correctedString.startsWith("'") && correctedString.endsWith("'")) {
+    correctedString = correctedString.slice(1, -1);
+  }
+
+  // Replace escaped double quotes with actual double quotes only if needed
+  if (correctedString.includes('\\"')) {
+    correctedString = correctedString.replace(/\\"/g, '"');
+  }
+
+  // Replace escaped newlines with actual newline characters only if needed
+  if (correctedString.includes("\\\\n")) {
+    correctedString = correctedString.replace(/\\\\n/g, "\\n");
+  }
+
+  // Attempt to parse the corrected string into a JSON object
+  try {
+    return JSON.parse(correctedString);
+  } catch (error) {
+    throw new Error(`Error un-escaping JSON string: ${error}`);
+  }
+}
+
 const gtfsGetRouteQuerySchema = z.object({
   q: z.string().trim().nonempty().max(32)
 });
@@ -24,7 +51,7 @@ function getAltAgencyNames():Record<string, string>{
   const { agencyAltNames: agencyAltNamesString } = useRuntimeConfig();
 
   try {
-    return JSON.parse(agencyAltNamesString);
+    return unescapeJsonString(agencyAltNamesString);
   } catch(err) {
     console.warn('Error parsing altAgencyNames env var', err);
     return {}
