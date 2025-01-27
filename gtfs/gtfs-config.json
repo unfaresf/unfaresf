@@ -1,0 +1,30 @@
+{
+  "agencies": [
+    {
+      "path": "gtfs/sf-gtfs.zip",
+      "exclude": [
+        "areas",
+        "attributions",
+        "calendar",
+        "calendar_attributes",
+        "calendar_dates",
+        "fare_leg_rules",
+        "fare_media",
+        "fare_products",
+        "fare_transfer_rules",
+        "feed_info",
+        "levels",
+        "mtc_feed_versions",
+        "pathways",
+        "rider_categories",
+        "route_attributes",
+        "shapes",
+        "stop_areas",
+        "transfers"
+      ]
+    }
+  ],
+  "ignoreDuplicates": true,
+  "ignoreErrors": true,
+  "sqlitePath": "db/data/gtfs-blue.db"
+}
