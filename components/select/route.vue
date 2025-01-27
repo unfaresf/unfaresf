@@ -8,7 +8,6 @@
       searchable-placeholder="Search for a transit route"
       placeholder="Select a route"
       option-attribute="routeShortName"
-      by="routeId"
       trailing
       :popper="{
         placement: isMobile ? 'top' : 'bottom'
