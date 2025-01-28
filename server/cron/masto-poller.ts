@@ -5,6 +5,7 @@ import { reports } from "../../db/schema";
 import { eq, desc } from 'drizzle-orm';
 import unfareLogger from '../../shared/utils/unfareLogger';
 import { URL } from 'node:url';
+import sanitizeHtml from 'sanitize-html';
 
 async function getLatestMentionId(): Promise<string|null> {
   const reportsUris = await db.select({uri: reports.uri}).from(reports).where(eq(reports.source, 'mastodon')).orderBy(desc(reports.createdAt)).limit(1);
@@ -16,6 +17,7 @@ async function getLatestMentionId(): Promise<string|null> {
   return latesetUriPathParts[latesetUriPathParts.length-1];
 }
 
+// export default defineCronHandler('everyTwoMinutes', async () => {
 export default defineCronHandler('everyTwoMinutes', async () => {
   unfareLogger.debug('masto-poller: running masto-poller');
   const { mastodonToken, mastodonDryRun, mastodonUrl, mastodonAccountName } = useRuntimeConfig();
@@ -38,8 +40,12 @@ export default defineCronHandler('everyTwoMinutes', async () => {
   unfareLogger.debug(`masto-poller: found ${mentions.statuses.length} new mentions`);
 
   const reportMentions = mentions.statuses.map((status) => {
+    const message = sanitizeHtml(status.content, {
+      allowedTags: [],
+      allowedAttributes: {}
+    });
     return {
-      message: status.content.slice(1000),
+      message,
       source: 'mastodon',
       uri: status.uri,
       createdAt: new Date(status.createdAt),
