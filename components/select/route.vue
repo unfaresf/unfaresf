@@ -6,7 +6,7 @@
       :searchable="search"
       :searchableLazy="true"
       searchable-placeholder="Search for a transit route"
-      placeholder="Select a route"
+      placeholder="Find a route"
       option-attribute="routeShortName"
       trailing
       :popper="{
