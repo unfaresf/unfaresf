@@ -8,7 +8,7 @@
   "scripts": {
     "build": "nuxt build",
     "start": "node .output/server/index.mjs",
-    "dev": "nuxt dev --no-fork",
+    "dev": "npx nuxi@latest dev --no-fork",
     "dev:inspect": "nuxt dev --inspect",
     "generate": "nuxt generate",
     "preview": "nuxt preview",

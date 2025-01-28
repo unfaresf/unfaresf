@@ -3,7 +3,7 @@
     <UCard class="mt-10">
       <template #header>
         <h2 class="text-xl mb-4">Report Sighting</h2>
-        <p>What service (Muni, BART, etc...), what line, where are they now and which way are they heading.</p>
+        <p>Use this form to report fare inspectors on San Francisco Bay Area public transit.</p>
       </template>
       <UForm class="flex flex-col gap-2 max-w-prose" ref="form" @submit="onSubmit" :state="formState" :schema="reportSchema">
         <SelectRoute @on-change="(newRoute:RouteRequest) => formState.route = newRoute" />
@@ -11,15 +11,19 @@
         <UFormGroup label="Inspectors onboard" name="passenger" help="Enable if inspectors are currently onboard.">
           <UToggle v-model="formState.passenger" />
         </UFormGroup>
-        <UButton type="submit" label="Report Sighting" class="ml-auto" :disabled="submitting"/>
       </UForm>
+      <template #footer>
+        <div class="flex">
+          <UButton type="submit" label="Report Sighting" class="ml-auto" @click="submitReport"  :disabled="submitting"/>
+        </div>
+      </template>
     </UCard>
   </UContainer>
 </template>
 
 <script lang="ts" setup>
 import { z } from "zod";
-import type { FormSubmitEvent, Form} from '#ui/types';
+import type { FormSubmitEvent, Form } from '#ui/types';
 import { type RouteRequest, routeSchema } from "../components/select/route.vue";
 import { type StopPost, stopPostSchema } from "../components/select/stop.vue";
 
@@ -57,5 +61,9 @@ async function onSubmit(event: FormSubmitEvent<ReportPostSchema>) {
   } finally {
     submitting.value = false;
   }
+}
+
+async function submitReport() {
+  await form.value?.submit();
 }
 </script>
