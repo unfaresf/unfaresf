@@ -6,9 +6,9 @@ import { sql, isNull, or } from 'drizzle-orm';
 import unfareLogger from '../../shared/utils/unfareLogger';
 
 export default defineCronHandler('everyMinute', async () => {
-  unfareLogger.debug('running masto-poster');
+  unfareLogger.debug('masto-poster: running');
   const config = useRuntimeConfig();
-  unfareLogger.debug(`dry run: ${config.mastodonDryRun}`);
+  unfareLogger.debug(`masto-poster: dry run: ${config.mastodonDryRun}`);
 
   const masto = createRestAPIClient({
     url: config.mastodonUrl,
@@ -27,11 +27,11 @@ export default defineCronHandler('everyMinute', async () => {
         )
       );
   } catch (err) {
-    unfareLogger.error(err);
+    unfareLogger.error('masto-poster:', err);
     return
   }
 
-  unfareLogger.debug(`Posting ${unpublishedBroadcasts.length} items`);
+  unfareLogger.debug(`masto-poster: Posting ${unpublishedBroadcasts.length} items`);
 
   const tootings = unpublishedBroadcasts.map(async cast => {
     const platformList = cast.platforms === null ? 'mastodon' : `${cast.platforms},mastodon`;
@@ -40,16 +40,16 @@ export default defineCronHandler('everyMinute', async () => {
     };
 
     if (config.mastodonDryRun) {
-      unfareLogger.log(`toot: ${JSON.stringify(broadcastObj)}`);
-      unfareLogger.log(`DB update: ${platformList}`);
+      unfareLogger.log(`masto-poster: toot: ${JSON.stringify(broadcastObj)}`);
+      unfareLogger.log(`masto-poster: DB update: ${platformList}`);
     } else {
       await masto.v1.statuses.create(broadcastObj);
-      unfareLogger.debug(`toot: ${JSON.stringify(broadcastObj)}`);
+      unfareLogger.debug(`masto-poster: toot: ${JSON.stringify(broadcastObj)}`);
       await db.update(broadcastsTable).set({platforms: platformList});
-      unfareLogger.debug(`DB update: ${platformList}`);
+      unfareLogger.debug(`masto-poster: DB update: ${platformList}`);
     }
   });
 
   const settledP = await Promise.allSettled(tootings);
-  settledP.filter(r => r.status === 'rejected').forEach(r => unfareLogger.error(r.reason));
+  settledP.filter(r => r.status === 'rejected').forEach(r => unfareLogger.error('masto-poster: ', r.reason));
 });
