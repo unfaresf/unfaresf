@@ -1,5 +1,5 @@
 <template>
-  <UModal>
+  <UModal :ui="{strategy:'merge', container:'items-start'}">
     <UCard>
       <template #header>
         <h3 class="text-lg">Post</h3>
@@ -14,15 +14,13 @@
 
       <template #footer>
         <div class="flex items-center">
-
-            <UButton color="green" @click="postSummary">Use Summary</UButton>
-            <UTooltip text="Tooltip example" :popper="{ placement: 'top' }">
+            <UButton color="orange" @click="postSummary">Post Summary</UButton>
+            <UTooltip text="Tooltip example" :popper="{ placement: 'top' }" class="p-2">
               <UIcon name="i-heroicons:question-mark-circle" class="w-5 h-5" />
               <template #text>
                 <span class="italic">Make a post using the text in the gray box.</span>
               </template>
             </UTooltip>
-
           <UButton color="gray" class="ml-auto mr-4" @click="onClose">Cancel</UButton>
           <UButton color="green" type="submit" form="post-form">Post</UButton>
         </div>

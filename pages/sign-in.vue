@@ -1,20 +1,18 @@
 <template>
-  <UContainer>
-    <UCard class="mt-10">
-      <div class="flex">
-        <form
-          class="flex flex-col gap-2"
-          @submit.prevent="signIn"
-        >
-          <UButton
-            type="submit"
-            color="black"
-            label="Sign in"
-          />
-        </form>
-      </div>
-    </UCard>
-  </UContainer>
+  <UCard class="mt-10">
+    <div class="flex">
+      <form
+        class="flex flex-col gap-2"
+        @submit.prevent="signIn"
+      >
+        <UButton
+          type="submit"
+          color="black"
+          label="Sign in"
+        />
+      </form>
+    </div>
+  </UCard>
 </template>
 
 <script lang="ts" setup>
