@@ -1,7 +1,7 @@
 {
   "agencies": [
     {
-      "path": "gtfs/sf-gtfs.zip",
+      "path": "gtfs/gtfs.zip",
       "exclude": [
         "areas",
         "attributions",

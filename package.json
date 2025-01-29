@@ -16,6 +16,7 @@
     "typecheck": "nuxt typecheck",
     "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
+    "gtfs:init": "node ./gtfs/init.js",
     "gtfs:migrate": "drizzle-kit migrate --config=drizzle-gtfs.config.ts"
   },
   "devDependencies": {
