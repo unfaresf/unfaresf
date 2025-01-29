@@ -1,30 +1,28 @@
 <template>
-  <UContainer>
-    <UCard class="mt-10">
-      <div class="flex">
-        <form
-          class="flex flex-col gap-2"
-          @submit.prevent="signUp"
+  <UCard class="mt-10">
+    <div class="flex">
+      <form
+        class="flex flex-col gap-2"
+        @submit.prevent="signUp"
+      >
+        <UFormGroup
+          label="User Name"
+          required
+          :error="formError"
         >
-          <UFormGroup
-            label="User Name"
-            required
-            :error="formError"
-          >
-            <UInput
-              v-model="signUpUserName"
-              name="username"
-            />
-          </UFormGroup>
-          <UButton
-            type="submit"
-            color="black"
-            label="Sign up"
+          <UInput
+            v-model="signUpUserName"
+            name="username"
           />
-        </form>
-      </div>
-    </UCard>
-  </UContainer>
+        </UFormGroup>
+        <UButton
+          type="submit"
+          color="black"
+          label="Sign up"
+        />
+      </form>
+    </div>
+  </UCard>
 </template>
 
 <script lang="ts" setup>
