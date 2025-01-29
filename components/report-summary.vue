@@ -1,11 +1,21 @@
 <template>
-  <span v-if="props.report.message">{{ props.report.message }}</span>
-  <span v-else-if="props.report.passenger">Fare inspectors on <strong>{{ props.report.route?.routeShortName }}</strong> headed <strong>{{ getDirection(props.report) }}</strong> from <strong>{{ props.report.stop?.stopName }}</strong></span>
-  <span v-else>Fare inspectors at <strong>{{ props.report.stop?.stopName }}</strong> for the <strong>{{ getDirection(props.report) }}</strong> bound <strong>{{ props.report.route?.routeShortName }}</strong></span>
+  <div ref="summary-ref">
+    <span v-if="props.report.message">{{ props.report.message }}</span>
+    <span v-else-if="props.report.passenger">Fare inspectors on <strong>{{ props.report.route?.routeShortName }}</strong> headed <strong>{{ getDirection(props.report) }}</strong> from <strong>{{ props.report.stop?.stopName }}</strong></span>
+    <span v-else>Fare inspectors at <strong>{{ props.report.stop?.stopName }}</strong> for the <strong>{{ getDirection(props.report) }}</strong> bound <strong>{{ props.report.route?.routeShortName }}</strong></span>
+  </div>
+
 </template>
 
 <script setup lang="ts">
 import type { SelectReport } from '../db/schema';
+import { useTemplateRef } from 'vue';
+
+const props = defineProps<{
+  report: SelectReport,
+}>();
+
+const summary = useTemplateRef('summary-ref');
 
 function getDirection(report:SelectReport): string {
   if (report.route?.direction) {
@@ -16,7 +26,7 @@ function getDirection(report:SelectReport): string {
   return '';
 }
 
-const props = defineProps<{
-  report: SelectReport,
-}>();
+defineExpose({
+  summary
+});
 </script>
