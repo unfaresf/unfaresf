@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `roles` text DEFAULT '["Editor"]' NOT NULL;

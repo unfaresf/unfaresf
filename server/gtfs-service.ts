@@ -1,5 +1,5 @@
 import { openDb } from 'gtfs';
-import config from '../gtfs-config.json' assert { type: 'json' };
+import config from '../gtfs/gtfs-config.json' assert { type: 'json' };
 
 const gtfsDb = openDb(config);
 

@@ -2,10 +2,16 @@ import { type InferSelectModel, type InferInsertModel, sql, relations } from "dr
 import { integer, sqliteTable, text, primaryKey, index } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from 'drizzle-zod';
 
+export enum Roles {
+  Admin = 'Admin',
+  Editor = 'Editor',
+}
+
 export const users = sqliteTable("users", {
   id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
   userName: text("username", { length: 64 }).unique().notNull(),
   createdAt: integer("created_at", { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  roles: text().notNull().default(JSON.stringify([Roles.Editor])),
 });
 
 export const userInsertSchema = createInsertSchema(users);

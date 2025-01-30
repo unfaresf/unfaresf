@@ -85,6 +85,13 @@
       "when": 1737473260922,
       "tag": "0011_ordinary_naoko",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1738272392549,
+      "tag": "0012_gray_cerise",
+      "breakpoints": true
     }
   ]
 }

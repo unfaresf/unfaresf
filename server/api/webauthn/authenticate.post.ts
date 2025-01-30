@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { credentials, users, challenges } from '../../../db/schema';
+import { credentials, users, challenges, type Roles } from '../../../db/schema';
 import { DB as db } from '../../sqlite-service';
 
 export default defineWebAuthnAuthenticateEventHandler({
@@ -41,24 +41,25 @@ export default defineWebAuthnAuthenticateEventHandler({
   },
   async onSuccess(event, { credential, authenticationInfo }) {
     const rows = await db
-      .select({ userName: users.userName, id: users.id })
+      .select({ userName: users.userName, id: users.id, roles: users.roles })
       .from(credentials)
       .innerJoin(users, eq(users.id, credentials.userId))
-      .where(eq(credentials.id, credential.id))
+      .where(eq(credentials.id, credential.id));
 
     // Update the counter
     await db
       .update(credentials)
       .set({counter: authenticationInfo.newCounter})
-      .where(eq(credentials.id, credential.id))
+      .where(eq(credentials.id, credential.id));
 
-    const [{ userName, id }] = rows
+    const [{ userName, id, roles }] = rows;
     await setUserSession(event, {
       user: {
         id,
         userName,
+        roles: JSON.parse(roles),
       },
       loggedInAt: Date.now(),
-    })
+    });
   },
 })
