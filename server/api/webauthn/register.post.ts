@@ -1,6 +1,6 @@
 // server/api/webauthn/register.post.ts
 import { and, eq, sql, between } from 'drizzle-orm';
-import { users, credentials, invites } from '../../../db/schema';
+import { users, credentials, invites, Roles } from '../../../db/schema';
 import { DB as db } from '../../sqlite-service';
 import { validate as uuidValidate } from 'uuid';
 
@@ -39,16 +39,19 @@ export default defineWebAuthnRegisterEventHandler({
       throw createError({ statusCode: 400, message: 'User already exists' });
     }
 
-    // If he registers a new account with credentials
     return {
       userName,
-      inviteId
-    }
+      inviteId,
+      roles: [Roles.Admin]
+    };
   },
   async onSuccess(event, { credential, user }) {
     // The credential creation has been successful
     // We need to create a user if it does not exist
     const { signUpKey } = useRuntimeConfig();
+
+    // are they using the root env var sign up key?
+    const usingSignUpKey = user.inviteId === signUpKey;
 
     // Get the user from the database
     let dbUser = await db.select().from(users).where(eq(users.userName, user.userName));
@@ -56,7 +59,11 @@ export default defineWebAuthnRegisterEventHandler({
     await db.transaction(async (tx) => {
       if (!dbUser.length) {
         // Store new user in database
-        dbUser = await tx.insert(users).values({userName: user.userName}).returning();
+        // If using the env var sign up key, give admin permissions.
+        dbUser = await tx.insert(users).values({
+          userName: user.userName,
+          roles: JSON.stringify(usingSignUpKey ? [Roles.Admin, Roles.Editor] : [Roles.Editor]),
+        }).returning();
       }
 
       // we now need to store the credential in our database and link it to the user
@@ -69,7 +76,7 @@ export default defineWebAuthnRegisterEventHandler({
         transports: JSON.stringify(credential.transports ?? [])
       });
 
-      if (typeof user.inviteId === 'string' && user.inviteId !== signUpKey) {
+      if (typeof user.inviteId === 'string' && !usingSignUpKey) {
         await tx.update(invites)
           .set({ used: true })
           .where(eq(invites.id, user.inviteId));
@@ -78,7 +85,9 @@ export default defineWebAuthnRegisterEventHandler({
     // Set the user session
     await setUserSession(event, {
       user: {
-        id: dbUser[0].id
+        id: dbUser[0].id,
+        userName: dbUser[0].userName,
+        roles: JSON.parse(dbUser[0].roles),
       },
       loggedInAt: Date.now(),
     })

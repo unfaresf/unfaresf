@@ -61,6 +61,7 @@ const page = ref(1);
 const disabledRows = ref(new Set);
 const modal = useModal();
 const toast = useToast();
+const { user } = useUserSession();
 
 async function dismiss(row:SelectReport) {
   try {
