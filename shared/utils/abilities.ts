@@ -19,3 +19,7 @@ export const getHealth = defineAbility({ allowGuest: true }, (user: User | null)
 
 // gtfs data fetch endpoints
 export const getGtfs = defineAbility({ allowGuest: true }, (user: User | null) => true);
+
+// settings/admin abilities
+export const getUsers = defineAbility((user: User) => user.roles.includes('Admin'));
+export const updateUsers = defineAbility((user: User) => user.roles.includes('Admin'));
