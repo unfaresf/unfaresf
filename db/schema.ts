@@ -7,6 +7,10 @@ export enum Roles {
   Editor = 'Editor',
 }
 
+type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
+
 export const users = sqliteTable("users", {
   id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
   userName: text("username", { length: 64 }).unique().notNull(),
@@ -16,6 +20,7 @@ export const users = sqliteTable("users", {
 
 export const userInsertSchema = createInsertSchema(users);
 export type SelectUser = InferSelectModel<typeof users>;
+export type GetUser = Prettify<Omit<InferSelectModel<typeof users>, 'roles'> & { roles: Roles[] }>;
 export type InsertUser = InferInsertModel<typeof users>;
 
 export const credentials = sqliteTable("credentials", {

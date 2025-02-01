@@ -23,10 +23,11 @@ export default defineEventHandler(async (event) => {
         .offset((page*limit)-limit)
         .orderBy(desc(usersTable.createdAt))
     ]);
-    const users = result.map(u => {
+    // JSON.parse of roles is because roles are stored as a stringified array of strings
+    const users = result.map(user => {
       return {
-        ...u,
-        ...{ roles: JSON.parse(u.roles)}
+        ...user,
+        ...{ roles: JSON.parse(user.roles).sort() }
       };
     })
     return {
