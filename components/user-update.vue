@@ -14,9 +14,14 @@
         </USelectMenu>
       </UFormGroup>
 
-      <UButton type="submit" class="self-end" icon="i-heroicons-pencil-square" :disabled="(props.user.id === user?.id) || loading" :loading="loading">
-        Save
-      </UButton>
+      <div class="self-end">
+        <UButton @click="deleteUser(props.user.id)" color="red" icon="i-heroicons-trash" :disabled="(props.user.id === user?.id) || loading" :loading="loading">
+          Delete
+        </UButton>
+        <UButton type="submit" class="self-end ml-4" icon="i-heroicons-pencil-square" :disabled="(props.user.id === user?.id) || loading" :loading="loading">
+          Save
+        </UButton>
+      </div>
     </UForm>
   </UContainer>
 </template>
@@ -29,6 +34,9 @@ import { z } from 'zod';
 const props = defineProps<{
   user: GetUser,
 }>();
+const emit = defineEmits<{
+  (e: 'onDeleteUser', userId:number): void
+}>()
 
 const userUpdateSchema = z.object({
   roles: z.string().array(),
@@ -42,6 +50,29 @@ const roles = Object.values(Roles);
 const state = ref({
   roles: props.user.roles
 });
+
+async function deleteUser(userId:number) {
+  try {
+    loading.value = true;
+    await $fetch(`/api/users/${userId}`, {
+      method: 'delete'
+    });
+    toast.add({
+      color: 'green',
+      title: 'User deleted'
+    });
+    emit('onDeleteUser', userId);
+  } catch (err:any) {
+    toast.add({
+      color: 'red',
+      title: 'Error deleting user',
+      description: err.message
+    });
+  }
+  finally {
+    loading.value = false;
+  }
+}
 
 async function onSubmit(event: FormSubmitEvent<userUpdateSchema>) {
   try {

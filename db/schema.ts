@@ -1,5 +1,5 @@
 import { type InferSelectModel, type InferInsertModel, sql, relations } from "drizzle-orm";
-import { integer, sqliteTable, text, primaryKey, index } from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text, primaryKey, index, foreignKey } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from 'drizzle-zod';
 
 export enum Roles {
@@ -31,7 +31,7 @@ export const credentials = sqliteTable("credentials", {
   backedUp: integer("backed_up").notNull(),
   transports: text().notNull(),
 }, table => [
-  primaryKey({ columns: [table.id, table.userId] }),
+  primaryKey({ columns: [table.id, table.userId] })
 ]);
 
 export type Credential = InferSelectModel<typeof credentials>;

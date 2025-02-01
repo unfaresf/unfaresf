@@ -28,3 +28,9 @@ export const updateUsers = defineAbility((user: User, targetUserId: number) => {
   if (user.id === targetUserId) return false;
   return true;
 });
+export const deleteUsers = defineAbility((user: User, targetUserId: number) => {
+  if (!user.roles.includes('Admin')) return false;
+  // prevent users from editting self for time being.
+  if (user.id === targetUserId) return false;
+  return true;
+});

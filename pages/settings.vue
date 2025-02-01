@@ -13,7 +13,7 @@
       :rows="users?.result"
     >
       <template #expand="{ row }">
-        <user-update :user="row"></user-update>
+        <user-update :user="row" @on-delete-user="onDeleteUser"></user-update>
       </template>
       <template #expand-action="{ isExpanded, toggle }">
         <UButton @click="toggle" :icon="isExpanded ? 'i-heroicons-bars-arrow-up-16-solid' : 'i-heroicons-bars-arrow-down-16-solid'" />
@@ -55,7 +55,7 @@ type UsersGetResp = {
   result: GetUser[]
 }
 
-const { data: users, status:usersStatus } = await useLazyFetch<Awaited<Promise<UsersGetResp>>>("/api/users", {
+const { data: users, status:usersStatus, refresh } = await useLazyFetch<Awaited<Promise<UsersGetResp>>>("/api/users", {
   query: { page: page, limit: limit },
   watch: [page],
   onResponseError({ response }) {
@@ -65,4 +65,7 @@ const { data: users, status:usersStatus } = await useLazyFetch<Awaited<Promise<U
     });
   }
 });
+async function onDeleteUser() {
+  await refresh();
+}
 </script>
