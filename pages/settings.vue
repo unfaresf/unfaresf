@@ -2,7 +2,7 @@
   <h1 class="text-xl my-4">Settings</h1>
   <UCard>
     <template #header>
-      <h2 class="text-lg">Users</h2>
+      <h2 class="text-lg text-center">Users</h2>
     </template>
     <UTable
       v-model:expand="usersExpand"
