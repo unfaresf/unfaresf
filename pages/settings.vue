@@ -32,10 +32,17 @@
       />
     </template>
   </UCard>
+  <UCard class="my-8">
+    <template #header>
+      <h2 class="text-lg text-center">Mastodon</h2>
+    </template>
+    <MastodonSettingsUpdate></MastodonSettingsUpdate>
+  </UCard>
 </template>
 
 <script lang="ts" setup>
 import { UButton, UCard } from '#components';
+import MastodonSettingsUpdate from '~/components/mastodon-settings-update.vue';
 import { type GetUser } from "../db/schema";
 
 definePageMeta({

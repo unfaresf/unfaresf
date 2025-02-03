@@ -1,4 +1,5 @@
 import { type InferSelectModel, type InferInsertModel, sql, relations } from "drizzle-orm";
+import { boolean } from "drizzle-orm/mysql-core";
 import { integer, sqliteTable, text, primaryKey, index, foreignKey } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from 'drizzle-zod';
 
@@ -7,7 +8,7 @@ export enum Roles {
   Editor = 'Editor',
 }
 
-type Prettify<T> = {
+export type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
 
@@ -90,3 +91,20 @@ export const challenges = sqliteTable("challenges", {
 export const challengesInsertSchema = createInsertSchema(challenges);
 export type SelectChallenge = InferSelectModel<typeof challenges>;
 export type InsertChallenge = InferInsertModel<typeof challenges>;
+
+export type MastodonOption = {
+  token?: string,
+  url?: string,
+  accountName?: string,
+};
+
+export const integrations = sqliteTable("integrations", {
+  id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
+  name: text().notNull().unique(),
+  enable: integer({ mode: 'boolean' }).notNull().default(false),
+  options: text({ mode: 'json' }).$type<MastodonOption>(),
+});
+
+export const integrationsInsertSchema = createInsertSchema(integrations);
+export type SelectIntegration = InferSelectModel<typeof integrations>;
+export type InsertIntegration = InferInsertModel<typeof integrations>;

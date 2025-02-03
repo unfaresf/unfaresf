@@ -34,3 +34,5 @@ export const deleteUsers = defineAbility((user: User, targetUserId: number) => {
   if (user.id === targetUserId) return false;
   return true;
 });
+export const getIntegrations = defineAbility((user: User) => user.roles.includes('Admin'));
+export const updateIntegrations = defineAbility((user: User) => user.roles.includes('Admin'));
