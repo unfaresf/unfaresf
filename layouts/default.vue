@@ -37,7 +37,7 @@ const unauthedLinks = [[],[
 const authedLinks = computed(() => {
   return [[],[
     {
-      label: user.value?.userName,
+      label: user.value?.userName || '',
       icon: 'i-heroicons-home',
       to: '/reports'
     }, {
@@ -48,6 +48,10 @@ const authedLinks = computed(() => {
       label: 'Invite',
       icon: 'i-heroicons-envelope-open',
       to: '/invite'
+    }, {
+      label: 'Settings',
+      icon: 'i-heroicons-adjustments-horizontal',
+      to: '/settings'
     }, {
       label: `Logout`,
       icon: 'i-heroicons-arrow-right-start-on-rectangle',
