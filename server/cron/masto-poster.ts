@@ -1,18 +1,31 @@
 import { defineCronHandler } from '#nuxt/cron'
 import { createRestAPIClient } from "masto";
 import { DB as db } from "../sqlite-service";
-import { broadcasts as broadcastsTable } from "../../db/schema";
+import { broadcasts as broadcastsTable, type SelectIntegration, integrations } from "../../db/schema";
 import { sql, isNull, or } from 'drizzle-orm';
 import unfareLogger from '../../shared/utils/unfareLogger';
 
 export default defineCronHandler('everyMinute', async () => {
   unfareLogger.debug('masto-poster: running');
-  const config = useRuntimeConfig();
-  unfareLogger.debug(`masto-poster: dry run: ${config.mastodonDryRun}`);
+  const { mastodonDryRun } = useRuntimeConfig();
+  unfareLogger.debug(`masto-poster: dry run: ${mastodonDryRun}`);
+
+  let integration:SelectIntegration;
+  try {
+    const [firstRow] = await db.select().from(integrations).limit(1);
+
+    if (!firstRow || !firstRow.enable) {
+      return;
+    }
+    integration = firstRow;
+  } catch (err:any) {
+    unfareLogger.info('Unable to read options form DB.');
+    return;
+  }
 
   const masto = createRestAPIClient({
-    url: config.mastodonUrl,
-    accessToken: config.mastodonToken,
+    url: integration.options?.url || '',
+    accessToken: integration.options?.token || '',
   });
 
   let unpublishedBroadcasts
@@ -39,7 +52,7 @@ export default defineCronHandler('everyMinute', async () => {
       status: cast.message,
     };
 
-    if (config.mastodonDryRun) {
+    if (mastodonDryRun) {
       unfareLogger.log(`masto-poster: toot: ${JSON.stringify(broadcastObj)}`);
       unfareLogger.log(`masto-poster: DB update: ${platformList}`);
     } else {
