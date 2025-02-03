@@ -4,7 +4,18 @@
     <header>
       <AuthState>
         <template #default="{ loggedIn }">
-          <UHorizontalNavigation v-if="loggedIn" :links="authedLinks" class="border-b border-gray-200 dark:border-gray-800" />
+          <div v-if="loggedIn" class="flex">
+            <UHorizontalNavigation :links="authedLinks" class="border-b border-gray-200 dark:border-gray-800" />
+            <UDropdown :items="authedDropdown" class="border-b">
+              <UButton color="white" icon="i-heroicons-bars-3" class="m-2"/>
+              <template #item="{ item }">
+                <div class="flex w-full items-center flex-row-reverse">
+                  <UIcon :name="item.icon" class="ml-2"/>
+                  <span class="truncate">{{ item.label }}</span>
+                </div>
+              </template>
+            </UDropdown>
+          </div>
           <UHorizontalNavigation v-else="loggedIn" :links="unauthedLinks" class="border-b border-gray-200 dark:border-gray-800" />
         </template>
         <template #placeholder>
@@ -27,6 +38,10 @@ async function logout() {
   return navigateTo('/sign-in');
 }
 
+async function toggleDropdown() {
+
+}
+
 const unauthedLinks = [[],[
   {
     label: `Sign In`,
@@ -44,19 +59,22 @@ const authedLinks = computed(() => {
       label: 'Report',
       icon: 'i-heroicons-document',
       to: '/'
-    }, {
-      label: 'Invite',
-      icon: 'i-heroicons-envelope-open',
-      to: '/invite'
-    }, {
-      label: 'Settings',
-      icon: 'i-heroicons-adjustments-horizontal',
-      to: '/settings'
-    }, {
-      label: `Logout`,
-      icon: 'i-heroicons-arrow-right-start-on-rectangle',
-      click: logout
-    }
+    },
   ]];
 });
+const authedDropdown = [[
+  {
+    label: 'Invite',
+    icon: 'i-heroicons-envelope-open',
+    to: '/invite'
+  }, {
+    label: 'Settings',
+    icon: 'i-heroicons-adjustments-horizontal',
+    to: '/settings'
+  }, {
+    label: `Logout`,
+    icon: 'i-heroicons-arrow-right-start-on-rectangle',
+    click: logout
+  }
+]];
 </script>
