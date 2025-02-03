@@ -38,9 +38,6 @@ async function logout() {
   return navigateTo('/sign-in');
 }
 
-async function toggleDropdown() {
-
-}
 
 const unauthedLinks = [[],[
   {
@@ -62,19 +59,23 @@ const authedLinks = computed(() => {
     },
   ]];
 });
-const authedDropdown = [[
-  {
-    label: 'Invite',
-    icon: 'i-heroicons-envelope-open',
-    to: '/invite'
-  }, {
-    label: 'Settings',
-    icon: 'i-heroicons-adjustments-horizontal',
-    to: '/settings'
-  }, {
-    label: `Logout`,
-    icon: 'i-heroicons-arrow-right-start-on-rectangle',
-    click: logout
-  }
-]];
+const authedDropdown = computed(() => {
+  return [[
+    {
+      label: 'Invite',
+      icon: 'i-heroicons-envelope-open',
+      to: '/invite',
+      disabled: user.value ? !user.value.roles.includes('Admin') : true,
+    }, {
+      label: 'Settings',
+      icon: 'i-heroicons-adjustments-horizontal',
+      to: '/settings',
+      disabled: user.value ? !user.value.roles.includes('Admin') : true,
+    }, {
+      label: `Logout`,
+      icon: 'i-heroicons-arrow-right-start-on-rectangle',
+      click: logout
+    }
+  ]];
+})
 </script>
