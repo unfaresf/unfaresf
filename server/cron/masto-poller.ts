@@ -1,7 +1,7 @@
 import { defineCronHandler } from '#nuxt/cron'
 import { createRestAPIClient } from "masto";
 import { DB as db } from "../sqlite-service";
-import { reports } from "../../db/schema";
+import { reports, integrations, type SelectIntegration } from "../../db/schema";
 import { eq, desc } from 'drizzle-orm';
 import unfareLogger from '../../shared/utils/unfareLogger';
 import { URL } from 'node:url';
@@ -20,19 +20,32 @@ async function getLatestMentionId(): Promise<string|null> {
 // export default defineCronHandler('everyTwoMinutes', async () => {
 export default defineCronHandler('everyTwoMinutes', async () => {
   unfareLogger.debug('masto-poller: running masto-poller');
-  const { mastodonToken, mastodonDryRun, mastodonUrl, mastodonAccountName } = useRuntimeConfig();
+  const { mastodonDryRun } = useRuntimeConfig();
   unfareLogger.debug(`masto-poller: dry run: ${mastodonDryRun}`);
 
+  let integration:SelectIntegration;
+  try {
+    const [firstRow] = await db.select().from(integrations).limit(1);
+
+    if (!firstRow || !firstRow.enable) {
+      return;
+    }
+    integration = firstRow;
+  } catch (err:any) {
+    unfareLogger.info('Unable to read options form DB.');
+    return;
+  }
+
   const masto = createRestAPIClient({
-    url: mastodonUrl,
-    accessToken: mastodonToken,
+    url: integration.options?.url || '',
+    accessToken: integration.options?.token || '',
   });
 
   const latestMentionId = await getLatestMentionId();
   unfareLogger.debug(`masto-poller: latestMentionId: ${latestMentionId}`);
 
   const mentions = await masto.v2.search.list({
-    q: `@${mastodonAccountName}`,
+    q: `@${integration.options?.accountName}`,
     type: 'statuses',
     minId: latestMentionId,
     limit: 10,
