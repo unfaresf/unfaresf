@@ -8,7 +8,7 @@ export const listReports = defineAbility(() => true); // Only authenticated user
 export const updateReports = defineAbility(() => true);
 
 // invite abilities
-export const createInvites = defineAbility(() => true);
+export const createInvites = defineAbility((user: User) => user.roles.includes('Admin'));
 
 // invite abilities
 export const createBroadcasts = defineAbility(() => true);
