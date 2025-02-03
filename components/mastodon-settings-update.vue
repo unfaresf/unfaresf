@@ -9,8 +9,8 @@
         <UInput v-model="state.url" :disabled="disabled" />
       </UFormGroup>
 
-      <UFormGroup label="Token" name="token" Description="The access token for the applcation in your account." help="Applications are at `/settings/applications` at the above URL.">
-        <UInput v-model="state.token" :disabled="disabled" />
+      <UFormGroup label="Token" name="token" Description="The access token for the applcation in your account." help="Tokens are at `/settings/applications` at your server's URL.">
+        <UInput v-model="state.token" type="password" :disabled="disabled" />
       </UFormGroup>
 
       <div class="flex">
