@@ -1,6 +1,6 @@
 <template>
 <div v-if="!permissionGranted" class="flex">
-  <UButton class="mr-2" color="fuchsia" label="Geolocate" @click="fetchLocation" />
+  <UButton class="mr-2" color="fuchsia" label="Use Location" @click="fetchLocation" />
   <UPopover mode="hover" :popper="{ placement: 'top-end' }">
     <UButton color="fuchsia" variant="ghost" icon="i-heroicons-question-mark-circle" />
     <template #panel>
