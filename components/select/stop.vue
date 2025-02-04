@@ -9,7 +9,6 @@
       searchable-placeholder="Search for a transit stops"
       placeholder="Select a stop"
       option-attribute="stopName"
-      by="stopId"
       trailing
       :popper="{
         placement: isMobile ? 'top' : 'bottom'
@@ -19,7 +18,7 @@
         <p v-if="stop">{{ stop.stopName }}</p>
       </template>
       <template #option="{ option: stop }" :loading="loading">
-        <p>{{ stop.stopName }}</p>
+        <p>{{ stop.stopName }} - {{ stop.direction }}</p>
       </template>
       <template #empty>
         No stops
@@ -31,38 +30,39 @@
 <script lang="ts">
 import { z } from "zod";
 
-export const stopPostSchema = z.object({
+export const stopPostResponseSchema = z.object({
   stopId: z.string(),
-  stopCode: z.string(),
   stopName: z.string(),
-  stopLat: z.string({coerce: true}),
-  stopLon: z.string({coerce: true}),
+  direction: z.string(),
 });
-export type StopPost = z.infer<typeof stopPostSchema>;
+export type StopPostResponse = z.infer<typeof stopPostResponseSchema>;
 </script>
 
 <script setup lang="ts">
 const loading = ref(false);
 const { isMobile } = useDevice();
-const stopOptions = ref<StopPost[]>([]);
-const stop = ref<StopPost>();
+const stopOptions = ref<StopPostResponse[]>([]);
+const stop = ref<StopPostResponse>();
 const query = ref<string>();
 const props = defineProps<{
   routeId: string|undefined,
+  geo: GeolocationPosition|undefined,
 }>();
 const routeId = ref(props.routeId);
 const emit = defineEmits<{
-  (e: 'onChange', stop: StopPost): void
+  (e: 'onChange', stop: StopPostResponse): void
 }>()
 
 async function searchStops(q?:string) {
-  // if (!props.routeId) return [];
   try {
     loading.value = true
-    return $fetch<StopPost[]>('/api/gtfs/stops/search', {
+    return $fetch<StopPostResponse[]>('/api/gtfs/stops/search', {
       params: {
         q,
-        routeId: props.routeId
+        routeId: props.routeId,
+        latitude: props.geo?.coords.latitude,
+        longitude: props.geo?.coords.longitude,
+        accuracy: props.geo?.coords.accuracy,
       }
     });
   } finally {

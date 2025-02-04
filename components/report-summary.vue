@@ -4,7 +4,6 @@
     <span v-else-if="props.report.passenger">Fare inspectors on <strong>{{ props.report.route?.routeShortName }}</strong> headed <strong>{{ getDirection(props.report) }}</strong> from <strong>{{ props.report.stop?.stopName }}</strong></span>
     <span v-else>Fare inspectors at <strong>{{ props.report.stop?.stopName }}</strong> for the <strong>{{ getDirection(props.report) }}</strong> bound <strong>{{ props.report.route?.routeShortName }}</strong></span>
   </div>
-
 </template>
 
 <script setup lang="ts">
