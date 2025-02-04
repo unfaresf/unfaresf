@@ -6,7 +6,7 @@
         <template #default="{ loggedIn }">
           <div v-if="loggedIn" class="flex">
             <UHorizontalNavigation :links="authedLinks" class="border-b border-gray-200 dark:border-gray-800" />
-            <UDropdown :items="authedDropdown" class="border-b">
+            <UDropdown :items="authedDropdown" class="border-b border-gray-200 dark:border-gray-800">
               <UButton color="white" icon="i-heroicons-bars-3" class="m-2"/>
               <template #item="{ item }">
                 <div class="flex w-full items-center flex-row-reverse">
