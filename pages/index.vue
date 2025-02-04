@@ -34,7 +34,7 @@ import { type StopPostResponse, stopPostResponseSchema } from "../components/sel
 
 const toast = useToast();
 const initialFormState = { passenger: false };
-const formState = reactive<Partial<ReportPostSchema>>(initialFormState);
+const formState = ref<Partial<ReportPostSchema>>(initialFormState);
 const submitting = ref(false);
 const form = ref<Form<ReportPostSchema>>();
 const geoLocation = ref<GeolocationPosition>();
@@ -57,7 +57,7 @@ async function onSubmit(event: FormSubmitEvent<ReportPostSchema>) {
       color: 'green',
       title: 'Report successful'
     });
-    await navigateTo("/reports");
+    await navigateTo('/thank-you');
   } catch(err:any) {
     toast.add({
       color: 'red',
