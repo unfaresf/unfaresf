@@ -4,13 +4,14 @@ import { gtfsDB } from "../../../sqlite-service";
 import { routes, stops, stopTimes, trips, directions } from "../../../../db/gtfs-migrations/schema";
 import { like, eq, lt, and, sql } from "drizzle-orm";
 
+const STOPS_RESULTS_LIMIT = 50;
+
 const gtfsGetStopsQuerySchema = z.object({
   q: z.string().trim().max(32).optional(),
   routeId: z.string().trim().nonempty().max(128),
   direction: z.string().trim().nonempty().max(128).optional(),
   latitude: z.number({ coerce: true }).optional(),
   longitude: z.number({ coerce: true }).optional(),
-  accuracy: z.number({ coerce: true }).optional(),
 });
 
 async function getStops(routeId:string, query:string|undefined) {
@@ -27,15 +28,15 @@ async function getStops(routeId:string, query:string|undefined) {
     .innerJoin(directions, eq(directions.routeId, routes.routeId))
     .where(
       and(
-        eq(routes.routeId, routeId),
+        (routeId ? eq(routes.routeId, routeId) : undefined),
         (query?.length ? like(stops.stopName, `%${query}%`) : undefined)
       )
     )
-    .limit(300);
+    .limit(STOPS_RESULTS_LIMIT);
 }
 
-async function getStopsByLocationQuery(routeId:string, query:string|undefined, lat:number, lng:number, acc:number) {
-  const accuracy = acc < 100 ? 100 : acc;
+async function getStopsByLocationQuery(routeId:string, query:string|undefined, lat:number, lng:number) {
+  const maxDistance = 500; // 500 meters
   const subquery = gtfsDB.select({
     stopId: stops.stopId,
     stopName: stops.stopName,
@@ -52,7 +53,7 @@ async function getStopsByLocationQuery(routeId:string, query:string|undefined, l
     )`
   })
   .from(stops)
-  .where(({distance}) => lt(distance, accuracy))
+  .where(({distance}) => lt(distance, maxDistance))
   .as('stops');
 
   return gtfsDB
@@ -68,20 +69,22 @@ async function getStopsByLocationQuery(routeId:string, query:string|undefined, l
     .innerJoin(directions, eq(directions.routeId, routes.routeId))
     .where(
       and(
-        eq(routes.routeId, routeId),
+        (routeId ? eq(routes.routeId, routeId) : undefined),
         (query?.length ? like(stops.stopName, `%${query}%`) : undefined)
       )
     )
-    .limit(300);
+    .limit(STOPS_RESULTS_LIMIT);
 }
 
 export default defineEventHandler(async (event) => {
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
   await authorize(event, getGtfs);
-  const { routeId, q, latitude, longitude, accuracy } = await getValidatedQuery(event, gtfsGetStopsQuerySchema.parse);
+  const { routeId, q, latitude, longitude } = await getValidatedQuery(event, gtfsGetStopsQuerySchema.parse);
   try {
-    if (latitude !== undefined && longitude !== undefined && accuracy !== undefined) {
-      return getStopsByLocationQuery(routeId, q, latitude, longitude, accuracy);
+
+    if (latitude !== undefined && longitude !== undefined) {
+      const stopsResults = await getStopsByLocationQuery(routeId, q, latitude, longitude);
+      if (stopsResults.length) return stopsResults;
     }
     return getStops(routeId, q);
   } catch(err:any) {

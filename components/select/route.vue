@@ -1,7 +1,8 @@
 <template>
-  <UFormGroup label="Route" name="route" help="Route name, e.g. 38 Geary or Bart Green line" required>
+  <UFormGroup label="Route" name="route" description="Route name, e.g. 38 Geary or Bart Green line" required>
     <USelectMenu
       v-model="route"
+      v-model:query="routeQuery"
       :loading="loading"
       :searchable="search"
       :searchableLazy="true"
@@ -14,10 +15,10 @@
       }"
     >
       <template #label>
-        <p v-if="route">{{ route.routeShortName }} {{ route.direction }} - <span class="lowercase">{{ route.routeLongName }}</span></p>
+        <p v-if="route">{{ route.routeShortName }} <span class="lowercase">{{ route.routeLongName }}</span> - {{ route.direction }}</p>
       </template>
       <template #option="{ option: route }">
-        <p>{{ route.routeShortName }} {{ route.direction }} - <span class="lowercase font-bold">{{ route.routeLongName }}</span> <span class="italic lowercase">{{ route.agencyName }}</span></p>
+        <p><span class="font-bold">{{ route.routeShortName }} <span class="lowercase">{{ route.routeLongName }}</span></span> - {{ route.direction }} <span class="italic lowercase">{{ route.agencyName }}</span></p>
       </template>
       <template #empty>
         No routes
@@ -38,29 +39,44 @@ export const routeSchema = z.object({
   direction: z.string(),
 });
 
-export type RouteRequest = z.infer<typeof routeSchema>;
+export type RouteResponse = z.infer<typeof routeSchema>;
 </script>
 
 <script setup lang="ts">
 const loading = ref(false);
 const { isMobile } = useDevice();
-const route = ref<RouteRequest>();
+const route = ref<RouteResponse>();
+const routeQuery = ref("");
+const props = defineProps<{
+  geo: GeolocationPosition|undefined,
+}>();
 const emit = defineEmits<{
-  (e: 'onChange', route: RouteRequest): void
+  (e: 'onChange', route: RouteResponse): void
 }>()
 
 async function search(q:string) {
-  if (!q.length) return [];
   try {
     loading.value = true
-    return $fetch<RouteRequest[]>('/api/gtfs/routes/search', { params: { q } });
+    return $fetch<RouteResponse[]>('/api/gtfs/routes/search', {
+      params: {
+        q,
+        latitude: props.geo?.coords.latitude,
+        longitude: props.geo?.coords.longitude,
+      }
+    });
   } catch(err:any) {
     return []
   } finally {
     loading.value = false;
   }
 }
-
+watch(() => props.geo, async (newGeo, oldGeo) => {
+  const newPos = `${newGeo?.coords.latitude}${newGeo?.coords.longitude}`;
+  const oldPos = `${oldGeo?.coords.latitude}${oldGeo?.coords.longitude}`;
+  if (newPos !== oldPos && routeQuery.value !== "") {
+    await search(routeQuery.value);
+  }
+});
 watch(route, (newRoute) => {
   if (newRoute) {
     emit('onChange', newRoute);

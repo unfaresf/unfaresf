@@ -1,5 +1,5 @@
 <template>
-  <UFormGroup label="Stop" name="stop" help="Current stop, e.g. Geary Blvd & 36th Ave or 16th & Mission" required>
+  <UFormGroup label="Stop" name="stop" description="Current stop, e.g. Geary Blvd & 36th Ave or 16th & Mission" help="Select a route first" required>
     <USelectMenu
       v-model="stop"
       v-model:query="query"
@@ -13,6 +13,7 @@
       :popper="{
         placement: isMobile ? 'top' : 'bottom'
       }"
+      :disabled="disable"
     >
       <template #label>
         <p v-if="stop">{{ stop.stopName }}</p>
@@ -52,6 +53,7 @@ const routeId = ref(props.routeId);
 const emit = defineEmits<{
   (e: 'onChange', stop: StopPostResponse): void
 }>()
+const disable = computed(() => !props.routeId);
 
 async function searchStops(q?:string) {
   try {
@@ -62,7 +64,6 @@ async function searchStops(q?:string) {
         routeId: props.routeId,
         latitude: props.geo?.coords.latitude,
         longitude: props.geo?.coords.longitude,
-        accuracy: props.geo?.coords.accuracy,
       }
     });
   } finally {
