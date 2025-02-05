@@ -25,6 +25,8 @@
     "@nuxtjs/device": "^3.2.4",
     "@types/better-sqlite3": "^7.6.12",
     "@types/sanitize-html": "^2.13.0",
+    "@vite-pwa/assets-generator": "^0.2.6",
+    "@vite-pwa/nuxt": "^0.10.6",
     "drizzle-kit": "^0.30.1",
     "nuxt": "^3.14.1592",
     "nuxt-auth-utils": "^0.5.7",
@@ -33,7 +35,9 @@
     "nuxt-rate-limit": "^1.2.0",
     "typescript": "^5.7.3",
     "vue": "latest",
-    "vue-tsc": "^2.2.0"
+    "vue-tsc": "^2.2.0",
+    "workbox-core": "^7.3.0",
+    "workbox-precaching": "^7.3.0"
   },
   "dependencies": {
     "@simplewebauthn/browser": "^11.0.0",

@@ -25,6 +25,7 @@ export default defineNuxtConfig({
     "nuxt-rate-limit",
     "nuxt-authorization",
     "@nuxtjs/device",
+    "@vite-pwa/nuxt",
   ],
   compatibilityDate: "2024-12-25",
   devServer: {
@@ -33,6 +34,40 @@ export default defineNuxtConfig({
   },
   auth: {
     webAuthn: true
+  },
+  pwa: {
+    disable: process.env.VITE_DEV_PWA !== 'true',
+    scope: '/',
+    srcDir: './service-worker',
+    filename: 'sw.ts',
+    strategies: 'injectManifest',
+    registerType: 'autoUpdate',
+    pwaAssets:{
+      config: 'pwa-assets.config.ts'
+    },
+    manifest:{
+      name:'Unfare SF',
+      short_name:'UnfareSF',
+      description:'Fare enforcement alerts in San Francisco to help each other avoid encounters with fare inspectors and cops.',
+      display: "standalone",
+      theme_color: "#255a91",
+      background_color: "#ffffff",
+      lang:'en',
+      orientation:'portrait'
+    },
+    workbox: {
+      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+    },
+    injectManifest: {
+      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+    },
+    client: {
+      installPrompt: true
+    },
+    devOptions: {
+      enabled: process.env.VITE_DEV_PWA === 'true',
+      type: 'module',
+    },
   },
   nuxtRateLimit: {
     routes: {
