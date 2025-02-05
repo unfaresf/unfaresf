@@ -9,10 +9,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     signUpKey: process.env.SIGN_UP_KEY,
-    mastodonToken: process.env.MASTODON_TOKEN,
-    mastodonUrl: process.env.MASTODON_URL,
     mastodonDryRun: process.env.MASTODON_DRY_RUN == 'true',
-    mastodonAccountName: process.env.MASTODON_ACCOUNT_NAME,
     gtfsDbFilePath: process.env.GTFS_DB_FILE_PATH,
     dbFileName: process.env.DB_FILE_NAME,
     agencyAltNames: process.env.AGENCY_ALT_NAMES,
