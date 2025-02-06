@@ -1,6 +1,5 @@
 import { type InferSelectModel, type InferInsertModel, sql, relations } from "drizzle-orm";
-import { boolean } from "drizzle-orm/mysql-core";
-import { integer, sqliteTable, text, primaryKey, index, foreignKey } from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text, primaryKey, index } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from 'drizzle-zod';
 
 export enum Roles {
@@ -18,6 +17,10 @@ export const users = sqliteTable("users", {
   createdAt: integer("created_at", { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
   roles: text().notNull().default(JSON.stringify([Roles.Editor])),
 });
+
+export const usersSubscriptions = relations(users, ({ many }) => ({
+	subscriptions: many(subscriptions),
+}));
 
 export const userInsertSchema = createInsertSchema(users);
 export type SelectUser = InferSelectModel<typeof users>;
@@ -93,9 +96,9 @@ export type SelectChallenge = InferSelectModel<typeof challenges>;
 export type InsertChallenge = InferInsertModel<typeof challenges>;
 
 export type MastodonOption = {
-  token?: string,
-  url?: string,
-  accountName?: string,
+  token?: string;
+  url?: string;
+  accountName?: string;
 };
 
 export const integrations = sqliteTable("integrations", {
@@ -108,3 +111,28 @@ export const integrations = sqliteTable("integrations", {
 export const integrationsInsertSchema = createInsertSchema(integrations);
 export type SelectIntegration = InferSelectModel<typeof integrations>;
 export type InsertIntegration = InferInsertModel<typeof integrations>;
+
+export type SubscriptionDetails = {
+  endpoint: string;
+  keys: {
+    p256dh: string;
+    auth: string;
+  }
+};
+
+export const subscriptions = sqliteTable("subscriptions", {
+  id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
+  userId: integer("user_id").notNull().references(() => users.id),
+  details: text({ mode: 'json' }).notNull().$type<SubscriptionDetails>(),
+});
+
+export const subscriptionsInsertSchema = createInsertSchema(subscriptions);
+export type SelectSubscription = InferSelectModel<typeof subscriptions>;
+export type InsertSubscription = InferInsertModel<typeof subscriptions>;
+
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+	subscriber: one(users, {
+		fields: [subscriptions.userId],
+		references: [users.id],
+	}),
+}));

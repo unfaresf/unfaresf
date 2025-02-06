@@ -1,10 +1,10 @@
 <template>
   <div v-if="supported">
     <UTooltip v-if="!permissionGranted" text="Enable new report notifications">
-      <UButton color="lime" class="m-2" icon="i-heroicons-bell" @click="setupNotifications" />
+      <UButton :loading="loading" color="lime" class="m-2" icon="i-heroicons-bell" @click="setupNotifications" />
     </UTooltip>
-    <UTooltip v-else  :text="notificationsEnabled ? 'Silence new report notifications': 'Enable new report notifications'">
-      <UButton color="white" class="m-2" :icon="notificationsEnabled ? 'i-heroicons-bell-snooze' : 'i-heroicons-bell-alert'" @click="toggleNotifications" />
+    <UTooltip v-else  :text="currentSubscription ? 'Silence notifications': 'Enable new report notifications'">
+      <UButton :loading="loading" color="white" class="m-2" :icon="currentSubscription ? 'i-heroicons-bell-snooze' : 'i-heroicons-bell-alert'" @click="toggleNotifications" />
     </UTooltip>
   </div>
 </template>
@@ -12,10 +12,12 @@
 <script setup lang="ts">
 const {public: {vapidPublicKey}} = useRuntimeConfig();
 const { $pwa } = useNuxtApp();
+const toast = useToast();
 
+const loading = ref(false);
 const supported = ref<boolean>(isSupported());
 const permissionGranted = ref<boolean>(isNotificationPermissionGranted());
-const notificationsEnabled = ref<boolean>(false);
+const currentSubscription = ref<PushSubscription|null>(null);
 
 function isSupported() {
   try {
@@ -76,8 +78,7 @@ function urlBase64ToUint8Array(s:string) {
 async function subscribeUserToPush() {
   const registration = $pwa?.getSWRegistration();
   if (!registration) {
-    console.warn(`SW registration missing`);
-    return;
+    throw new Error('service worker not registered');
   }
 
   const subscribeOptions = {
@@ -87,12 +88,77 @@ async function subscribeUserToPush() {
   return registration.pushManager.subscribe(subscribeOptions);
 }
 
-async function setupNotifications() {
-  await askPermission();
-  const pushSubscription = await subscribeUserToPush();
+async function saveSubscription(sub:PushSubscription) {
+  await $fetch('/api/subscriptions', {
+    method: 'POST',
+    body: {
+      details: sub
+    }
+  });
+}
+
+async function deleteSubscription(sub:PushSubscription) {
+  return $fetch('/api/subscriptions', {
+    method: 'DELETE',
+    query: {
+      endpoint: sub.endpoint
+    }
+  });
+}
+
+async function getCurrentSubscription():Promise<PushSubscription|null> {
+  const registration = $pwa?.getSWRegistration();
+  if (!registration) {
+    throw new Error('service worker not registered');
+  }
+  return registration.pushManager.getSubscription();
 }
 
 async function toggleNotifications() {
-  notificationsEnabled.value = !notificationsEnabled.value;
+  if (currentSubscription.value) {
+    await tearDownNotifications()
+  } else {
+    setupNotifications();
+  }
 }
+
+async function setupNotifications() {
+  loading.value = true;
+  await askPermission();
+  try {
+    const pushSubscription = await subscribeUserToPush();
+    await saveSubscription(pushSubscription);
+    currentSubscription.value = pushSubscription;
+    toast.add({
+      color: 'green',
+      title: 'Notification enabled',
+      description: 'Notifications are enabled for this device/browser.'
+    });
+  } catch (err:any) {
+    toast.add({
+      color: 'red',
+      title: 'Error deleting user',
+      description: err.message
+    });
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function tearDownNotifications() {
+  if (currentSubscription.value) {
+    await Promise.allSettled([
+      await currentSubscription.value?.unsubscribe(),
+      await deleteSubscription(currentSubscription.value),
+    ]);
+    currentSubscription.value = null;
+    toast.add({
+      color: 'green',
+      title: 'Notification disabled',
+      description: 'Notifications are disabled for this device/browser.'
+    });
+  }
+}
+
+currentSubscription.value = await getCurrentSubscription();
 </script>
