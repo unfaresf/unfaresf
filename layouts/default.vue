@@ -39,12 +39,6 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 const { clear, user } = useUserSession();
-const { $pwa } = useNuxtApp();
-
-onMounted(() => {
-  if ($pwa && $pwa.offlineReady)
-    console.log('App ready to work offline')
-});
 
 async function logout() {
   await clear();

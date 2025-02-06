@@ -1,4 +1,6 @@
-import { users } from '../../db/schema';
+import { users, subscriptions } from '../../db/schema';
+import { DB as db } from "../../server/sqlite-service";
+import { eq } from 'drizzle-orm';
 
 type User = typeof users.$inferSelect;
 
@@ -36,3 +38,17 @@ export const deleteUsers = defineAbility((user: User, targetUserId: number) => {
 });
 export const getIntegrations = defineAbility((user: User) => user.roles.includes('Admin'));
 export const updateIntegrations = defineAbility((user: User) => user.roles.includes('Admin'));
+
+// user subscription abilities
+export const createSubscription = defineAbility(() => true);
+export const deleteSubscription = defineAbility(async (user: User, targetSubscriptionId: number) => {
+  const sub = await db.query.subscriptions.findFirst({
+    columns: {
+      userId: true
+    },
+    where: eq(subscriptions.id, targetSubscriptionId)
+  });
+
+  if (sub === undefined) return false;
+  return user.id === sub.userId;
+});
