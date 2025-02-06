@@ -13,8 +13,10 @@ export default defineNuxtConfig({
     gtfsDbFilePath: process.env.GTFS_DB_FILE_PATH,
     dbFileName: process.env.DB_FILE_NAME,
     agencyAltNames: process.env.AGENCY_ALT_NAMES,
+    vapidPrivateKey: process.env.VAPID_PRIVATE_KEY,
     public: {
       logLevel: Number(process.env.LOG_LEVEL) || 3,
+      vapidPublicKey: process.env.VAPID_PUBLIC_KEY,
     }
   },
   devtools: { enabled: true },
@@ -65,8 +67,7 @@ export default defineNuxtConfig({
       installPrompt: true
     },
     devOptions: {
-      enabled: process.env.VITE_DEV_PWA === 'true',
-      type: 'module',
+      enabled: process.env.VITE_DEV_PWA === 'true'
     },
   },
   nuxtRateLimit: {
