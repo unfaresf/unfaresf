@@ -14,15 +14,16 @@
 
     <template #footer>
       <div class="flex items-center">
-        <UButton color="orange" @click="postSummary">Post Summary</UButton>
+        <UButton color="orange" :disabled="pending" @click="postSummary">Post Summary</UButton>
         <UTooltip text="Tooltip example" :popper="{ placement: 'top' }" class="p-2">
           <UIcon name="i-heroicons:question-mark-circle" class="w-5 h-5" />
           <template #text>
             <span class="italic">Make a post using the text in the gray box.</span>
           </template>
         </UTooltip>
-        <UButton color="gray" class="ml-auto mr-4" to="/reports">Cancel</UButton>
-        <UButton color="green" type="submit" form="post-form">Post</UButton>
+        <UButton color="gray" :disabled="pending" class="ml-auto mr-4" to="/reports">Cancel</UButton>
+        <UButton color="red" :disabled="pending" class="mr-4" v-if="report" @click="dismiss(report?.id)">Dismiss</UButton>
+        <UButton color="green" :disabled="pending" type="submit" form="post-form">Post</UButton>
       </div>
     </template>
   </UCard>
@@ -46,7 +47,7 @@ type PostSchema = z.output<typeof postSchema>
 const post = reactive({
   message: undefined,
 });
-const posting = ref(false);
+const pending = ref(false);
 const reportSummRef = useTemplateRef('report-summary-ref');
 const route = useRoute();
 const toast = useToast();
@@ -58,7 +59,7 @@ watch(report, (newPosts) => {
 
 async function postMessage(msg:string) {
   if (!report.value) return;
-  posting.value = true;
+  pending.value = true;
   try {
     await $fetch("/api/broadcast", {
       method: 'POST',
@@ -79,7 +80,7 @@ async function postMessage(msg:string) {
       title: err.data?.message || err.message,
     });
   } finally {
-    posting.value = false;
+    pending.value = false;
   }
 }
 
@@ -91,5 +92,26 @@ async function postSummary() {
 
 async function onSubmit(event: FormSubmitEvent<PostSchema>) {
   await postMessage(event.data.message);
+}
+
+async function dismiss(reportId:number) {
+  try {
+    pending.value = true;
+    await $fetch(`/api/reports/${reportId}`, {
+      method: 'PUT',
+      body: {
+        approved: false
+      }
+    });
+    await navigateTo('/reports');
+  } catch (err:any) {
+    toast.add({
+      color: 'red',
+      title: 'Error dismissing reprt',
+      description: err.data?.message || err.message,
+    });
+  } finally {
+    pending.value = false;
+  }
 }
 </script>

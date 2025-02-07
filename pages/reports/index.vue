@@ -40,7 +40,7 @@
 </template>
 
 <script lang="ts" setup>
-import { type SelectReport } from '../db/schema';
+import { type SelectReport } from '../../db/schema';
 import { formatDistanceToNow } from "date-fns";
 import { Post } from '#components';
 
