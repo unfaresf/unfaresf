@@ -14,6 +14,7 @@ export default defineEventHandler(async (event) => {
     stop: true,
     passenger: true,
   }).parse);
+
   const report = {
     ...defaultRepost,
     ...body
