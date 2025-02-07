@@ -1,7 +1,7 @@
 /* In the Service Worker. */
 type PushNotificationBody = {
   notification: {
-    reportId: number;
+    reportUrl: number;
     title: string;
     body: string;
     tag: string;
@@ -27,7 +27,7 @@ self.addEventListener('push', function(event) {
           image: image,
           tag: tag,
           data: {
-            reportId: pushBody.notification.reportId
+            reportUrl: pushBody.notification.reportUrl
           }
         })
       );
@@ -37,4 +37,18 @@ self.addEventListener('push', function(event) {
   }
 
   event.waitUntil(Promise.all(promises));
+});
+
+self.addEventListener('notificationclick', async (event) => {
+  const clickedNotification = event.notification;
+  clickedNotification.close();
+
+  const openingWindow = clients.openWindow(`${event.notification.data.reportUrl}`)
+  .then(windowClient => {
+    if (windowClient) {
+      windowClient.focus();
+    }
+  });
+
+  event.waitUntil(openingWindow);
 });

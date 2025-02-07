@@ -6,7 +6,6 @@
       <AuthState>
         <template #default="{ loggedIn }">
           <div v-if="loggedIn" class="flex">
-
             <UHorizontalNavigation :links="authedLinks" class="border-b border-gray-200 dark:border-gray-800" />
             <div class="flex border-b border-gray-200 dark:border-gray-800">
               <ClientOnly>

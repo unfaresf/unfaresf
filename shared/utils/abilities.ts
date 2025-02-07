@@ -7,6 +7,7 @@ type User = typeof users.$inferSelect;
 // report abilities
 export const createReports = defineAbility({ allowGuest: true }, (user: User | null) => true); // all users can report
 export const listReports = defineAbility(() => true); // Only authenticated users can list reports
+export const getReport = defineAbility(() => true); // Only authenticated users can list reports
 export const updateReports = defineAbility(() => true);
 
 // invite abilities

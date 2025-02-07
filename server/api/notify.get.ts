@@ -5,7 +5,7 @@ import { type SelectSubscription, subscriptions as subscriptionsTable } from '..
 
 type PushNotificationBody = {
   notification: {
-    reportId: number;
+    reportUrl: string;
     title: string;
     body: string;
     tag: string;
@@ -46,10 +46,10 @@ export default defineEventHandler(async (event) => {
   // @ts-ignore TS isn't picking up the relation type on the subscriptions join
   await triggerPushMsg(user.subscriptions[0], {
     notification: {
-      reportId: report.id,
       title: 'New Report',
       body: `${report.route?.agencyName} ${report.route?.routeShortName} ${report.route?.direction} near ${report.stop?.stopName}`,
       tag: 'new-report',
+      reportUrl: `/reports/${report.id}`,
     }
-  })
+  });
 });

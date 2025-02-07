@@ -1,10 +1,10 @@
 <template>
   <div v-if="supported">
     <UTooltip v-if="!permissionGranted" text="Enable new report notifications">
-      <UButton :loading="loading" color="lime" class="m-2" icon="i-heroicons-bell" @click="setupNotifications" />
+      <UButton :loading="loading" color="lime" class="m-2" icon="i-heroicons-bell-slash" @click="setupNotifications" />
     </UTooltip>
-    <UTooltip v-else  :text="currentSubscription ? 'Silence notifications': 'Enable new report notifications'">
-      <UButton :loading="loading" color="white" class="m-2" :icon="currentSubscription ? 'i-heroicons-bell-snooze' : 'i-heroicons-bell-alert'" @click="toggleNotifications" />
+    <UTooltip v-else  :text="currentSubscription ? 'Notifications enabled': 'Notifications disabled'">
+      <UButton :loading="loading" color="white" class="m-2" :icon="currentSubscription ? 'i-heroicons-bell' : 'i-heroicons-bell-snooze'" @click="toggleNotifications" />
     </UTooltip>
   </div>
 </template>
