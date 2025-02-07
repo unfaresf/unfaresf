@@ -34,6 +34,7 @@ import { z } from 'zod';
 import type { FormSubmitEvent } from '#ui/types'
 import type { SelectReport } from '../db/schema';
 import { useTemplateRef } from 'vue';
+
 const emit = defineEmits(['success', 'close']);
 const props = defineProps<{
   report: SelectReport,
