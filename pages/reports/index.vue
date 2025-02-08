@@ -27,9 +27,8 @@
         </div>
       </template>
     </UTable>
-    <template #footer>
+    <template v-if="unreviewedReports.count > limit" #footer>
       <UPagination
-        v-if="unreviewedReports.count > limit"
         v-model="page"
         :page-count="limit"
         :total="unreviewedReports.count"
@@ -42,7 +41,7 @@
 <script lang="ts" setup>
 import { type SelectReport } from '../../db/schema';
 import { formatDistanceToNow } from "date-fns";
-import { Post } from '#components';
+import { PostModal } from '#components';
 
 definePageMeta({
   middleware: ['auth']
@@ -83,7 +82,7 @@ async function dismiss(row:SelectReport) {
 }
 
 async function openPostModel(row:SelectReport) {
-  modal.open(Post, {
+  modal.open(PostModal, {
     report: row,
     async onClose() {
       return modal.close();

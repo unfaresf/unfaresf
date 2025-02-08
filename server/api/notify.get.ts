@@ -13,7 +13,10 @@ type PushNotificationBody = {
 };
 async function triggerPushMsg (subscription:SelectSubscription, dataToSend:PushNotificationBody) {
   try {
-    await webpush.sendNotification(subscription.details, JSON.stringify(dataToSend));
+    await webpush.sendNotification(subscription.details, JSON.stringify(dataToSend), {
+      TTL: 60 * 3, // 3 minutes
+      urgency: 'normal'
+    });
   } catch (err:any) {
     if (err.statusCode === 404 || err.statusCode === 410) {
       await db.delete(subscriptionsTable).where(eq(subscriptionsTable.id, subscription.id));
@@ -22,6 +25,14 @@ async function triggerPushMsg (subscription:SelectSubscription, dataToSend:PushN
     }
   }
 };
+
+/**********************************************************************
+ *
+ *
+ * DO NOT DEPLOY THIS ENDPOINT. ONLY HERE FOR DEBUGGING NOTIFICATIONS
+ *
+ *
+***********************************************************************/
 
 export default defineEventHandler(async (event) => {
   const { vapidPrivateKey, public: {vapidPublicKey} } = useRuntimeConfig(event);
