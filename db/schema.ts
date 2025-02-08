@@ -71,6 +71,10 @@ export const reports = sqliteTable("reports", {
   index("reviewed_at_idx").on(table.reviewedAt),
 ]);
 
+export const reportsRelations = relations(reports, ({ one }) => ({
+	broadcast: one(broadcasts)
+}));
+
 export const reportInsertSchema = createInsertSchema(reports);
 export type SelectReport = InferSelectModel<typeof reports>;
 export type InsertReport = InferInsertModel<typeof reports>;
@@ -80,7 +84,12 @@ export const broadcasts = sqliteTable("broadcasts", {
   createdAt: integer("created_at", { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
   message: text({ length: 1024 }).notNull(),
   platforms: text(),
+  reportId: integer("report_id", { mode: 'number' }).unique().references(() => reports.id),
 });
+
+export const broadcastsRelations = relations(broadcasts, ({ one }) => ({
+	report: one(reports, { fields: [broadcasts.reportId], references: [reports.id] }),
+}));
 
 export const broadcastInsertSchema = createInsertSchema(broadcasts);
 export type SelectBroadcast = InferSelectModel<typeof broadcasts>;

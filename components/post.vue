@@ -59,26 +59,31 @@ async function postSummary() {
 }
 
 async function postMessage(msg:string) {
+  if (!props.report) return;
   pending.value = true;
   try {
     await $fetch("/api/broadcast", {
       method: 'POST',
       body: {
-        message: msg
-      }
-    });
-    await $fetch(`/api/reports/${props.report?.id}`, {
-      method: 'PUT',
-      body: {
-        approved: true
+        message: msg,
+        reportId: props.report.id,
       }
     });
     post.message = undefined;
   } catch (err:any) {
-    toast.add({
-      color: 'red',
-      title: err.data?.message || err.message,
-    });
+    if (err.message === "UNIQUE constraint failed: broadcasts.report_id") {
+      toast.add({
+        color: 'orange',
+        title: 'Someone beat you to the punch',
+        description: 'Someone else created a broadcast for this report.',
+      });
+    } else {
+      toast.add({
+        color: 'red',
+        title: 'Error creating new broadcast',
+        description: err.data?.message || err.message,
+      });
+    }
   } finally {
     pending.value = false;
   }
