@@ -5,9 +5,8 @@
     <span v-else>Fare inspectors at <strong>{{ props.report.stop?.stopName }}</strong> for the <strong>{{ getDirection(props.report) }}</strong> bound <strong>{{ props.report.route?.routeShortName }}</strong></span>
   </div>
   <div v-else class="space-y-2">
-    <USkeleton class="h-4 w-[250px]" />
-    <USkeleton class="h-4 w-[200px]" />
-    </div>
+    <USkeleton class="h-4" />
+  </div>
 </template>
 
 <script setup lang="ts">
