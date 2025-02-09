@@ -42,8 +42,37 @@
 import { computed } from 'vue';
 
 const { clear, user } = useUserSession();
+const { $pwa } = useNuxtApp();
+
+async function deleteSubscription(sub:PushSubscription) {
+  return $fetch('/api/subscriptions', {
+    method: 'DELETE',
+    query: {
+      endpoint: sub.endpoint
+    }
+  });
+}
+
+async function getCurrentSubscription():Promise<PushSubscription|null> {
+  const registration = $pwa?.getSWRegistration();
+  if (!registration) {
+    throw new Error('service worker not registered');
+  }
+  return registration.pushManager.getSubscription();
+}
+
+async function disableNotifications() {
+  const subscriptions = await getCurrentSubscription();
+  if (subscriptions) {
+    await Promise.allSettled([
+      subscriptions.unsubscribe(),
+      deleteSubscription(subscriptions),
+    ]);
+  }
+}
 
 async function logout() {
+  await disableNotifications();
   await clear();
   return navigateTo('/sign-in');
 }
