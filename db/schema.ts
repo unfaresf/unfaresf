@@ -133,15 +133,42 @@ export const subscriptions = sqliteTable("subscriptions", {
   id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
   userId: integer("user_id").notNull().references(() => users.id),
   details: text({ mode: 'json' }).notNull().$type<SubscriptionDetails>(),
+  deletedAt: integer("deleted_at", { mode: 'timestamp' }),
 });
 
 export const subscriptionsInsertSchema = createInsertSchema(subscriptions);
 export type SelectSubscription = InferSelectModel<typeof subscriptions>;
 export type InsertSubscription = InferInsertModel<typeof subscriptions>;
 
-export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+export const subscriptionsRelations = relations(subscriptions, ({ many, one }) => ({
+  broadcasts: many(broadcasts),
 	subscriber: one(users, {
 		fields: [subscriptions.userId],
 		references: [users.id],
 	}),
 }));
+
+export type NotificationDetail = {
+  reportUrl: string;
+  title: string;
+  body: string;
+  tag: string;
+};
+
+export const notifications = sqliteTable("notifications", {
+  id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
+  createdAt: integer("created_at", { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  details: text({ mode: 'json' }).notNull().$type<NotificationDetail>(),
+  subscriptionId: integer("subscription_id").notNull().references(() => subscriptions.id),
+},  table => [
+  index("notifications_created_at_idx").on(table.createdAt),
+  index("notifications_subscription_id_idx").on(table.subscriptionId),
+]);
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+	subscription: one(subscriptions)
+}));
+
+export const notificationsInsertSchema = createInsertSchema(notifications);
+export type SelectNotification = InferSelectModel<typeof notifications>;
+export type InsertNotification = InferInsertModel<typeof notifications>;

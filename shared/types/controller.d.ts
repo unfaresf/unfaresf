@@ -1,0 +1,3 @@
+type ControllerOptions = {
+  quiet?: boolean
+}

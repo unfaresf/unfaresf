@@ -1,10 +1,30 @@
 <template>
-  <post :report="report" @close="onClose" @success="onSuccess" />
+  <div class="grid lg:grid-cols-2 gap-4 mt-4">
+    <post :report="report" @close="onClose" @success="onSuccess" />
+    <UCard class="xs:mt-8 md:mt-0">
+      <template #header>
+        <h2 class="text-lg">Recent Broadcasts</h2>
+        <p class="text-xs text-gray-500">Check recent broadcasts to avoid duplicate messages.</p>
+      </template>
+      <div>
+        <ol v-if="broadcasts && broadcasts.result.length">
+          <li v-for="broadcast in broadcasts?.result" class="">
+            {{ broadcast.message }}
+            <span class="text-xs italic">{{ formatDistanceToNow(broadcast.createdAt) }} ago</span>
+            <UDivider class="my-2"/>
+          </li>
+        </ol>
+        <div v-else>
+          <p>No recent broadcasts.</p>
+        </div>
+      </div>
+    </UCard>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import type { SelectReport } from '../../db/schema';
-
+import { sub, formatDistanceToNow } from 'date-fns';
 definePageMeta({
   middleware: ['auth']
 });
@@ -15,6 +35,17 @@ const { data: report } = await useLazyFetch<SelectReport>(`/api/reports/${route.
 watch(report, newReport => {
   if (newReport) {
     report.value = newReport;
+  }
+}, {once: true});
+
+const { data: broadcasts } = await useLazyFetch(`/api/broadcasts`, {
+  query: {
+    from: sub(new Date(), {hours: 12}).toISOString(),
+  },
+});
+watch(broadcasts, newBroadcasts => {
+  if (newBroadcasts) {
+    broadcasts.value = newBroadcasts;
   }
 }, {once: true});
 
