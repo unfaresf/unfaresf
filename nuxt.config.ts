@@ -43,6 +43,7 @@ export default defineNuxtConfig({
     srcDir: './service-worker',
     filename: 'sw.ts',
     strategies: 'injectManifest',
+    injectRegister: 'script',
     registerType: 'autoUpdate',
     pwaAssets:{
       config: 'pwa-assets.config.ts'

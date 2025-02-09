@@ -40,6 +40,7 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue';
+
 const { clear, user } = useUserSession();
 
 async function logout() {
@@ -85,5 +86,5 @@ const authedDropdown = computed(() => {
       click: logout
     }
   ]];
-})
+});
 </script>
