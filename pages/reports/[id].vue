@@ -1,7 +1,9 @@
 <template>
-  <div class="grid lg:grid-cols-2 gap-4 mt-4">
-    <post :report="report" @close="onClose" @success="onSuccess" />
-    <UCard class="xs:mt-8 md:mt-0">
+  <div class="grid grid-cols-6 gap-4 mt-4">
+    <div class="col-span-6 lg:col-span-4 xs:mt-10 md:mt-0">
+      <post :report="report" @close="onClose" @success="onSuccess" />
+    </div>
+    <UCard class="col-span-6 lg:col-span-2 xs:mt-10 md:mt-0">
       <template #header>
         <h2 class="text-lg">Recent Broadcasts</h2>
         <p class="text-xs text-gray-500">Check recent broadcasts to avoid duplicate messages.</p>

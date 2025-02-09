@@ -30,6 +30,9 @@
       </AuthState>
     </header>
     <NuxtPage />
+    <footer>
+      <div class="py-2"></div>
+    </footer>
   </UContainer>
   <UModals />
   <UNotifications />
