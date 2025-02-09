@@ -1,3 +1,8 @@
+/// <reference lib="webworker" />
+/// <reference types="@types/serviceworker" />
+/*
+ * TS doesnt work in this file. i can't figure it out. YOLO
+ */
 /* In the Service Worker. */
 self.addEventListener('push', function(event) {
   const pushBody = event.data.json();
