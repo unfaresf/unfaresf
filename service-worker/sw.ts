@@ -1,11 +1,7 @@
-/// <reference lib="webworker" />
-/// <reference types="@types/serviceworker" />
-/*
- * TS doesnt work in this file. i can't figure it out. YOLO
- */
+declare let self: ServiceWorkerGlobalScope
 /* In the Service Worker. */
 self.addEventListener('push', function(event) {
-  const pushBody = event.data.json();
+  const pushBody = event.data?.json();
   const promises = [];
 
   switch (pushBody.tag) {
@@ -13,6 +9,7 @@ self.addEventListener('push', function(event) {
       promises.push(
         self.registration.showNotification(pushBody.title, {
           body: pushBody.body,
+          // @ts-ignore it exists, type is wrong https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification#image
           image: '/android-chrome-192x192.png',
           tag: pushBody.tag,
           data: {
