@@ -1,8 +1,8 @@
-import { DB as db } from "../sqlite-service";
+import { DB as db } from "../../sqlite-service";
 import { eq } from 'drizzle-orm';
-import { broadcasts as broadcastsTable, reports as reportsTable } from "../../db/schema";
+import { broadcasts as broadcastsTable, reports as reportsTable } from "../../../db/schema";
 import { z } from "zod";
-import { createBroadcasts } from "../../shared/utils/abilities";
+import { createBroadcasts } from "../../../shared/utils/abilities";
 
 const broadcastPostBodySchema = z.object({
   message: z.string().min(8).max(400).trim(),

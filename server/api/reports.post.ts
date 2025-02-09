@@ -1,6 +1,6 @@
-import { DB as db } from "../sqlite-service"
-import { reports as reportsTable, reportInsertSchema } from "../../db/schema";
+import { reportInsertSchema } from "../../db/schema";
 import { createReports } from "../../shared/utils/abilities";
+import CreateReport from "~/shared/utils/create-report";
 
 export default defineEventHandler(async (event) => {
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
     ...body
   };
   try {
-    return db.insert(reportsTable).values(report);
+    return CreateReport(event, report);
   } catch (e: any) {
     throw createError({
       statusCode: 400,
