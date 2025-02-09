@@ -160,5 +160,11 @@ async function tearDownNotifications() {
   }
 }
 
-currentSubscription.value = await getCurrentSubscription();
+onMounted(async () => {
+  try {
+    currentSubscription.value = await getCurrentSubscription();
+  } catch (err:any) {
+    console.warn('error retrieving current subscriptions', err);
+  }
+})
 </script>

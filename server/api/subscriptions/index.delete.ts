@@ -10,14 +10,15 @@ const deleteSubscriptionQuerySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const { endpoint } = await getValidatedQuery(event, deleteSubscriptionQuerySchema.parse);
-  const {user} = await getUserSession(event);
+  const { user } = await getUserSession(event);
   if (!user || user.id === undefined) {
     throw createError({
       statusCode: 401,
-      message: "1"
+      statusMessage: "Unauthorized"
     });
   }
-  const usersAndSubscriptions = await db.select().from(usersTable)
+  const usersAndSubscriptions = await db.select()
+    .from(usersTable)
     .where(eq(usersTable.id, user.id))
     .innerJoin(subscriptionsTable, eq(subscriptionsTable.userId, user.id));
 
@@ -25,16 +26,14 @@ export default defineEventHandler(async (event) => {
     return userAndSub.subscriptions.details.endpoint === endpoint
   });
   if (!userSub) {
-    throw createError({
-      statusCode: 401,
-      message: "2"
-    });
+    setResponseStatus(event, 200, "Deleted");
+    return;
   }
 
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
   await authorize(event, deleteSubscription, userSub.subscriptions.id);
   try {
-    await db.delete(subscriptionsTable).where(eq(subscriptionsTable.id, userSub.subscriptions.id));
+    await db.update(subscriptionsTable).set({deletedAt: new Date()}).where(eq(subscriptionsTable.id, userSub.subscriptions.id));
     setResponseStatus(event, 200, "Deleted");
   } catch (e: any) {
     throw createError({
