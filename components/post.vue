@@ -14,17 +14,18 @@
     </UForm>
 
     <template v-if="!props.report?.reviewedAt" #footer>
-      <div class="flex items-center">
-        <UButton color="orange" @click="postSummary">Post Summary</UButton>
-        <UTooltip text="Tooltip example" :popper="{ placement: 'top' }" class="p-2">
-          <UIcon name="i-heroicons:question-mark-circle" class="w-5 h-5" />
-          <template #text>
-            <span class="italic">Make a post using the text in the gray box.</span>
-          </template>
-        </UTooltip>
-        <UButton color="gray" class="ml-auto mr-4" @click="onClose">Cancel</UButton>
-        <UButton color="red" :disabled="pending" class="mr-4" v-if="report" @click="dismiss(report?.id)">Dismiss</UButton>
-        <UButton color="green" type="submit" form="post-form">Post</UButton>
+      <div class="flex flex-col md:flex-row flex-grow md:flex-grow-0 gap-y-3">
+        <UButton color="green" class="justify-center md:order-4 md:ml-3" type="submit" form="post-form">Post</UButton>
+        <div class="flex flex-grow items-center md:order-1">
+          <UButton color="orange" class="justify-center grow md:flex-grow-0 mr-2" @click="postSummary">Post Summary</UButton>
+          <UTooltip text="Tooltip example" :popper="{ placement: 'top' }">
+            <UIcon name="i-heroicons:question-mark-circle" class="w-5 h-5" />
+            <template #text>
+              <span class="italic">Make a post using the text in the gray box.</span>
+            </template>
+          </UTooltip>
+        </div>
+        <UButton color="red" class="justify-center md:order-2" :disabled="pending" v-if="report" @click="dismiss(report?.id)">Dismiss</UButton>
       </div>
     </template>
   </UCard>
