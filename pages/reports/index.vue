@@ -12,8 +12,11 @@
           </div>
         </div>
       </template>
-      <div v-if="unreviewedReports.result">
+      <div v-if="unreviewedReports.result && unreviewedReports.result.length">
         <ReportCard v-for="report in unreviewedReports.result" :report="report" @onApprove="openPostModel" @onDismiss="dismiss"/>
+      </div>
+      <div v-else>
+        <p>No recent reports</p>
       </div>
       <template v-if="unreviewedReports.count > limit" #footer>
         <UPagination
@@ -38,7 +41,7 @@
           </li>
         </ol>
         <div v-else>
-          <p>No recent broadcasts.</p>
+          <p>No recent broadcasts</p>
         </div>
       </div>
     </UCard>
