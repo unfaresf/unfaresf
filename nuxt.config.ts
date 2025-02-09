@@ -38,7 +38,6 @@ export default defineNuxtConfig({
     webAuthn: true
   },
   pwa: {
-    disable: process.env.VITE_DEV_PWA !== 'true',
     scope: '/',
     srcDir: './service-worker',
     filename: 'sw.ts',
