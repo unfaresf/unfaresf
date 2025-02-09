@@ -7,13 +7,13 @@
     <div class="p-2 rounded bg-gray-100 text-gray-600 text-sm mb-4">
       <ReportSummary ref="report-summary-ref" :report="props.report"></ReportSummary>
     </div>
-    <UForm id="post-form" :schema="postSchema" :state="post" class="space-y-4" @submit="onSubmit">
+    <UForm v-if="!props.report?.reviewedAt" id="post-form" :schema="postSchema" :state="post" class="space-y-4" @submit="onSubmit">
       <UFormGroup label="Message" name="message" help="Tweet, toot, txt, etc...">
         <UTextarea v-model="post.message" autofocus />
       </UFormGroup>
     </UForm>
 
-    <template #footer>
+    <template v-if="!props.report?.reviewedAt" #footer>
       <div class="flex items-center">
         <UButton color="orange" @click="postSummary">Post Summary</UButton>
         <UTooltip text="Tooltip example" :popper="{ placement: 'top' }" class="p-2">

@@ -1,57 +1,65 @@
 <template>
-  <UCard class="mt-10">
-    <template #header>
-      <div class="flex">
-        <h2>New Reports</h2>
-        <USelect v-model="reviewed" :options="reviewedStatuses" option-attribute="name" class="ml-auto"/>
-      </div>
-    </template>
-    <UTable
-      :loading="reportsStatus === 'pending'"
-      :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Loading...' }"
-      :empty-state="{ icon: 'i-heroicons-circle-stack-20-solid', label: 'No reports' }"
-      class="w-full"
-      :columns="[{ key: 'actions' },{ key: 'message', label: 'Message' }, { key: 'source', label: 'Source' },{ key: 'createdAt', label: 'Created' }]"
-      :rows="unreviewedReports.result"
-    >
-      <template #message-data="{ row }">
-        <ReportSummary :report="row"></ReportSummary>
-      </template>
-      <template #createdAt-data="{ row }">
-        <span>{{ formatDistanceToNow(new Date(row.createdAt)) }}</span>
-      </template>
-      <template #actions-data="{ row }">
-        <div v-if="!row.reviewedAt">
-          <UButton color="green" variant="soft" icon="i-heroicons-check-circle" @click="openPostModel(row)" class="mr-2" :disabled="disabledRows.has(row.id)" />
-          <UButton color="red" variant="ghost" icon="i-heroicons-x-circle" @click="dismiss(row)" :disabled="disabledRows.has(row.id)" />
+  <div class="grid grid-cols-6 gap-4 mt-4">
+    <UCard class="col-span-6 lg:col-span-4 xs:mt-10 md:mt-0">
+      <template #header>
+        <div class="flex">
+          <div>
+            <h2 class="text-lg">New Reports</h2>
+            <p class="text-xs text-gray-500">Recent reports of cop sightings from various platforms.</p>
+          </div>
+          <div class="ml-auto">
+            <USelect v-model="reviewed" :options="reviewedStatuses" option-attribute="name"/>
+          </div>
         </div>
       </template>
-    </UTable>
-    <template v-if="unreviewedReports.count > limit" #footer>
-      <UPagination
-        v-model="page"
-        :page-count="limit"
-        :total="unreviewedReports.count"
-        class="justify-center"
-      />
-    </template>
-  </UCard>
+      <div v-if="unreviewedReports.result">
+        <ReportCard v-for="report in unreviewedReports.result" :report="report" @onApprove="openPostModel" @onDismiss="dismiss"/>
+      </div>
+      <template v-if="unreviewedReports.count > limit" #footer>
+        <UPagination
+          v-model="page"
+          :page-count="limit"
+          :total="unreviewedReports.count"
+          class="justify-center"
+        />
+      </template>
+    </UCard>
+    <UCard class="col-span-6 lg:col-span-2 xs:mt-10 md:mt-0">
+      <template #header>
+        <h2 class="text-lg">Recent Broadcasts</h2>
+        <p class="text-xs text-gray-500">Check recent broadcasts to avoid duplicate messages.</p>
+      </template>
+      <div>
+        <ol v-if="broadcasts && broadcasts.result.length">
+          <li v-for="broadcast in broadcasts?.result" class="">
+            {{ broadcast.message }}
+            <span class="text-xs italic">{{ formatDistanceToNow(broadcast.createdAt) }} ago</span>
+            <UDivider class="my-2"/>
+          </li>
+        </ol>
+        <div v-else>
+          <p>No recent broadcasts.</p>
+        </div>
+      </div>
+    </UCard>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import { type SelectReport } from '../../db/schema';
-import { formatDistanceToNow } from "date-fns";
 import { PostModal } from '#components';
+import ReportCard from '~/components/report-card.vue';
+import { sub, formatDistanceToNow } from 'date-fns';
 
 definePageMeta({
   middleware: ['auth']
 });
 
 const reviewedStatuses = [{
-  name: 'Reviewed',
+  name: 'Old',
   value: 'true'
 }, {
-  name: 'Unreviewed',
+  name: 'New',
   value: 'false'
 }];
 const reviewed = ref(reviewedStatuses[1].value);
@@ -109,6 +117,17 @@ const { data:unreviewedReports, status:reportsStatus, refresh } = await useLazyF
     });
   }
 });
+
+const { data: broadcasts } = await useLazyFetch(`/api/broadcasts`, {
+  query: {
+    from: sub(new Date(), {hours: 12}).toISOString(),
+  },
+});
+watch(broadcasts, newBroadcasts => {
+  if (newBroadcasts) {
+    broadcasts.value = newBroadcasts;
+  }
+}, {once: true});
 watch(reviewed, () => {
   page.value = 1;
 });
