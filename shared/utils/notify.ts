@@ -10,7 +10,6 @@ import {
 } from "../../db/schema";
 import { eq, lt, and, inArray, sql, isNull } from "drizzle-orm";
 import webpush from 'web-push';
-import type { H3Event, EventHandlerRequest } from 'h3';
 import { sub } from "date-fns";
 
 async function cleanOldNotifications() {
@@ -55,16 +54,22 @@ async function getSubscriptionsForUsers(userIds:number[]) {
   );
 }
 
-function formatReportAsNotification(report:SelectReport):NotificationDetail {
-  const body = report.message
-    ? report.message
-    : `${report.route?.agencyName} ${report.route?.routeShortName} ${report.route?.direction} near ${report.stop?.stopName}`;
+function formatReportBody(reports:SelectReport[]):string {
+  if (reports.length === 1) {
+    const report = reports[0];
+    return report.message ? report.message : `${report.route?.agencyName} ${report.route?.routeShortName} ${report.route?.direction} near ${report.stop?.stopName}`;
+  }
+  return 'Multiple new reports.';
+}
+
+function formatReportAsNotification(reports:SelectReport[]):NotificationDetail {
+  const body = formatReportBody(reports)
 
   return {
     title: '🚌 🐷 Report',
     body,
     tag: 'new-report',
-    reportUrl: `/reports/${report.id}`,
+    reportUrl: reports.length === 1 ? `/reports/${reports[0].id}` : `/reports`,
   }
 }
 
@@ -93,12 +98,13 @@ async function triggerPushMsg(
   }
 };
 
-export default async function Notify(event:H3Event<EventHandlerRequest>, report:SelectReport) {
-  const notificationBody = formatReportAsNotification(report);
+export default async function Notify(reports:SelectReport[]) {
+  const notificationBody = formatReportAsNotification(reports);
   // collect users to notify
   const users = await getUsersToNotify();
+
   // send notifications
-  const { vapidPrivateKey, public: { vapidPublicKey } } = useRuntimeConfig(event);
+  const { vapidPrivateKey, public: { vapidPublicKey } } = useRuntimeConfig();
   webpush.setVapidDetails(
     'https://unfaresf.org',
     vapidPublicKey,

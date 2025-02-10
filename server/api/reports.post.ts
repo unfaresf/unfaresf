@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
     ...body
   };
   try {
-    return CreateReport(event, report);
+    return CreateReport({event, reports: [report]});
   } catch (e: any) {
     throw createError({
       statusCode: 400,
