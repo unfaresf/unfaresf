@@ -21,6 +21,12 @@
       <template #roles-data="{ row }">
         <span>{{ row.roles.join(', ') }}</span>
       </template>
+      <template #userName-data="{ row }">
+        <div class="flex">
+          <span>{{ row.userName }}</span>
+          <UIcon v-if="row.hasActiveSubscription" name="i-heroicons-bell" class="w-5 h-5 ml-2" />
+        </div>
+      </template>
     </UTable>
     <template #footer>
       <UPagination
@@ -41,7 +47,7 @@
 </template>
 
 <script lang="ts" setup>
-import { UButton, UCard } from '#components';
+import { UButton, UCard, UIcon } from '#components';
 import MastodonSettingsUpdate from '~/components/mastodon-settings-update.vue';
 import { type GetUser } from "../db/schema";
 

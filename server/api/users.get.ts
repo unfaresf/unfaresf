@@ -1,6 +1,6 @@
-import { desc, isNull, isNotNull } from 'drizzle-orm';
+import { desc, eq, sql, isNull, getTableColumns } from 'drizzle-orm';
 import { DB as db } from "../sqlite-service";
-import { users as usersTable } from "../../db/schema";
+import { users as usersTable, subscriptions as subscriptionsTable } from "../../db/schema";
 import { getUsers } from "../../shared/utils/abilities";
 import { z } from "zod";
 
@@ -15,10 +15,15 @@ export default defineEventHandler(async (event) => {
 
   try {
     const { page, limit } = await getValidatedQuery(event, usersGetQuerySchema.parse);
+    const actSub = db.select({userId: subscriptionsTable.userId}).from(subscriptionsTable).where(isNull(subscriptionsTable.deletedAt)).as('actSub');
     const [count, result] = await Promise.all([
       db.$count(usersTable),
-      db.select()
+      db.select({
+        ...getTableColumns(usersTable),
+        hasActiveSubscription: sql<boolean>`CASE WHEN ${actSub.userId} IS NULL THEN false ELSE true END`,
+      })
         .from(usersTable)
+        .leftJoin(actSub, eq(actSub.userId, usersTable.id))
         .limit(limit)
         .offset((page*limit)-limit)
         .orderBy(desc(usersTable.createdAt))
