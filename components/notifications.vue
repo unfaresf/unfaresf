@@ -1,10 +1,11 @@
 <template>
   <div v-if="supported">
-    <UTooltip v-if="!permissionGranted" text="Enable new report notifications">
-      <UButton :loading="loading" color="lime" class="m-2" icon="i-heroicons-bell-slash" @click="setupNotifications" />
+    <UTooltip v-if="permissionGranted" :text="tooltipText">
+      <UButton v-if="currentSubscription" :loading="loading" color="white" class="m-2" icon="i-heroicons-bell" @click="toggleNotifications" />
+      <UButton v-else :loading="loading" color="white" class="m-2" icon="i-heroicons-bell-snooze" @click="toggleNotifications" />
     </UTooltip>
-    <UTooltip v-else  :text="currentSubscription ? 'Notifications enabled': 'Notifications disabled'">
-      <UButton :loading="loading" color="white" class="m-2" :icon="currentSubscription ? 'i-heroicons-bell' : 'i-heroicons-bell-snooze'" @click="toggleNotifications" />
+    <UTooltip v-else text="Enable new report notifications">
+      <UButton :loading="loading" color="lime" class="m-2" icon="i-heroicons-bell-slash" @click="setupNotifications" />
     </UTooltip>
   </div>
 </template>
@@ -16,9 +17,11 @@ const toast = useToast();
 
 const loading = ref(false);
 const supported = ref<boolean>(isSupported());
-const permissionGranted = ref<boolean>(isNotificationPermissionGranted());
-const currentSubscription = ref<PushSubscription|null>(null);
-
+const permissionGranted = ref<boolean>(Notification.permission === "granted");
+const currentSubscription = shallowRef<PushSubscription|null>(null);
+const tooltipText = computed(() => {
+  return currentSubscription.value ? 'Notifications enabled' : 'Notifications disabled'
+});
 function isSupported() {
   try {
     if (!('serviceWorker' in navigator)) {
@@ -36,10 +39,6 @@ function isSupported() {
     return false;
   }
   return true;
-}
-
-function isNotificationPermissionGranted() {
-  return Notification.permission === "granted";
 }
 
 async function askPermission() {
@@ -107,14 +106,6 @@ async function deleteSubscription(sub:PushSubscription) {
   });
 }
 
-async function getCurrentSubscription():Promise<PushSubscription|null> {
-  const registration = $pwa?.getSWRegistration();
-  if (!registration) {
-    throw new Error('service worker not registered');
-  }
-  return registration.pushManager.getSubscription();
-}
-
 async function toggleNotifications() {
   if (currentSubscription.value) {
     await tearDownNotifications();
@@ -165,22 +156,17 @@ async function checkForCurrentSubscription() {
   const registration = $pwa?.getSWRegistration();
   if (registration && !$pwa?.registrationError) {
     try {
-      return getCurrentSubscription();
+      return registration.pushManager.getSubscription();
     } catch (err:any) {
       console.warn('error retrieving current subscriptions', err);
-      return null;
     }
   }
   return null;
 }
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
 onMounted(async () => {
-  currentSubscription.value = await checkForCurrentSubscription();
-  if (!currentSubscription.value) {
-    await sleep(5000);
-    currentSubscription.value = await checkForCurrentSubscription();
-  }
+  const x = await checkForCurrentSubscription();
+  console.log(x);
+  currentSubscription.value = x;
 });
 </script>
