@@ -42,8 +42,8 @@
 import { computed } from 'vue';
 
 const { clear, user } = useUserSession();
-const { $pwa, $pwaIcons } = useNuxtApp();
-console.log($pwaIcons);
+const { $pwa } = useNuxtApp();
+
 async function deleteSubscription(sub:PushSubscription) {
   return $fetch('/api/subscriptions', {
     method: 'DELETE',
