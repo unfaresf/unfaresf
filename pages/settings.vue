@@ -49,7 +49,7 @@
 <script lang="ts" setup>
 import { UButton, UCard, UIcon } from '#components';
 import MastodonSettingsUpdate from '~/components/mastodon-settings-update.vue';
-import { type GetUser } from "../db/schema";
+import { type GetUser, type Prettify } from "../db/schema";
 
 definePageMeta({
   middleware: ['admin']
@@ -65,7 +65,7 @@ const usersExpand = ref({
 
 type UsersGetResp = {
   count: number,
-  result: GetUser[]
+  result: Prettify<{hasActiveSubscription:boolean} & GetUser>[]
 }
 
 const { data: users, status:usersStatus, refresh } = await useLazyFetch<Awaited<Promise<UsersGetResp>>>("/api/users", {

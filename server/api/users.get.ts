@@ -22,11 +22,11 @@ export default defineEventHandler(async (event) => {
         ...getTableColumns(usersTable),
         hasActiveSubscription: sql<boolean>`CASE WHEN ${actSub.userId} IS NULL THEN false ELSE true END`,
       })
-        .from(usersTable)
-        .leftJoin(actSub, eq(actSub.userId, usersTable.id))
-        .limit(limit)
-        .offset((page*limit)-limit)
-        .orderBy(desc(usersTable.createdAt))
+      .from(usersTable)
+      .leftJoin(actSub, eq(actSub.userId, usersTable.id))
+      .limit(limit)
+      .offset((page*limit)-limit)
+      .orderBy(desc(usersTable.createdAt))
     ]);
     // JSON.parse of roles is because roles are stored as a stringified array of strings
     const users = result.map(user => {
