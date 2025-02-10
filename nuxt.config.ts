@@ -5,6 +5,10 @@ export default defineNuxtConfig({
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover',
       title: 'UnfareSF',
+      meta: [
+        { name: 'theme-color', content: '#FFFFFF', media: '(prefers-color-scheme: light)'},
+        { name: 'theme-color', content: '#000000', media: '(prefers-color-scheme: dark)'},
+      ]
     }
   },
   runtimeConfig: {
@@ -53,7 +57,7 @@ export default defineNuxtConfig({
       description:'Fare enforcement alerts in San Francisco to help each other avoid encounters with fare inspectors and cops.',
       display: "standalone",
       theme_color: "#255a91",
-      background_color: "#ffffff",
+      background_color: "#255a91",
       lang:'en',
       orientation:'portrait'
     },

@@ -1,5 +1,5 @@
 <template>
-  <NuxtPwaManifest />
+  <NuxtPwaAssets />
   <NuxtLoadingIndicator />
   <UContainer>
     <header>
@@ -42,8 +42,8 @@
 import { computed } from 'vue';
 
 const { clear, user } = useUserSession();
-const { $pwa } = useNuxtApp();
-
+const { $pwa, $pwaIcons } = useNuxtApp();
+console.log($pwaIcons);
 async function deleteSubscription(sub:PushSubscription) {
   return $fetch('/api/subscriptions', {
     method: 'DELETE',
