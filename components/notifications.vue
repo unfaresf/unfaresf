@@ -165,8 +165,6 @@ async function checkForCurrentSubscription() {
 }
 
 onMounted(async () => {
-  const x = await checkForCurrentSubscription();
-  console.log(x);
-  currentSubscription.value = x;
+  currentSubscription.value = await checkForCurrentSubscription();
 });
 </script>
