@@ -9,6 +9,7 @@
     "build": "nuxt build",
     "start": "node .output/server/index.mjs",
     "dev": "npx nuxi@latest dev --no-fork",
+    "dev:host": "npx nuxi@latest dev --no-fork --host 0.0.0.0",
     "dev:inspect": "npx nuxi@latest dev --inspect",
     "generate": "nuxt generate",
     "preview": "nuxt preview",

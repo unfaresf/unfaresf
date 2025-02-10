@@ -46,7 +46,7 @@ async function askPermission() {
   // The API recently changed from taking a callback to returning a Promise. The
   // problem with this, is that we can't tell what version of the API is
   // implemented by the current browser, so you have to implement both and handle both.
-  const permission = await new Promise<NotificationPermission>(function (resolve, reject) {
+  const permission = await new Promise<NotificationPermission>((resolve, reject) => {
     const permissionResult = Notification.requestPermission(function (result) {
       resolve(result);
     });
@@ -58,6 +58,7 @@ async function askPermission() {
   if (permission === 'granted') {
     permissionGranted.value = true;
   }
+  return permission;
 }
 
 function urlBase64ToUint8Array(s:string) {
@@ -116,9 +117,9 @@ async function getCurrentSubscription():Promise<PushSubscription|null> {
 
 async function toggleNotifications() {
   if (currentSubscription.value) {
-    await tearDownNotifications()
+    await tearDownNotifications();
   } else {
-    setupNotifications();
+    await setupNotifications();
   }
 }
 
@@ -137,7 +138,7 @@ async function setupNotifications() {
   } catch (err:any) {
     toast.add({
       color: 'red',
-      title: 'Error deleting user',
+      title: 'Error disabling notifications',
       description: err.message
     });
   } finally {
@@ -160,11 +161,26 @@ async function tearDownNotifications() {
   }
 }
 
-onMounted(async () => {
-  try {
-    currentSubscription.value = await getCurrentSubscription();
-  } catch (err:any) {
-    console.warn('error retrieving current subscriptions', err);
+async function checkForCurrentSubscription() {
+  const registration = $pwa?.getSWRegistration();
+  if (registration && !$pwa?.registrationError) {
+    try {
+      return getCurrentSubscription();
+    } catch (err:any) {
+      console.warn('error retrieving current subscriptions', err);
+      return null;
+    }
   }
-})
+  return null;
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+onMounted(async () => {
+  currentSubscription.value = await checkForCurrentSubscription();
+  if (!currentSubscription.value) {
+    await sleep(5000);
+    currentSubscription.value = await checkForCurrentSubscription();
+  }
+});
 </script>
