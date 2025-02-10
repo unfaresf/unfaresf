@@ -6,6 +6,7 @@ import { eq, desc } from 'drizzle-orm';
 import unfareLogger from '../../shared/utils/unfareLogger';
 import { URL } from 'node:url';
 import sanitizeHtml from 'sanitize-html';
+import CreateReport from "~/shared/utils/create-report";
 
 async function getLatestMentionId(): Promise<string|null> {
   const reportsUris = await db.select({uri: reports.uri}).from(reports).where(eq(reports.source, 'mastodon')).orderBy(desc(reports.createdAt)).limit(1);
@@ -72,6 +73,6 @@ export default defineCronHandler('everyTwoMinutes', async () => {
 
   unfareLogger.info(`masto-poller: creating ${reportMentions.length} report(s)`);
   if (reportMentions.length) {
-    await db.insert(reports).values(reportMentions);
+    await CreateReport({reports: reportMentions});
   }
 });
