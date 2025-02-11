@@ -13,6 +13,7 @@ Make sure to install the dependencies:
 ```bash
 # npm
 npm install
+
 ```
 
 Download GTFS
@@ -21,6 +22,9 @@ This is the GTFS for the San Francisco Bay area from [API 511](https://511.org/o
 ```shell
 curl -o gtfs/gtfs.zip "http://api.511.org/transit/datafeeds?api_key=API_KEY&operator_id=RG"
 ```
+
+Certs
+This app is designed to be a progressive web app (PWA) with push notifications. service works, push notifications, location awareness (for reporting) all require https, even durin glocal dev. The devX story for https isn't great, i know, but we need it. I suggest using [mkcert](https://github.com/FiloSottile/mkcert) to greatly simply this. Follow the install guide for mkcert and use system. Note that firefox and mobile device support have a few extra steps. Once its install use mkcert to generate your cert and key, add them to the `/certs` directory and fill in the two env vars in your .env file: `LOCAL_DEV_TLS_KEY_PATH` `LOCAL_DEV_TLS_CERT_PATH`.
 
 ## Development Server
 

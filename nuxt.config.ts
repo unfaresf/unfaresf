@@ -40,8 +40,10 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   compatibilityDate: "2024-12-25",
   devServer: {
-    https: true,
-    url: "https://localhost:3000"
+    https: {
+      key: process.env.LOCAL_DEV_TLS_KEY_PATH,
+      cert: process.env.LOCAL_DEV_TLS_CERT_PATH,
+    }
   },
   auth: {
     webAuthn: true
