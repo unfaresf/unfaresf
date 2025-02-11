@@ -17,7 +17,7 @@ const toast = useToast();
 
 const loading = ref(false);
 const supported = ref<boolean>(isSupported());
-const permissionGranted = ref<boolean>(Notification.permission === "granted");
+const permissionGranted = ref<boolean>(Notification.permission !== "denied");
 const currentSubscription = shallowRef<PushSubscription|null>(null);
 const tooltipText = computed(() => {
   return currentSubscription.value ? 'Notifications enabled' : 'Notifications disabled'

@@ -78,10 +78,11 @@ async function triggerPushMsg(
   subscription:Prettify<Pick<SelectSubscription, "id" | "details">>
 ) {
   try {
-    await webpush.sendNotification(subscription.details, JSON.stringify(dataToSend), {
+    const response = await webpush.sendNotification(subscription.details, JSON.stringify(dataToSend), {
       TTL: 60 * 3, // 3 minutes
       urgency: 'normal'
     });
+    console.log('push reponse: ', JSON.stringify(response))
     await db.insert(notificationsTable)
       .values({
         subscriptionId: subscription.id,
@@ -89,6 +90,7 @@ async function triggerPushMsg(
       });
   } catch (err:any) {
     if (err.statusCode === 404 || err.statusCode === 410) {
+      console.error('400 level error sending push notification', err);
       await db.update(subscriptionsTable)
         .set({deletedAt: new Date()})
         .where(eq(subscriptionsTable.id, subscription.id));
