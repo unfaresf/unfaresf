@@ -1,5 +1,14 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  modules: [
+    "@nuxt/ui",
+    "nuxt-auth-utils",
+    "nuxt-cron",
+    "nuxt-rate-limit",
+    "nuxt-authorization",
+    "@nuxtjs/device",
+    "@vite-pwa/nuxt",
+  ],
   app: {
     head: {
       charset: 'utf-8',
@@ -21,18 +30,14 @@ export default defineNuxtConfig({
     public: {
       logLevel: Number(process.env.LOG_LEVEL) || 3,
       vapidPublicKey: process.env.VAPID_PUBLIC_KEY,
+    },
+    session: {
+      name: "unfare-session",
+      password: process.env.NUXT_SESSION_PASSWORD || '',
+      maxAge: 60 * 60 * 24 * 7 // 1 week
     }
   },
   devtools: { enabled: true },
-  modules: [
-    "@nuxt/ui",
-    "nuxt-auth-utils",
-    "nuxt-cron",
-    "nuxt-rate-limit",
-    "nuxt-authorization",
-    "@nuxtjs/device",
-    "@vite-pwa/nuxt",
-  ],
   compatibilityDate: "2024-12-25",
   devServer: {
     https: true,

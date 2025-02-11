@@ -4,7 +4,7 @@
       <template #header>
         <div class="flex flex-row">
           <div class="basis-3/4">
-            <h2 class="text-lg">New Reports</h2>
+            <h2 class="text-lg">Reports</h2>
             <p class="text-xs text-gray-500">Recent reports of cop sightings from various platforms.</p>
           </div>
           <div class="basis-1/4 ml-auto">
