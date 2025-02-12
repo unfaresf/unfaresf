@@ -76,8 +76,7 @@ function urlBase64ToUint8Array(s:string) {
 }
 
 async function subscribeUserToPush() {
-  const registration = $pwa?.getSWRegistration();
-  if (!registration) {
+  if (!$pwa.isRegistered || !$pwa.registration.value) {
     throw new Error('service worker not registered');
   }
 
@@ -85,7 +84,8 @@ async function subscribeUserToPush() {
     userVisibleOnly: true,
     applicationServerKey: urlBase64ToUint8Array(String(vapidPublicKey)),
   };
-  return registration.pushManager.subscribe(subscribeOptions);
+
+  return $pwa.registration.value.pushManager.subscribe(subscribeOptions);
 }
 
 async function saveSubscription(sub:PushSubscription) {
@@ -153,10 +153,9 @@ async function tearDownNotifications() {
 }
 
 async function checkForCurrentSubscription() {
-  const registration = $pwa?.getSWRegistration();
-  if (registration && !$pwa?.registrationError) {
+  if ($pwa.isRegistered) {
     try {
-      return registration.pushManager.getSubscription();
+      return $pwa.registration.value?.pushManager.getSubscription() ?? null;
     } catch (err:any) {
       console.warn('error retrieving current subscriptions', err);
     }

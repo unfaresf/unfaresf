@@ -1,5 +1,4 @@
 <template>
-  <NuxtPwaAssets />
   <NuxtLoadingIndicator />
   <UContainer>
     <header>
@@ -54,11 +53,11 @@ async function deleteSubscription(sub:PushSubscription) {
 }
 
 async function getCurrentSubscription():Promise<PushSubscription|null> {
-  const registration = $pwa?.getSWRegistration();
-  if (!registration) {
+  const registration = $pwa.registration;
+  if (!registration.value) {
     throw new Error('service worker not registered');
   }
-  return registration.pushManager.getSubscription();
+  return registration.value?.pushManager.getSubscription() ?? null;
 }
 
 async function disableNotifications() {

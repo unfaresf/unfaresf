@@ -1,7 +1,7 @@
 <template>
   <div v-if="props.report" class="flex border-b last:border-none last:pb-0 py-4 first:pt-0">
     <UAvatar
-      src="unfaresf-logo.png"
+      src="unfaresf-logo.svg"
       alt="Avatar"
       class="mt-2"
     />
