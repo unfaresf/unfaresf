@@ -16,6 +16,8 @@ export default defineNuxtConfig({
       meta: [
         { name: 'theme-color', content: '#FFFFFF', media: '(prefers-color-scheme: light)'},
         { name: 'theme-color', content: '#000000', media: '(prefers-color-scheme: dark)'},
+        { name: "apple-mobile-web-app-capable", content:"yes"},
+        { name: "mobile-web-app-capable", content:"yes"},
       ],
       link: [
         {rel:"manifest", href:"manifest.webmanifest"},
