@@ -1,7 +1,7 @@
 import { desc, isNull, isNotNull } from 'drizzle-orm';
-import { DB as db } from "../sqlite-service";
-import { reports as reportsTable } from "../../db/schema";
-import { listReports } from "../../shared/utils/abilities";
+import { DB as db } from "../../sqlite-service";
+import { reports as reportsTable } from "../../../db/schema";
+import { listReports } from "../../../shared/utils/abilities";
 import { z } from "zod";
 
 const reportsPutRouteQuerySchema = z.object({

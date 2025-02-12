@@ -1,7 +1,7 @@
 import { desc, eq, sql, isNull, getTableColumns } from 'drizzle-orm';
-import { DB as db } from "../sqlite-service";
-import { users as usersTable, subscriptions as subscriptionsTable } from "../../db/schema";
-import { getUsers } from "../../shared/utils/abilities";
+import { DB as db } from "../../sqlite-service";
+import { users as usersTable, subscriptions as subscriptionsTable } from "../../../db/schema";
+import { getUsers } from "../../../shared/utils/abilities";
 import { z } from "zod";
 
 const usersGetQuerySchema = z.object({

@@ -9,6 +9,10 @@
             <div class="flex border-b border-gray-200 dark:border-gray-800">
               <ClientOnly>
                 <notifications></notifications>
+                <template #fallback>
+                  <!-- this will be rendered on server side -->
+                  <UButton color="gray" class="m-2" icon="i-heroicons-bell-slash" disabled />
+                </template>
               </ClientOnly>
               <UDropdown :items="authedDropdown">
                 <UButton color="white" icon="i-heroicons-bars-3" class="m-2" />
