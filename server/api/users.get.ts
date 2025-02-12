@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     const { page, limit } = await getValidatedQuery(event, usersGetQuerySchema.parse);
-    const actSub = db.select({userId: subscriptionsTable.userId}).from(subscriptionsTable).where(isNull(subscriptionsTable.deletedAt)).as('actSub');
+    const actSub = db.selectDistinct({userId: subscriptionsTable.userId}).from(subscriptionsTable).where(isNull(subscriptionsTable.deletedAt)).as('actSub');
     const [count, result] = await Promise.all([
       db.$count(usersTable),
       db.select({
