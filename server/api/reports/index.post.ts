@@ -1,5 +1,5 @@
-import { reportInsertSchema } from "../../db/schema";
-import { createReports } from "../../shared/utils/abilities";
+import { reportInsertSchema } from "../../../db/schema";
+import { createReports } from "../../../shared/utils/abilities";
 import CreateReport from "~/shared/utils/create-report";
 
 export default defineEventHandler(async (event) => {
