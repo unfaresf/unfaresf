@@ -7,7 +7,6 @@ export default defineNuxtConfig({
     "nuxt-rate-limit",
     "nuxt-authorization",
     "@nuxtjs/device",
-    "@vite-pwa/nuxt",
   ],
   app: {
     head: {
@@ -19,6 +18,7 @@ export default defineNuxtConfig({
         { name: 'theme-color', content: '#000000', media: '(prefers-color-scheme: dark)'},
       ],
       link: [
+        {rel:"manifest", href:"manifest.webmanifest"},
         {rel:"icon", href:"/favicon.ico", sizes:"48x48"},
         {rel:"icon", href:"/unfaresf-logo.svg", sizes:"any", type:"image/svg+xml"},
         {rel:"apple-touch-icon", href:"/apple-touch-icon.png"},
@@ -95,60 +95,6 @@ export default defineNuxtConfig({
   },
   auth: {
     webAuthn: true
-  },
-  pwa: {
-    scope: '/',
-    srcDir: './service-worker',
-    filename: 'sw.ts',
-    strategies: 'injectManifest',
-    injectRegister: 'script',
-    registerType: 'autoUpdate',
-    manifest:{
-      name:'Unfare SF',
-      short_name:'UnfareSF',
-      description:'Fare enforcement alerts in San Francisco to help each other avoid encounters with fare inspectors and cops.',
-      display: "standalone",
-      theme_color: "#255a91",
-      background_color: "#255a91",
-      lang:'en',
-      orientation:'portrait',
-      icons: [
-        {
-          "src": "pwa-64x64.png",
-          "sizes": "64x64",
-          "type": "image/png"
-        },
-        {
-          "src": "pwa-192x192.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        },
-        {
-          "src": "pwa-512x512.png",
-          "sizes": "512x512",
-          "type": "image/png"
-        },
-        {
-          "src": "maskable-icon-512x512.png",
-          "sizes": "512x512",
-          "type": "image/png",
-          "purpose": "maskable"
-        }
-      ]
-    },
-    workbox: {
-      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
-    },
-    injectManifest: {
-      injectionPoint: undefined,
-      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
-    },
-    client: {
-      installPrompt: true
-    },
-    devOptions: {
-      enabled: process.env.VITE_DEV_PWA === 'true'
-    },
   },
   nuxtRateLimit: {
     routes: {

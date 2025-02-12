@@ -1,4 +1,6 @@
-declare let self: ServiceWorkerGlobalScope
+self.skipWaiting();
+
+// declare let self: ServiceWorkerGlobalScope
 /* In the Service Worker. */
 self.addEventListener('push', function(event) {
   const pushBody = event.data?.json();
