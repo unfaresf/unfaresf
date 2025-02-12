@@ -82,7 +82,6 @@ async function triggerPushMsg(
       TTL: 60 * 3, // 3 minutes
       urgency: 'normal'
     });
-    console.log('push reponse: ', JSON.stringify(response))
     await db.insert(notificationsTable)
       .values({
         subscriptionId: subscription.id,
