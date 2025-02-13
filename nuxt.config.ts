@@ -7,6 +7,7 @@ export default defineNuxtConfig({
     "nuxt-rate-limit",
     "nuxt-authorization",
     "@nuxtjs/device",
+    "@nuxt/icon",
   ],
   app: {
     head: {
@@ -86,6 +87,11 @@ export default defineNuxtConfig({
       password: process.env.NUXT_SESSION_PASSWORD || '',
       maxAge: 60 * 60 * 24 * 7 // 1 week
     }
+  },
+  icon: {
+    clientBundle: {
+      scan: true
+    },
   },
   devtools: { enabled: true },
   compatibilityDate: "2024-12-25",
