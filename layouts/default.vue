@@ -16,15 +16,17 @@
                     <li><UButton color="gray" class="m-2" icon="i-heroicons-bell-slash" disabled /></li>
                   </template>
                 </ClientOnly>
-                <UDropdown :items="authedDropdown">
-                  <li><UButton color="white" icon="i-heroicons-bars-3" class="m-2" /></li>
-                  <template #item="{ item }">
-                    <div class="flex w-full items-center flex-row-reverse">
-                      <UIcon :name="item.icon" class="ml-2"/>
-                      <span class="truncate">{{ item.label }}</span>
-                    </div>
+                <UPopover :popper="{ placement: 'bottom-end' }">
+                  <UButton color="white" icon="i-heroicons-bars-3" class="m-2" />
+                  <template #panel>
+                    <ul class="p-1 bg-white  dark:bg-gray-800  min-w-44">
+                      <li v-for="link in authedDropdown" class="flex w-full items-center flex-row-reverse mb-1 last:mb-0">
+                        <UButton v-if="link.click" :click="link.click" variant="ghost" color="gray" class="w-full justify-between dark:hover:bg-gray-900"><UIcon :name="link.icon" class="ml-2"/><span>{{ link.label }}</span></UButton>
+                        <NuxtLink v-else class="flex px-2 py-1 w-full rounded-md justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-900" :to="link.to"><UIcon :name="link.icon" class="ml-2"/><span>{{ link.label }}</span></NuxtLink>
+                      </li>
+                    </ul>
                   </template>
-                </UDropdown>
+                </UPopover>
               </ul>
 
             </div>
@@ -90,7 +92,7 @@ async function logout() {
 }
 
 const authedDropdown = computed(() => {
-  return [[
+  return [
     {
       label: 'Invite',
       icon: 'i-heroicons-envelope-open',
@@ -106,6 +108,6 @@ const authedDropdown = computed(() => {
       icon: 'i-heroicons-arrow-right-start-on-rectangle',
       click: logout
     }
-  ]];
+  ];
 });
 </script>
