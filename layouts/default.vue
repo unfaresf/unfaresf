@@ -21,7 +21,7 @@
                   <template #panel="{close}">
                     <ul class="p-1 bg-white  dark:bg-gray-800  min-w-44">
                       <li v-for="link in authedDropdown" class="flex w-full items-center flex-row-reverse mb-1 last:mb-0">
-                        <UButton v-if="link.click" :click="() => { close(); link.click()}" variant="ghost" color="gray" class="w-full justify-between dark:hover:bg-gray-900"><UIcon :name="link.icon" class="ml-2"/><span>{{ link.label }}</span></UButton>
+                        <UButton v-if="link.click" @click="async () => { close(); return link.click();}" variant="ghost" color="gray" class="w-full justify-between dark:hover:bg-gray-900"><UIcon :name="link.icon" class="ml-2"/><span>{{ link.label }}</span></UButton>
                         <NuxtLink v-else class="flex px-2 py-1 w-full rounded-md justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-900" active-class="bg-gray-50 dark:bg-gray-900" :to="link.to" @click="close"><UIcon :name="link.icon" class="ml-2"/><span>{{ link.label }}</span></NuxtLink>
                       </li>
                     </ul>
@@ -86,7 +86,12 @@ async function disableNotifications() {
 }
 
 async function logout() {
-  await disableNotifications();
+  try {
+    await disableNotifications();
+  } catch (err) {
+    console.debug('error disabling notifications during logout', err);
+  }
+
   await clear();
   return navigateTo('/sign-in');
 }
