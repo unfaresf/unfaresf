@@ -34,15 +34,15 @@
       </template>
       <div>
         <ol v-if="broadcasts && broadcasts.result.length">
-          <li v-for="broadcast in broadcasts?.result" class="">
+          <li v-for="broadcast in broadcasts.result">
             {{ broadcast.message }}
             <span class="text-xs italic">{{ formatDistanceToNow(broadcast.createdAt) }} ago</span>
             <UDivider class="my-2"/>
           </li>
         </ol>
-        <div v-else>
-          <p>No recent broadcasts</p>
-        </div>
+        <ol v-else>
+          <li>No recent broadcasts</li>
+        </ol>
       </div>
     </UCard>
   </div>

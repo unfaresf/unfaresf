@@ -9,6 +9,25 @@
   </div>
 </template>
 
+<script lang="ts">
+type ReportSummary = {
+  routeShortName?: string;
+  direction?: string;
+  stopName?: string;
+  message?: string;
+  passenger?: boolean;
+};
+export function getPlainTextSummary(report?:ReportSummary) {
+  if (!report) return '';
+
+  if (report.passenger) {
+    return `Fare inspectors on ${report.routeShortName } headed ${ report.direction } from ${ report.stopName }`;
+  } else {
+    return `Fare inspectors at ${ report.stopName } for the ${ report.direction } bound ${ report.routeShortName }`;
+  }
+}
+</script>
+
 <script setup lang="ts">
 import type { SelectReport } from '../db/schema';
 import { useTemplateRef } from 'vue';
