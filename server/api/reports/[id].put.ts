@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, and, isNull } from 'drizzle-orm';
 import { DB as db } from "../../sqlite-service"
 import { reports as reportsTable } from "../../../db/schema";
 import { z } from "zod";
@@ -19,7 +19,12 @@ export default defineEventHandler(async (event) => {
       .set({
         reviewedAt: new Date(),
       })
-      .where(eq(reportsTable.id, id))
+      .where(
+        and(
+          eq(reportsTable.id, id),
+          isNull(reportsTable.reviewedAt),
+        )
+      )
       .returning({
         id: reportsTable.id,
         reviewedAt: reportsTable.reviewedAt,
