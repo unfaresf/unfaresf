@@ -6,15 +6,15 @@
     height="500px"
   >
     <MglVectorSource
-      source-id="routes"
-      url="http://localhost:8080/data/routes.json"
-      :tiles="routesSourceTiles"
+      source-id="trips"
+      url="http://localhost:8080/data/trips.json"
+      :tiles="tripsSourceTiles"
     >
       <MglLineLayer
-      layer-id="transit-routes"
-      source-layer="routes"
+      layer-id="transit-trips"
+      source-layer="trips"
       :paint="paint"
-      :filter="routeFilter"
+      :filter="tripFilter"
       ></MglLineLayer>
     </MglVectorSource>
 
@@ -44,7 +44,7 @@ import type { Position } from 'geojson';
 import type { RouteResponse } from "./select/route.vue";
 
 const style = 'https://api.maptiler.com/maps/streets/style.json?key=DDypiIJ7OGinseJ5cFio';
-const routesSourceTiles = [ 'http://localhost:8080/data/routes/{z}/{x}/{y}.pbf' ];
+const tripsSourceTiles = [ 'http://localhost:8080/data/trips/{z}/{x}/{y}.pbf' ];
 const stopsSourceTiles = [ 'http://localhost:8080/data/stops/{z}/{x}/{y}.pbf' ];
 const center:LngLatLike = [-122.4494,37.7549];
 const zoom = 10.5;
@@ -65,8 +65,8 @@ const props = defineProps<{
 }>();
 const transitMap = useMap();
 
-const routeFilter = computed(()=> {
-  return props.route ? ["all", ["==","route_id",props.route?.routeId],["==","direction_id",props.route?.directionsId]] : ["all", false];
+const tripFilter = computed(()=> {
+  return props.route ? ["==","route_id",props.route?.routeId] : ["all", false];
 });
 const stopFilter = computed(()=> {
   return props.stopId ? ["==","stop_id",props.stopId] : ["all", false];
@@ -77,7 +77,7 @@ watch(() => props.route, (newRoute) => {
     // timeout because queryRenderedFeatures depends on the map updating
     // after the map updates
     setTimeout(() => {
-      const routeFeatures = transitMap.map?.queryRenderedFeatures({ layers: ['transit-routes'] });
+      const routeFeatures = transitMap.map?.queryRenderedFeatures({ layers: ['transit-trips'] });
       if (routeFeatures) {
         const [feature] = routeFeatures;
 
