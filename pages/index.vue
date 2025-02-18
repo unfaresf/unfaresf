@@ -30,7 +30,7 @@
         <h2 class="text-xl mb-4">Location</h2>
         <p>Does this look right?</p>
       </template>
-      <routes-map :route-id="formState.route?.routeId ?? null" :stop-id="formState.stop?.stopId ?? null"/>
+      <routes-map :route="formState.route ?? null" :stop-id="formState.stop?.stopId ?? null"/>
     </UCard>
   </div>
 </template>

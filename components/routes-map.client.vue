@@ -6,21 +6,27 @@
     height="500px"
   >
     <MglVectorSource
-      source-id="sfbayarea"
-      url="http://0.0.0.0:8080/data/transit_lines.json"
+      source-id="routes"
+      url="http://localhost:8080/data/routes.json"
       :tiles="routesSourceTiles"
     >
       <MglLineLayer
       layer-id="transit-routes"
-      source-layer="sfbayarea"
+      source-layer="routes"
       :paint="paint"
       :filter="routeFilter"
       ></MglLineLayer>
+    </MglVectorSource>
 
+    <MglVectorSource
+      source-id="stops"
+      url="http://localhost:8080/data/stops.json"
+      :tiles="stopsSourceTiles"
+    >
       <MglCircleLayer
         layer-id="transit-stops"
-        source-layer="sfbayarea"
-        :paint="librariesLayerCirclesPaint"
+        source-layer="stops"
+        :paint="stopsLayerCirclesPaint"
         :filter="stopFilter"
         :minzoom="10"
       />
@@ -35,57 +41,56 @@ import { MglMap, useMap, MglNavigationControl, MglVectorSource, MglLineLayer, Mg
 import type { CircleLayerSpecification, LngLatLike } from 'maplibre-gl';
 import { LngLatBounds } from 'maplibre-gl';
 import type { Position } from 'geojson';
+import type { RouteResponse } from "./select/route.vue";
 
 const style = 'https://api.maptiler.com/maps/streets/style.json?key=DDypiIJ7OGinseJ5cFio';
-const routesSourceTiles = [ 'http://0.0.0.0:8080/data/transit_lines/{z}/{x}/{y}.pbf' ];
+const routesSourceTiles = [ 'http://localhost:8080/data/routes/{z}/{x}/{y}.pbf' ];
+const stopsSourceTiles = [ 'http://localhost:8080/data/stops/{z}/{x}/{y}.pbf' ];
 const center:LngLatLike = [-122.4494,37.7549];
 const zoom = 10.5;
 const paint = {
   "line-width": 2,
   "line-color": "#000000"
 };
-const librariesLayerCirclesPaint = {
+const stopsLayerCirclesPaint = {
   'circle-radius': 5,
   'circle-stroke-width': 2,
   'circle-stroke-color' : '#1b5e20',
   'circle-color': "rgba(0, 0, 0, 0)"
 } as CircleLayerSpecification['paint'];
+
 const props = defineProps<{
-  routeId: string|null,
+  route: RouteResponse|null,
   stopId: string|null,
 }>();
-const mapOne = useMap();
+const transitMap = useMap();
 
 const routeFilter = computed(()=> {
-  return props.routeId ? ["==","route_id",props.routeId] : ["all", false];
+  return props.route ? ["all", ["==","route_id",props.route?.routeId],["==","direction_id",props.route?.directionsId]] : ["all", false];
 });
 const stopFilter = computed(()=> {
   return props.stopId ? ["==","stop_id",props.stopId] : ["all", false];
 });
 
-watch(() => props.routeId, (newRouteId) => {
-  if (newRouteId) {
+watch(() => props.route, (newRoute) => {
+  if (newRoute) {
     // timeout because queryRenderedFeatures depends on the map updating
     // after the map updates
     setTimeout(() => {
-      const routeFeatures = mapOne.map?.queryRenderedFeatures({ layers: ['transit-routes'] });
+      const routeFeatures = transitMap.map?.queryRenderedFeatures({ layers: ['transit-routes'] });
       if (routeFeatures) {
         const [feature] = routeFeatures;
 
         if (feature) {
           // this is a MultiLineString and TS seems to hate it.
-          const multiline:Position[][] = feature.geometry?.coordinates;
-          const bbox = multiline.reduce((bounds, line) => {
-            return line.reduce((bounds, segment) => {
-              return bounds.extend(segment);
-            }, bounds);
-          }, new LngLatBounds(multiline[0][0], multiline[0][0]));
+          const coordinates:Position[] = feature.geometry?.coordinates;
+          const bounds = coordinates.reduce((bounds, coord) => {
+              return bounds.extend(coord);
+          }, new LngLatBounds(coordinates[0], coordinates[0]));
 
-          if (bbox) {
-            mapOne.map?.fitBounds(bbox, {
-              padding: 20
-            });
-          }
+          transitMap.map?.fitBounds(bounds, {
+            padding: 30
+          });
         }
       }
     }, ((1000/60) * 5));
@@ -97,10 +102,10 @@ watch(() => props.stopId, (newRouteId) => {
     // timeout because queryRenderedFeatures depends on the map updating
     // after the map updates
     setTimeout(() => {
-      const routeFeatures = mapOne.map?.queryRenderedFeatures({ layers: ['transit-stops'] });
+      const routeFeatures = transitMap.map?.queryRenderedFeatures({ layers: ['transit-stops'] });
       if (routeFeatures?.length) {
         const [feature] = routeFeatures;
-        mapOne.map?.easeTo({zoom:17, duration:1500, center: feature.geometry?.coordinates});
+        transitMap.map?.easeTo({zoom:17, duration:1500, center: feature.geometry?.coordinates});
       }
     }, ((1000/60) * 5));
   }
