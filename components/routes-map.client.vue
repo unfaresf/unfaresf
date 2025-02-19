@@ -3,7 +3,7 @@
     :map-style="style"
     :zoom="zoom"
     :center="center"
-    height="500px"
+    height="330px"
   >
     <MglVectorSource
       source-id="trips"
@@ -35,12 +35,10 @@
     <MglNavigationControl />
   </MglMap>
 </template>
-<!--  -->
+
 <script setup lang="ts">
 import { MglMap, useMap, MglNavigationControl, MglVectorSource, MglLineLayer, MglCircleLayer } from '@indoorequal/vue-maplibre-gl';
 import type { CircleLayerSpecification, LngLatLike } from 'maplibre-gl';
-import { LngLatBounds } from 'maplibre-gl';
-import type { Position } from 'geojson';
 import type { RouteResponse } from "./select/route.vue";
 
 const style = 'https://api.maptiler.com/maps/streets/style.json?key=DDypiIJ7OGinseJ5cFio';
@@ -72,42 +70,25 @@ const stopFilter = computed(()=> {
   return props.stopId ? ["==","stop_id",props.stopId] : ["all", false];
 });
 
-watch(() => props.route, (newRoute) => {
+watch(() => props.route, async (newRoute) => {
   if (newRoute) {
-    // timeout because queryRenderedFeatures depends on the map updating
-    // after the map updates
-    setTimeout(() => {
-      const routeFeatures = transitMap.map?.queryRenderedFeatures({ layers: ['transit-trips'] });
-      if (routeFeatures) {
-        const [feature] = routeFeatures;
+    const routeDetails = await $fetch(`/api/gtfs/routes/${newRoute.routeId}`);
 
-        if (feature) {
-          // this is a MultiLineString and TS seems to hate it.
-          const coordinates:Position[] = feature.geometry?.coordinates;
-          const bounds = coordinates.reduce((bounds, coord) => {
-              return bounds.extend(coord);
-          }, new LngLatBounds(coordinates[0], coordinates[0]));
-
-          transitMap.map?.fitBounds(bounds, {
-            padding: 30
-          });
-        }
-      }
-    }, ((1000/60) * 5));
+    if (routeDetails) {
+      transitMap.map?.fitBounds(routeDetails.bbox, {
+        padding: 30
+      });
+    }
   }
 });
 
-watch(() => props.stopId, (newRouteId) => {
-  if (newRouteId) {
-    // timeout because queryRenderedFeatures depends on the map updating
-    // after the map updates
-    setTimeout(() => {
-      const routeFeatures = transitMap.map?.queryRenderedFeatures({ layers: ['transit-stops'] });
-      if (routeFeatures?.length) {
-        const [feature] = routeFeatures;
-        transitMap.map?.easeTo({zoom:17, duration:1500, center: feature.geometry?.coordinates});
-      }
-    }, ((1000/60) * 5));
+watch(() => props.stopId, async (newStopId) => {
+  if (newStopId) {
+    const [stopDetails] = await $fetch(`/api/gtfs/stops/${newStopId}`);
+
+    if (!stopDetails.stopLon || !stopDetails.stopLat) return;
+
+    transitMap.map?.easeTo({zoom:17, duration:1500, center: [stopDetails.stopLon, stopDetails.stopLat]});
   }
 });
 </script>
