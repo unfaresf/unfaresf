@@ -48,7 +48,7 @@ const { isMobile } = useDevice();
 const route = ref<RouteResponse>();
 const routeQuery = ref("");
 const props = defineProps<{
-  geo: GeolocationPosition|undefined,
+  geo?: GeolocationPosition,
 }>();
 const emit = defineEmits<{
   (e: 'onChange', route: RouteResponse): void
