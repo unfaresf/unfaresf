@@ -110,6 +110,7 @@ type ReportsGetResp = {
   result: SelectReport[]
 }
 const { data:unreviewedReports, status:reportsStatus, refresh } = await useLazyFetch<ReportsGetResp>("/api/reports", {
+  server: false,
   query: { page: page, limit: limit, reviewed: reviewed },
   default: () => ({count: 0, result: []}),
   watch: [reviewed, page],
@@ -122,6 +123,7 @@ const { data:unreviewedReports, status:reportsStatus, refresh } = await useLazyF
 });
 
 const { data: broadcasts } = await useLazyFetch(`/api/broadcasts`, {
+  server: false,
   query: {
     from: sub(new Date(), {hours: 12}).toISOString(),
   },

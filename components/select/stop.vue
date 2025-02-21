@@ -9,6 +9,7 @@
       searchable-placeholder="Search for a transit stops"
       placeholder="Select a stop"
       option-attribute="stopName"
+      :searchableLazy="true"
       trailing
       :popper="{
         placement: isMobile ? 'top' : 'bottom'
@@ -56,9 +57,10 @@ const emit = defineEmits<{
 const disable = computed(() => !props.routeId);
 
 async function searchStops(q?:string) {
+  if (!props.routeId) return [];
   try {
     loading.value = true;
-    return await $fetch<StopPostResponse[]>('/api/gtfs/stops/search', {
+    return $fetch<StopPostResponse[]>('/api/gtfs/stops/search', {
       params: {
         q,
         routeId: props.routeId,

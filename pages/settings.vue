@@ -69,6 +69,7 @@ type UsersGetResp = {
 }
 
 const { data: users, status:usersStatus, refresh } = await useLazyFetch<Awaited<Promise<UsersGetResp>>>("/api/users", {
+  server: false,
   query: { page: page, limit: limit },
   watch: [page],
   onResponseError({ response }) {

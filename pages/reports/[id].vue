@@ -33,7 +33,9 @@ definePageMeta({
 
 const route = useRoute();
 
-const { data: report } = await useLazyFetch<SelectReport>(`/api/reports/${route.params.id}`);
+const { data: report } = await useLazyFetch<SelectReport>(`/api/reports/${route.params.id}`, {
+  server: false,
+});
 watch(report, newReport => {
   if (newReport) {
     report.value = newReport;
@@ -41,6 +43,7 @@ watch(report, newReport => {
 }, {once: true});
 
 const { data: broadcasts } = await useLazyFetch(`/api/broadcasts`, {
+  server: false,
   query: {
     from: sub(new Date(), {hours: 12}).toISOString(),
   },
