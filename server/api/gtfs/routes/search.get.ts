@@ -68,7 +68,7 @@ async function getRoutesByLocation(q:string, agencyIds:string[], lat:number, lng
   const maxDistance = 500; // 500 meters
   const subquery = gtfsDB.select({
     stopId: stops.stopId,
-    distance: sql<string>`(
+    distance: sql<number>`(
       6371000 * acos (
       cos ( radians(${lat}) )
       * cos( radians( stop_lat ) )

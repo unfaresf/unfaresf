@@ -55,28 +55,29 @@ const emit = defineEmits<{
 }>()
 const disable = computed(() => !props.routeId);
 
-function searchStops(q?:string) {
-  return $fetch<StopPostResponse[]>('/api/gtfs/stops/search', {
-    params: {
-      q,
-      routeId: props.routeId,
-      latitude: props.geo?.coords.latitude,
-      longitude: props.geo?.coords.longitude,
-    }
-  });
+async function searchStops(q?:string) {
+  try {
+    loading.value = true;
+    return await $fetch<StopPostResponse[]>('/api/gtfs/stops/search', {
+      params: {
+        q,
+        routeId: props.routeId,
+        latitude: props.geo?.coords.latitude,
+        longitude: props.geo?.coords.longitude,
+      }
+    });
+  }
+  finally {
+    loading.value = false;
+  }
 }
 
 watch(() => props.routeId, async (newRouteId) => {
   if (newRouteId) {
-    loading.value = true;
     routeId.value = newRouteId;
     stop.value = undefined;
     query.value = undefined;
-    try {
-      stopOptions.value = await searchStops();
-    } finally {
-      loading.value = false;
-    }
+    stopOptions.value = await searchStops();
   }
 });
 watch(stop, (newStop) => {

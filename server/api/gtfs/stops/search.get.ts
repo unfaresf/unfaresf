@@ -24,7 +24,7 @@ async function getStops(routeId: string, query: string | undefined, lat: number 
       stopName: stops.stopName,
       stopLat: stops.stopLat,
       stopLon: stops.stopLon,
-      distance: sql<string>`(
+      distance: sql<number>`(
         6371000 * acos (
         cos ( radians(${lat}) )
         * cos( radians( stop_lat ) )
