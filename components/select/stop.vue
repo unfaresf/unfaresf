@@ -66,8 +66,7 @@ async function searchStops(q?:string) {
         longitude: props.geo?.coords.longitude,
       }
     });
-  }
-  finally {
+  } finally {
     loading.value = false;
   }
 }
