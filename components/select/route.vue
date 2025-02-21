@@ -57,7 +57,7 @@ const emit = defineEmits<{
 async function search(q:string) {
   try {
     loading.value = true
-    return $fetch<RouteResponse[]>('/api/gtfs/routes/search', {
+    return await $fetch<RouteResponse[]>('/api/gtfs/routes/search', {
       params: {
         q,
         latitude: props.geo?.coords.latitude,

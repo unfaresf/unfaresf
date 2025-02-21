@@ -3,7 +3,7 @@
     <USelectMenu
       v-model="stop"
       v-model:query="query"
-      searchable
+      :searchable="searchStops"
       :options="stopOptions"
       :loading="loading"
       searchable-placeholder="Search for a transit stops"
@@ -57,8 +57,8 @@ const disable = computed(() => !props.routeId);
 
 async function searchStops(q?:string) {
   try {
-    loading.value = true
-    return $fetch<StopPostResponse[]>('/api/gtfs/stops/search', {
+    loading.value = true;
+    return await $fetch<StopPostResponse[]>('/api/gtfs/stops/search', {
       params: {
         q,
         routeId: props.routeId,
@@ -73,15 +73,10 @@ async function searchStops(q?:string) {
 
 watch(() => props.routeId, async (newRouteId) => {
   if (newRouteId) {
-    loading.value = true;
     routeId.value = newRouteId;
     stop.value = undefined;
     query.value = undefined;
-    try {
-      stopOptions.value = await searchStops();
-    } finally {
-      loading.value = false;
-    }
+    stopOptions.value = await searchStops();
   }
 });
 watch(stop, (newStop) => {

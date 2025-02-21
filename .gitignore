@@ -27,3 +27,4 @@ logs
 certs/*.pem
 db/data/*.db*
 gtfs/gtfs.zip
+gtfs/gtfs/
