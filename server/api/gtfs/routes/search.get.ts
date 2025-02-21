@@ -110,7 +110,8 @@ async function getRoutesByLocation(q:string, agencyIds:string[], lat:number, lng
     .limit(ROUTE_RESULTS_LIMIT);
 }
 
-async function getRoutes(q:string, agencyIds:string[]) {
+async function getRoutes(query:string, agencyIds:string[]) {
+  const queryTokens = query?.split(/\s+/) || [];
   return gtfsDB
     .selectDistinct({
       routeId: routes.routeId,
@@ -125,11 +126,12 @@ async function getRoutes(q:string, agencyIds:string[]) {
     .innerJoin(directions, eq(directions.routeId, routes.routeId))
     .where(
       and(
-        or(
-          like(routes.routeShortName, `${q}%`),
-          like(routes.routeLongName, `${q}%`)
-        ),
-        (agencyIds.length ? inArray(agency.agencyId, agencyIds) : undefined)
+        (agencyIds.length ? inArray(agency.agencyId, agencyIds) : undefined),
+        ...queryTokens.map(token => or(
+            like(routes.routeShortName, `%${token}%`),
+            like(routes.routeLongName, `%${token}%`),
+          )
+        )
       )
     )
     .limit(ROUTE_RESULTS_LIMIT);
