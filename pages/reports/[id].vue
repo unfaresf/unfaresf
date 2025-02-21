@@ -1,7 +1,7 @@
 <template>
   <div class="grid grid-cols-6 gap-4 mt-4">
     <div class="col-span-6 lg:col-span-4 xs:mt-10 md:mt-0">
-      <post :report="report" @close="onClose" @success="onSuccess" />
+      <post v-if="report" :report="report" @close="onClose" @success="onSuccess" />
     </div>
     <UCard class="col-span-6 lg:col-span-2 xs:mt-10 md:mt-0">
       <template #header>

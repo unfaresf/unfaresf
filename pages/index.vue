@@ -1,29 +1,38 @@
 <template>
-  <UCard class="mt-10">
-    <template #header>
-      <h2 class="text-xl mb-4">Report Sighting</h2>
-      <p>Use this form to report fare inspectors on San Francisco Bay Area public transit.</p>
-    </template>
-    <UForm class="flex flex-col gap-2 max-w-prose" ref="form" @submit="onSubmit" :state="formState" :schema="reportSchema">
-      <SelectRoute :geo="geoLocation" @on-change="(newRoute:RouteResponse) => formState.route = newRoute" />
-      <SelectStop :route-id="formState.route?.routeId" :geo="geoLocation" @on-change="(newStop:StopPostResponse) => formState.stop = newStop" />
-      <UFormGroup label="Inspectors onboard" name="passenger" help="Enable if inspectors are currently onboard.">
-        <UToggle v-model="formState.passenger" />
-      </UFormGroup>
-    </UForm>
-    <template #footer>
-      <div class="flex">
-        <ClientOnly>
-          <geolocate @on-geolocate="(newGeolocation) => geoLocation = newGeolocation">
-            <template #help>
-              <span>Use your location to narrow the route and stop search to those near you. May be helpful for those who report often. You can always disable this. We do not store your location.</span>
-            </template>
-          </geolocate>
-        </ClientOnly>
-        <UButton type="submit" label="Report Sighting" class="ml-auto" @click="submitReport"  :disabled="submitting"/>
-      </div>
-    </template>
-  </UCard>
+  <div class="grid grid-cols-8 gap-4 mt-4">
+    <UCard class="col-span-8 lg:col-span-5 xs:mt-10 md:mt-0">
+      <template #header>
+        <h2 class="text-xl mb-4">Report Sighting</h2>
+        <p>Use this form to report fare inspectors on San Francisco Bay Area public transit.</p>
+      </template>
+      <UForm class="flex flex-col gap-2 max-w-prose" ref="form" @submit="onSubmit" :state="formState" :schema="reportSchema">
+        <SelectRoute :geo="geoLocation" @on-change="(newRoute:RouteResponse) => formState.route = newRoute" />
+        <SelectStop :route-id="formState.route?.routeId" :geo="geoLocation" @on-change="(newStop:StopPostResponse) => formState.stop = newStop" />
+        <UFormGroup label="Inspectors onboard" name="passenger" help="Enable if inspectors are currently onboard.">
+          <UToggle v-model="formState.passenger" />
+        </UFormGroup>
+      </UForm>
+      <template #footer>
+        <div class="flex">
+          <ClientOnly>
+            <geolocate @on-geolocate="(newGeolocation) => geoLocation = newGeolocation">
+              <template #help>
+                <span>Use your location to narrow the route and stop search to those near you. May be helpful for those who report often. You can always disable this. We do not store your location.</span>
+              </template>
+            </geolocate>
+          </ClientOnly>
+          <UButton type="submit" label="Report Sighting" class="ml-auto" @click="submitReport"  :disabled="submitting"/>
+        </div>
+      </template>
+    </UCard>
+    <UCard class="col-span-8 lg:col-span-3 xs:mt-10 md:mt-0">
+      <template #header>
+        <h2 class="text-xl mb-4">Recent Sighting</h2>
+        <p>Routes on this map have fare inspectors working today.</p>
+      </template>
+      <routes-map show-broadcasts :route="formState.route ?? null" :stop-id="formState.stop?.stopId ?? null"/>
+    </UCard>
+  </div>
 </template>
 
 <script lang="ts" setup>

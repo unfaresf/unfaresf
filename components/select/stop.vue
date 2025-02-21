@@ -47,8 +47,8 @@ const stopOptions = ref<StopPostResponse[]>([]);
 const stop = ref<StopPostResponse>();
 const query = ref<string>();
 const props = defineProps<{
-  routeId: string|undefined,
-  geo: GeolocationPosition|undefined,
+  routeId?: string,
+  geo?: GeolocationPosition,
 }>();
 const routeId = ref(props.routeId);
 const emit = defineEmits<{

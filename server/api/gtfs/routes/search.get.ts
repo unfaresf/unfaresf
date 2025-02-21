@@ -2,7 +2,7 @@ import { getGtfs } from "../../../../shared/utils/abilities";
 import { z } from "zod";
 import { gtfsDB } from "../../../sqlite-service";
 import { routes, agency, directions, stops, stopTimes, trips } from "../../../../db/gtfs-migrations/schema";
-import { like, lt, eq, or, and, inArray, sql } from "drizzle-orm";
+import { like, lt, eq, or, and, inArray, sql, asc } from "drizzle-orm";
 
 const ROUTE_RESULTS_LIMIT = 15;
 
@@ -80,6 +80,7 @@ async function getRoutesByLocation(q:string, agencyIds:string[], lat:number, lng
   })
   .from(stops)
   .where(({distance}) => lt(distance, maxDistance))
+  .orderBy(({distance}) => asc(distance))
   .limit(30)
   .as('stops');
 

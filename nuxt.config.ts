@@ -81,6 +81,7 @@ export default defineNuxtConfig({
     public: {
       logLevel: Number(process.env.LOG_LEVEL) || 3,
       vapidPublicKey: process.env.VAPID_PUBLIC_KEY,
+      tileServerDomain: process.env.TILE_SERVER_DOMAIN,
     },
     session: {
       name: "unfare-session",
@@ -93,7 +94,12 @@ export default defineNuxtConfig({
       scan: true
     },
   },
-  devtools: { enabled: true },
+  devtools: {
+    enabled: true,
+    timeline: {
+      enabled: false
+    }
+  },
   compatibilityDate: "2024-12-25",
   devServer: {
     https: {

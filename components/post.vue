@@ -4,24 +4,40 @@
       <h3 class="text-lg">Post</h3>
       <p class="text-xs text-gray-500">What operator, from where, which line, headed which direction.</p>
     </template>
+
     <div class="p-2 rounded bg-gray-100 text-gray-600 text-sm mb-4">
       <ReportSummary ref="report-summary-ref" :report="props.report"></ReportSummary>
     </div>
-    <UForm v-if="!props.report?.reviewedAt" id="post-form" :schema="postSchema" :state="post" class="space-y-4" @submit="onSubmit">
+
+    <UForm v-if="sourceInternal" class="space-y-4" id="internal-source-broadcast-form" :schema="internalSourceBroadcastSchema" :state="internalSourceBroadcast" @submit="onSubmitInternalSource">
       <UFormGroup label="Message" name="message" help="Tweet, toot, txt, etc...">
-        <UTextarea v-model="post.message" autofocus />
+        <UTextarea v-model="internalSourceBroadcast.message" autofocus />
+      </UFormGroup>
+    </UForm>
+
+    <UForm v-else class="space-y-4" id="internal-source-broadcast-form" :schema="externalSourceBroadcastSchema" :state="externalSourceBroadcast" @submit="onSubmitExternalSource">
+      <SelectRoute @on-change="(newRoute:RouteResponse) => externalSourceBroadcast.route = newRoute" />
+
+      <SelectStop :route-id="externalSourceBroadcast.route?.routeId" @on-change="(newStop:StopPostResponse) => externalSourceBroadcast.stop = newStop" />
+
+      <UFormGroup label="Inspectors onboard" name="passenger" help="Enable if inspectors are currently onboard.">
+        <UToggle v-model="externalSourceBroadcast.passenger" />
+      </UFormGroup>
+
+      <UFormGroup label="Message" name="message" help="Tweet, toot, txt, etc...">
+        <UTextarea v-model="externalSourceBroadcast.message" />
       </UFormGroup>
     </UForm>
 
     <template v-if="!props.report?.reviewedAt" #footer>
       <div class="flex flex-col md:flex-row flex-grow md:flex-grow-0 gap-y-3">
-        <UButton color="green" class="justify-center md:order-4 md:ml-3" type="submit" form="post-form">Post</UButton>
+        <UButton color="green" class="justify-center md:order-4 md:ml-3" type="submit" form="internal-source-broadcast-form">Post</UButton>
         <div class="flex flex-grow items-center md:order-1">
-          <UButton color="orange" class="justify-center grow md:flex-grow-0 mr-2" @click="postSummary">Post Summary</UButton>
+          <UButton color="orange" class="justify-center grow md:flex-grow-0 mr-2" @click="postInternalSourceSummary" :disabled="!sourceInternal">Post Summary</UButton>
           <UTooltip text="Tooltip example" :popper="{ placement: 'top' }">
             <UIcon name="i-heroicons:question-mark-circle" class="w-5 h-5" />
             <template #text>
-              <span class="italic">Make a post using the text in the gray box.</span>
+              <span class="italic">Post using the text at the top of this popup.</span>
             </template>
           </UTooltip>
         </div>
@@ -36,41 +52,56 @@ import { z } from 'zod';
 import type { FormSubmitEvent } from '#ui/types'
 import type { SelectReport } from '../db/schema';
 import { useTemplateRef } from 'vue';
+import { type RouteResponse, routeSchema } from "../components/select/route.vue";
+import { type StopPostResponse, stopPostResponseSchema } from "../components/select/stop.vue";
+import { getPlainTextSummary } from './report-summary.vue';
 
 const emit = defineEmits(['success', 'close']);
 const props = defineProps<{
-  report: SelectReport|null,
+  report: SelectReport,
 }>();
-const post = reactive({
+
+const internalSourceBroadcast:Partial<InternalSourceBroadcastSchema> = reactive({
   message: undefined,
 });
+
+const externalSourceBroadcast:Partial<ExternalSourceBroadcastSchema> = reactive({});
+
 const toast = useToast();
 const pending = ref(false);
 const reportSummRef = useTemplateRef('report-summary-ref');
-const postSchema = z.object({
-  message: z.string().min(8).max(400).trim()
+const externalSourceBroadcastSchema = z.object({
+  message: z.string().min(8).max(400).trim(),
+  route: routeSchema.required(),
+  stop: stopPostResponseSchema.required(),
+  passenger: z.boolean({coerce: true}),
 });
-type PostSchema = z.output<typeof postSchema>
+const sourceInternal = props.report.source === 'internal';
+type ExternalSourceBroadcastSchema = z.output<typeof externalSourceBroadcastSchema>
+const internalSourceBroadcastSchema = z.object({
+  message: z.string().min(8).max(400).trim(),
+});
+type InternalSourceBroadcastSchema = z.output<typeof internalSourceBroadcastSchema>
 
-async function postSummary() {
+async function postInternalSourceSummary() {
   if (reportSummRef.value?.summary?.innerText) {
-    await postMessage(reportSummRef.value?.summary?.innerText);
+    await postBroadcast(reportSummRef.value?.summary?.innerText);
     emit('success');
   }
 }
 
-async function postMessage(msg:string) {
+async function postBroadcast(msg:string) {
   if (!props.report) return;
   pending.value = true;
   try {
-    await $fetch("/api/broadcast", {
+    await $fetch("/api/broadcasts", {
       method: 'POST',
       body: {
         message: msg,
         reportId: props.report.id,
       }
     });
-    post.message = undefined;
+    internalSourceBroadcast.message = undefined;
   } catch (err:any) {
     if (err.message === "UNIQUE constraint failed: broadcasts.report_id") {
       toast.add({
@@ -85,6 +116,23 @@ async function postMessage(msg:string) {
         description: err.data?.message || err.message,
       });
     }
+  } finally {
+    pending.value = false;
+  }
+}
+
+async function postExternalSourceBroadcast(broadcast:ExternalSourceBroadcastSchema) {
+  pending.value = true;
+  try {
+    await $fetch(`/api/reports/${props.report.id}`, {
+      method: 'PUT',
+      body: {
+        route: broadcast.route,
+        stop: broadcast.stop,
+        passenger: broadcast.passenger
+      }
+    });
+    await postBroadcast(broadcast.message);
   } finally {
     pending.value = false;
   }
@@ -111,13 +159,33 @@ async function dismiss(reportId:number) {
   }
 }
 
-async function onSubmit(event: FormSubmitEvent<PostSchema>) {
-  await postMessage(event.data.message);
+async function onSubmitInternalSource(event: FormSubmitEvent<InternalSourceBroadcastSchema>) {
+  await postBroadcast(event.data.message);
   emit('success');
 }
 
-async function onClose(event: FormSubmitEvent<PostSchema>) {
+async function onSubmitExternalSource(event: FormSubmitEvent<ExternalSourceBroadcastSchema>) {
+  await postExternalSourceBroadcast(event.data);
+  emit('success');
+}
+
+async function onClose(event: FormSubmitEvent<InternalSourceBroadcastSchema>) {
   event.preventDefault();
   emit('close');
 }
+
+watch([
+() => externalSourceBroadcast.route,
+() => externalSourceBroadcast.stop,
+() => externalSourceBroadcast.passenger
+], ([newRoute, newStop, newPass]) => {
+  const newMessage = getPlainTextSummary({
+    routeShortName: newRoute?.routeShortName,
+    direction: newRoute?.direction,
+    stopName: newStop?.stopName,
+    passenger: newPass,
+    message: props.report.message ?? undefined,
+  });
+  externalSourceBroadcast.message = newMessage;
+});
 </script>

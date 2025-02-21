@@ -16,6 +16,7 @@ export const createInvites = defineAbility((user: User) => user.roles.includes('
 // broadcasts abilities
 export const createBroadcasts = defineAbility(() => true);
 export const listBroadcasts = defineAbility(() => true);
+export const listBroadcastsGeo = defineAbility({ allowGuest: true }, (user: User | null) => true);
 
 // health check endpoint
 export const getHealth = defineAbility({ allowGuest: true }, (user: User | null) => true);
