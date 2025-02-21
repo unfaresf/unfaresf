@@ -57,7 +57,7 @@ function getAltAgencyNames():Record<string, string>{
   const { agencyAltNames: agencyAltNamesString } = useRuntimeConfig();
 
   try {
-    return unescapeJsonString(agencyAltNamesString);
+    return agencyAltNamesString ? unescapeJsonString(agencyAltNamesString) : {};
   } catch(err) {
     console.warn('Error parsing altAgencyNames env var', err);
     return {}
