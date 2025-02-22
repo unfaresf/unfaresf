@@ -1,10 +1,11 @@
 import { getGtfs } from "../../../../shared/utils/abilities";
 import { z } from "zod";
 import { gtfsDB } from "../../../sqlite-service";
-import { routes, agency, directions, stops, stopTimes, trips } from "../../../../db/gtfs-migrations/schema";
+import { routes, agency, directions, stops, stopTimes, trips, calendar } from "../../../../db/gtfs-migrations/schema";
 import { like, lt, eq, or, and, inArray, sql, asc } from "drizzle-orm";
 
 const ROUTE_RESULTS_LIMIT = 15;
+const calendarDayCols = [calendar.sunday,calendar.monday,calendar.tuesday,calendar.wednesday,calendar.thursday,calendar.friday,calendar.saturday]
 
 // https://github.com/coollabsio/coolify/issues/1919#issuecomment-2026080171
 function unescapeJsonString(possiblyEscapedJsonString:string):Record<string, string>{
@@ -99,8 +100,10 @@ async function getRoutesByLocation(q:string, agencyIds:string[], lat:number, lng
     .innerJoin(routes, eq(routes.routeId, trips.routeId))
     .innerJoin(agency, eq(agency.agencyId, routes.agencyId))
     .innerJoin(directions, eq(directions.routeId, routes.routeId))
+    .innerJoin(calendar, eq(calendar.serviceId, trips.serviceId))
     .where(
       and(
+        eq(calendarDayCols[new Date().getDay()], 1),
         or(
           like(routes.routeShortName, `${q}%`),
           like(routes.routeLongName, `${q}%`)
@@ -125,8 +128,11 @@ async function getRoutes(query:string, agencyIds:string[]) {
     .from(routes)
     .innerJoin(agency, eq(routes.agencyId, agency.agencyId))
     .innerJoin(directions, eq(directions.routeId, routes.routeId))
+    .innerJoin(trips, eq(trips.routeId, routes.routeId))
+    .innerJoin(calendar, eq(calendar.serviceId, trips.serviceId))
     .where(
       and(
+        eq(calendarDayCols[new Date().getDay()], 1),
         (agencyIds.length ? inArray(agency.agencyId, agencyIds) : undefined),
         ...queryTokens.map(token => or(
             like(routes.routeShortName, `%${token}%`),
