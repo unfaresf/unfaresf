@@ -25,7 +25,7 @@
         </div>
       </template>
     </UCard>
-    <UCard class="col-span-8 lg:col-span-3 xs:mt-10 md:mt-0">
+    <UCard class="col-span-8 lg:col-span-3 xs:mt-10 md:mt-0" :ui="{ base: 'overflow-hidden', body: { padding: 'px-0 py-0 sm:p-0' } }">
       <template #header>
         <h2 class="text-xl mb-4">Recent Sighting</h2>
         <p>Routes on this map have fare inspectors working today.</p>
