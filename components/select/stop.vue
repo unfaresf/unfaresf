@@ -9,7 +9,6 @@
       searchable-placeholder="Search for a transit stops"
       placeholder="Select a stop"
       option-attribute="stopName"
-      :searchableLazy="true"
       trailing
       :popper="{
         placement: isMobile ? 'top' : 'bottom'
@@ -45,24 +44,23 @@ const loading = ref(false);
 const { isMobile } = useDevice();
 const stopOptions = ref<StopPostResponse[]>([]);
 const stop = ref<StopPostResponse>();
-const query = ref<string>();
+const query = ref<string>('');
 const props = defineProps<{
   routeId?: string,
   geo?: GeolocationPosition,
 }>();
-const routeId = ref(props.routeId);
 const emit = defineEmits<{
   (e: 'onChange', stop: StopPostResponse): void
 }>()
 const disable = computed(() => !props.routeId);
 
-async function searchStops(q?:string) {
+async function searchStops(q:string) {
   if (!props.routeId) return [];
   try {
     loading.value = true;
     return $fetch<StopPostResponse[]>('/api/gtfs/stops/search', {
       params: {
-        q,
+        q: q.trim(),
         routeId: props.routeId,
         latitude: props.geo?.coords.latitude,
         longitude: props.geo?.coords.longitude,
@@ -75,10 +73,10 @@ async function searchStops(q?:string) {
 
 watch(() => props.routeId, async (newRouteId) => {
   if (newRouteId) {
-    routeId.value = newRouteId;
     stop.value = undefined;
-    query.value = undefined;
-    stopOptions.value = await searchStops();
+    // this is a hack because you cant manually set options on a searchable USelectMenu
+    // this triggers the search but the white space is trimmed later
+    query.value = ' ';
   }
 });
 watch(stop, (newStop) => {
