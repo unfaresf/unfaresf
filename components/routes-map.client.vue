@@ -96,7 +96,7 @@ const transitMap = useMap();
 const visibleRouteIds = ref<string[]>([]);
 const visibleStopIds = ref<string[]>([]);
 const mapHeight = computed(() => {
-  return isMobile ? '500px': '330px'
+  return isMobile ? '500px': '362px'
 });
 const tripFilter = computed(()=> {
   return props.route? ["==","route_id",props.route?.routeId] : ["all", false];
