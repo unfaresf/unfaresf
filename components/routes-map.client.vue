@@ -1,6 +1,6 @@
 <template>
   <MglMap
-    :mapStyle="style"
+    :map-style="style"
     :zoom="zoom"
     :center="center"
     :height="mapHeight"
@@ -30,7 +30,7 @@
     </MglVectorSource>
 
     <MglVectorSource
-      sourceId="trips"
+      source-id="trips"
       :url="tileServerDomain+'/data/trips.json'"
       :tiles="tripsSourceTiles"
       :minzoom="6"
@@ -42,14 +42,14 @@
         :filter="hotTrips"
       />
       <MglLineLayer
-        layerId="transit-trips"
-        sourceLayer="trips"
+        layer-id="transit-trips"
+        source-layer="trips"
         :paint="paint"
         :filter="tripFilter"
       />
       <MglSymbolLayer
-        layerId="transit-trips-labels"
-        sourceLayer="trips"
+        layer-id="transit-trips-labels"
+        source-layer="trips"
         :minzoom="6"
         :layout="routeSymbolLayout"
         :paint="routeSymbolPaint"
