@@ -1,9 +1,11 @@
 import { z } from "zod";
 import { getGtfs } from "../../../../shared/utils/abilities";
 import { getRouteTrips } from "../../../utils/routes-cache";
+import {unescape} from 'node:querystring';
+
 
 const gtfsGetRouteParamsSchema = z.object({
-  id: z.string().trim().max(64)
+  id: z.string().trim().max(64).transform(unescape)
 });
 
 export default defineEventHandler(async (event) => {
@@ -11,7 +13,6 @@ export default defineEventHandler(async (event) => {
   await authorize(event, getGtfs);
 
   const { id } = await getValidatedRouterParams(event, gtfsGetRouteParamsSchema.parse);
-
   try {
     // calculating the bbox is time consuming but doesnt change. cacheing...
     return getRouteTrips(id);
