@@ -1,6 +1,6 @@
 <template>
   <MglMap
-    :map-style="style"
+    :map-style="props.config.mapStylesUrl"
     :zoom="zoom"
     :center="center"
     :height="mapHeight"
@@ -64,11 +64,9 @@
 import { MglMap, useMap, MglNavigationControl, MglVectorSource, MglLineLayer, MglCircleLayer, MglGeolocateControl, MglSymbolLayer } from '@indoorequal/vue-maplibre-gl';
 import type { CircleLayerSpecification, LineLayerSpecification, LngLatLike } from 'maplibre-gl';
 import type { RouteResponse } from "./select/route.vue";
+import type { MapOption } from '../db/schema';
 
 const {public: { tileServerDomain } } = useRuntimeConfig();
-const style = 'https://api.maptiler.com/maps/995d0704-eb12-493a-9e6c-41e320a7b94c/style.json?key=DDypiIJ7OGinseJ5cFio';
-const tripsSourceTiles = [ `${tileServerDomain}/data/trips/{z}/{x}/{y}.pbf` ];
-const stopsSourceTiles = [ `${tileServerDomain}/data/stops/{z}/{x}/{y}.pbf` ];
 const center:LngLatLike = [-122.4404,37.7549];
 const zoom = 10.5;
 const paint = {
@@ -110,8 +108,12 @@ const hotStopsLayerCirclesPaint = {
 const props = defineProps<{
   route: RouteResponse|null,
   stopId: string|null,
-  showBroadcasts?: boolean
+  showBroadcasts?: boolean,
+  config: MapOption,
 }>();
+
+const tripsSourceTiles = [ `${props.config.tileServerDomain}/data/trips/{z}/{x}/{y}.pbf` ];
+const stopsSourceTiles = [ `${props.config.tileServerDomain}/data/stops/{z}/{x}/{y}.pbf` ];
 
 const { isMobile } = useDevice();
 const transitMap = useMap();
