@@ -25,12 +25,12 @@
         </div>
       </template>
     </UCard>
-    <UCard class="col-span-8 lg:col-span-3 xs:mt-10 md:mt-0" :ui="{ base: 'overflow-hidden', body: { padding: 'px-0 py-0 sm:p-0' } }">
+    <UCard v-if="mapIntegration && mapIntegration.enable" class="col-span-8 lg:col-span-3 xs:mt-10 md:mt-0" :ui="{ base: 'overflow-hidden', body: { padding: 'px-0 py-0 sm:p-0' } }">
       <template #header>
         <h2 class="text-xl mb-4">Recent Sighting</h2>
         <p>Routes on this map have fare inspectors working today.</p>
       </template>
-      <routes-map show-broadcasts :route="formState.route ?? null" :stop-id="formState.stop?.stopId ?? null"/>
+      <routes-map :config="mapIntegration.options" show-broadcasts :route="formState.route ?? null" :stop-id="formState.stop?.stopId ?? null"/>
     </UCard>
   </div>
 </template>
@@ -40,6 +40,7 @@ import { z } from "zod";
 import type { FormSubmitEvent, Form } from '#ui/types';
 import { type RouteResponse, routeSchema } from "../components/select/route.vue";
 import { type StopPostResponse, stopPostResponseSchema } from "../components/select/stop.vue";
+import type { MapOption, SelectIntegration, Prettify } from '../db/schema';
 
 const toast = useToast();
 const initialFormState = { passenger: false };
@@ -77,6 +78,9 @@ async function onSubmit(event: FormSubmitEvent<ReportPostSchema>) {
     submitting.value = false;
   }
 }
+type mapInt = Prettify<Omit<SelectIntegration, 'options'> & {options: MapOption}> | null;
+const {data} = await useFetch('/api/integrations/map');
+const mapIntegration = data.value as mapInt;
 
 async function submitReport() {
   await form.value?.submit();
