@@ -22,8 +22,13 @@ export default defineEventHandler(async (event) => {
       .from(integrationsTable)
       .where(eq(integrationsTable.name, 'map'))
       .limit(1);
-    return integration || null;
+    if (integration) return integration;
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Not found',
+    });
   } catch (e: any) {
+    if (e.statusCode === 404) throw e;
     throw createError({
       statusCode: 500,
       statusMessage: e.message,
