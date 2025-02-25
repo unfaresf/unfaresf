@@ -1,6 +1,7 @@
 import { type InferSelectModel, type InferInsertModel, sql, relations } from "drizzle-orm";
 import { integer, sqliteTable, text, primaryKey, index } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from 'drizzle-zod';
+import { z } from 'zod';
 
 export enum Roles {
   Admin = 'Admin',
@@ -104,17 +105,25 @@ export const challengesInsertSchema = createInsertSchema(challenges);
 export type SelectChallenge = InferSelectModel<typeof challenges>;
 export type InsertChallenge = InferInsertModel<typeof challenges>;
 
-export type MastodonOption = {
-  token?: string;
-  url?: string;
-  accountName?: string;
-};
+export const mastodonIntegrationOptionSchema = z.object({
+  token: z.string().optional(),
+  url: z.string().url().optional(),
+  accountName: z.string().optional(),
+});
+
+export const mapIntegrationOptionSchema = z.object({
+  mapStylesUrl: z.string().url().optional(),
+  tileServerDomain: z.string().url().optional(),
+});
+
+export type MastodonOption = z.infer<typeof mastodonIntegrationOptionSchema>;
+export type MapOption = z.infer<typeof mapIntegrationOptionSchema>;
 
 export const integrations = sqliteTable("integrations", {
   id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
   name: text().notNull().unique(),
   enable: integer({ mode: 'boolean' }).notNull().default(false),
-  options: text({ mode: 'json' }).$type<MastodonOption>(),
+  options: text({ mode: 'json' }).$type<MastodonOption|MapOption>(),
 });
 
 export const integrationsInsertSchema = createInsertSchema(integrations);
