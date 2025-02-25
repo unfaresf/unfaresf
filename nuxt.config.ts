@@ -81,7 +81,6 @@ export default defineNuxtConfig({
     public: {
       logLevel: Number(process.env.LOG_LEVEL) || 3,
       vapidPublicKey: process.env.VAPID_PUBLIC_KEY,
-      tileServerDomain: process.env.TILE_SERVER_DOMAIN,
     },
     session: {
       name: "unfare-session",
