@@ -65,7 +65,7 @@ import { MglMap, useMap, MglNavigationControl, MglVectorSource, MglLineLayer, Mg
 import type { CircleLayerSpecification, LineLayerSpecification, LngLatLike } from 'maplibre-gl';
 import type { RouteResponse } from "./select/route.vue";
 
-const {public: {tileServerDomain} } = useRuntimeConfig();
+const {public: { tileServerDomain } } = useRuntimeConfig();
 const style = 'https://api.maptiler.com/maps/995d0704-eb12-493a-9e6c-41e320a7b94c/style.json?key=DDypiIJ7OGinseJ5cFio';
 const tripsSourceTiles = [ `${tileServerDomain}/data/trips/{z}/{x}/{y}.pbf` ];
 const stopsSourceTiles = [ `${tileServerDomain}/data/stops/{z}/{x}/{y}.pbf` ];
@@ -136,7 +136,7 @@ const hotStops = computed(():CircleLayerSpecification['filter'] => {
 });
 
 const routeLabels = computed(():LineLayerSpecification['filter'] => {
-  const routeIds = [...visibleRouteIds.value, props.route?.routeId].filter(r => !!r);
+  const routeIds = [...visibleRouteIds.value, props.route?.routeId].filter((r):r is string => !!r);
 
   return props.showBroadcasts ? ["in","route_id", ...routeIds] : ["all", false];
 });

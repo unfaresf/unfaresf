@@ -6,7 +6,7 @@
     </template>
     <UTable
       v-model:expand="usersExpand"
-      :loading="usersStatus === 'pending'"
+      :loading="usersStatus === 'pending' || users === null"
       :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Loading...' }"
       :empty-state="{ icon: 'i-heroicons-circle-stack-20-solid', label: 'No users' }"
       :columns="[{ key: 'userName', label: 'User' },{ key: 'roles', label: 'Roles' }]"
@@ -42,14 +42,35 @@
     <template #header>
       <h2 class="text-lg text-center">Mastodon</h2>
     </template>
-    <MastodonSettingsUpdate></MastodonSettingsUpdate>
+    <MastodonSettingsUpdate v-if="integrationsStatus === 'success'" :integration="mastoInt" />
+    <div v-else-if="integrationsStatus === 'error'" class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
+      <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+      <p class="text-sm text-center text-gray-900 dark:text-white">Error retrieving settings</p>
+    </div>
+    <div v-else class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
+      <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4 animate-spin" />
+      <p class="text-sm text-center text-gray-900 dark:text-white">Loading...</p>
+    </div>
+  </UCard>
+  <UCard class="my-8">
+    <template #header>
+      <h2 class="text-lg text-center">Map</h2>
+    </template>
+    <MapSettings v-if="integrationsStatus === 'success'" :integration="mapInt" />
+    <div v-else-if="integrationsStatus === 'error'" class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
+      <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+      <p class="text-sm text-center text-gray-900 dark:text-white">Error retrieving settings</p>
+    </div>
+    <div v-else class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
+      <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4 animate-spin" />
+      <p class="text-sm text-center text-gray-900 dark:text-white">Loading...</p>
+    </div>
   </UCard>
 </template>
 
 <script lang="ts" setup>
 import { UButton, UCard, UIcon } from '#components';
 import MastodonSettingsUpdate from '~/components/mastodon-settings-update.vue';
-import { type GetUser, type Prettify } from "../db/schema";
 
 definePageMeta({
   middleware: ['admin']
@@ -62,13 +83,10 @@ const usersExpand = ref({
   openedRows: [],
   row: {}
 });
+const mastoInt = ref();
+const mapInt = ref();
 
-type UsersGetResp = {
-  count: number,
-  result: Prettify<{hasActiveSubscription:boolean} & GetUser>[]
-}
-
-const { data: users, status:usersStatus, refresh } = await useLazyFetch<Awaited<Promise<UsersGetResp>>>("/api/users", {
+const { data: users, status:usersStatus, refresh } = await useLazyFetch("/api/users", {
   server: false,
   query: { page: page, limit: limit },
   watch: [page],
@@ -82,4 +100,20 @@ const { data: users, status:usersStatus, refresh } = await useLazyFetch<Awaited<
 async function onDeleteUser() {
   await refresh();
 }
+
+const { data: integrations, status:integrationsStatus } = await useLazyFetch('/api/integrations', {
+  server: false,
+  onResponseError({ response }) {
+    toast.add({
+      color: 'red',
+      title: response.statusText
+    });
+  }
+});
+watch(integrations, (newIntegrations) => {
+  if (newIntegrations) {
+    mastoInt.value = newIntegrations.find((integ) => integ.name === 'mastodon');
+    mapInt.value = newIntegrations.find((integ) => integ.name === 'map');
+  }
+}, {once: true});
 </script>
