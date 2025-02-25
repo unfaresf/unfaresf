@@ -10,7 +10,7 @@
 
     <MglVectorSource
       source-id="stops"
-      :url="tileServerDomain+'/data/stops.json'"
+      :url="props.config.tileServerDomain+'/data/stops.json'"
       :tiles="stopsSourceTiles"
     >
       <MglCircleLayer
@@ -31,7 +31,7 @@
 
     <MglVectorSource
       source-id="trips"
-      :url="tileServerDomain+'/data/trips.json'"
+      :url="props.config.tileServerDomain+'/data/trips.json'"
       :tiles="tripsSourceTiles"
       :minzoom="6"
     >
@@ -66,7 +66,6 @@ import type { CircleLayerSpecification, LineLayerSpecification, LngLatLike } fro
 import type { RouteResponse } from "./select/route.vue";
 import type { MapOption } from '../db/schema';
 
-const {public: { tileServerDomain } } = useRuntimeConfig();
 const center:LngLatLike = [-122.4404,37.7549];
 const zoom = 10.5;
 const paint = {
