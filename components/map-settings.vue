@@ -67,10 +67,12 @@ async function updateIntegrationsOptions(id:number, integration:updateMapIntegra
   });
 }
 
-async function createIntegrationsOptions(options:InsertIntegration) {
+async function createIntegrationsOptions(integration:InsertIntegration) {
+  const body = integration;
+  body.name = 'map';
   return $fetch(`/api/integrations`, {
     method: 'POST',
-    body: options,
+    body: body,
   });
 }
 
