@@ -40,6 +40,7 @@ export const deleteUsers = defineAbility((user: User, targetUserId: number) => {
 });
 export const getIntegrations = defineAbility((user: User) => user.roles.includes('Admin'));
 export const updateIntegrations = defineAbility((user: User) => user.roles.includes('Admin'));
+export const getPublicIntegrations = defineAbility({ allowGuest: true }, (user: User | null) => true);
 
 // user subscription abilities
 export const createSubscription = defineAbility(() => true);
