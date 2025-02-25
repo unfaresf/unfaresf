@@ -53,7 +53,7 @@ const state = reactive({
 });
 
 async function updateIntegrationsOptions(id:number, integration:updateMapIntegration) {
-  const body = integration;
+  const body = {...integration};
   body.name = 'map';
   if (integration.options && integration.options.mapStylesUrl === '') {
     delete body.options?.mapStylesUrl;
@@ -68,7 +68,7 @@ async function updateIntegrationsOptions(id:number, integration:updateMapIntegra
 }
 
 async function createIntegrationsOptions(integration:InsertIntegration) {
-  const body = integration;
+  const body = {...integration};
   body.name = 'map';
   return $fetch(`/api/integrations`, {
     method: 'POST',
