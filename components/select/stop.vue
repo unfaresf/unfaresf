@@ -52,7 +52,7 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{
   (e: 'onChange', stop: StopPostResponse): void
-}>()
+}>();
 const disable = computed(() => !props.routeId);
 
 async function searchStops(q:string) {
