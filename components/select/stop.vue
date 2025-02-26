@@ -14,6 +14,7 @@
         placement: isMobile ? 'top' : 'bottom'
       }"
       :disabled="disable"
+      :clearSearchOnClose="true"
     >
       <template #label>
         <p v-if="stop">{{ stop.stopName }}</p>
