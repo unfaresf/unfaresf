@@ -125,7 +125,7 @@ export const integrations = sqliteTable("integrations", {
   id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
   name: text().notNull().unique(),
   enable: integer({ mode: 'boolean' }).notNull().default(false),
-  options: text({ mode: 'json' }).$type<MastodonOption|MapOption>(),
+  options: text({ mode: 'json' }).notNull().$type<MastodonOption|MapOption>(),
 });
 
 export const integrationsInsertSchema = createInsertSchema(integrations);

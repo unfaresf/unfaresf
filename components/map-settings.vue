@@ -28,13 +28,15 @@ import type { FormSubmitEvent } from '#ui/types';
 import z from 'zod';
 
 const mapIntegrationsFormSchema = z.object({
+  name: z.literal('map'),
   enable: z.boolean(),
   options: z.object({
+    name: z.literal('map'),
     mapStylesUrl: z.string().url().or(z.literal('')),
     tileServerDomain: z.string().url().or(z.literal('')),
   }),
 });
-type updateMapIntegration = Prettify<Omit<SelectIntegration, 'options'> & {name: 'map', options?: MapOption}>;
+type updateMapIntegration = Prettify<Omit<SelectIntegration, 'options'> & {options: MapOption}>;
 
 const props = defineProps<{
   integration?: updateMapIntegration,
@@ -47,6 +49,7 @@ const state = reactive({
   enable: props.integration?.enable ?? false,
   name: 'map',
   options: {
+    name: 'map',
     mapStylesUrl: props.integration?.options?.mapStylesUrl ?? '',
     tileServerDomain: props.integration?.options?.tileServerDomain ?? '',
   }
@@ -55,6 +58,7 @@ const state = reactive({
 async function updateIntegrationsOptions(id:number, integration:updateMapIntegration) {
   const body = {...integration};
   body.name = 'map';
+  body.options.name = 'map';
   if (integration.options && integration.options.mapStylesUrl === '') {
     delete body.options?.mapStylesUrl;
   }
@@ -79,7 +83,7 @@ async function createIntegrationsOptions(integration:InsertIntegration) {
 async function onSubmit(event: FormSubmitEvent<InsertIntegration|updateMapIntegration>) {
   try {
     pendingReq.value = true;
-    if (props.integration?.id) {
+    if (props.integration && props.integration.id !== -1) {
       await updateIntegrationsOptions(props.integration.id, event.data as updateMapIntegration);
     } else {
       await createIntegrationsOptions(event.data);
