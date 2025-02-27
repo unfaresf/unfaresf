@@ -106,12 +106,14 @@ export type SelectChallenge = InferSelectModel<typeof challenges>;
 export type InsertChallenge = InferInsertModel<typeof challenges>;
 
 export const mastodonIntegrationOptionSchema = z.object({
+  name: z.literal('mastodon').readonly(),
   token: z.string().optional(),
   url: z.string().url().optional(),
   accountName: z.string().optional(),
 });
 
 export const mapIntegrationOptionSchema = z.object({
+  name: z.literal('map').readonly(),
   mapStylesUrl: z.string().url().optional(),
   tileServerDomain: z.string().url().optional(),
 });
