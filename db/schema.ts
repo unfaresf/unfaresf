@@ -106,12 +106,14 @@ export type SelectChallenge = InferSelectModel<typeof challenges>;
 export type InsertChallenge = InferInsertModel<typeof challenges>;
 
 export const mastodonIntegrationOptionSchema = z.object({
+  name: z.literal('mastodon').readonly(),
   token: z.string().optional(),
   url: z.string().url().optional(),
   accountName: z.string().optional(),
 });
 
 export const mapIntegrationOptionSchema = z.object({
+  name: z.literal('map').readonly(),
   mapStylesUrl: z.string().url().optional(),
   tileServerDomain: z.string().url().optional(),
 });
@@ -123,7 +125,7 @@ export const integrations = sqliteTable("integrations", {
   id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
   name: text().notNull().unique(),
   enable: integer({ mode: 'boolean' }).notNull().default(false),
-  options: text({ mode: 'json' }).$type<MastodonOption|MapOption>(),
+  options: text({ mode: 'json' }).notNull().$type<MastodonOption|MapOption>(),
 });
 
 export const integrationsInsertSchema = createInsertSchema(integrations);

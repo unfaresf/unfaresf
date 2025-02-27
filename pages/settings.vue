@@ -71,6 +71,7 @@
 <script lang="ts" setup>
 import { UButton, UCard, UIcon } from '#components';
 import MastodonSettingsUpdate from '~/components/mastodon-settings-update.vue';
+import type { SelectIntegration, Prettify, MastodonOption, MapOption } from '../db/schema'
 
 definePageMeta({
   middleware: ['admin']
@@ -83,8 +84,11 @@ const usersExpand = ref({
   openedRows: [],
   row: {}
 });
-const mastoInt = ref();
-const mapInt = ref();
+type selectMastodonIntegration = Prettify<Omit<SelectIntegration, 'options'> & {options: MastodonOption}>;
+type selectMapIntegration = Prettify<Omit<SelectIntegration, 'options'> & {options: MapOption}>;
+
+const mastoInt = ref<selectMastodonIntegration>();
+const mapInt = ref<selectMapIntegration>();
 
 const { data: users, status:usersStatus, refresh } = await useLazyFetch("/api/users", {
   server: false,
@@ -112,8 +116,14 @@ const { data: integrations, status:integrationsStatus } = await useLazyFetch('/a
 });
 watch(integrations, (newIntegrations) => {
   if (newIntegrations) {
-    mastoInt.value = newIntegrations.find((integ) => integ.name === 'mastodon');
-    mapInt.value = newIntegrations.find((integ) => integ.name === 'map');
+    newIntegrations.forEach(integration => {
+      if (integration.options.name === 'mastodon') {
+        mastoInt.value = {...integration, ...{options: integration.options}};
+      }
+      if (integration.options.name === 'map') {
+        mapInt.value = {...integration, ...{options: integration.options}};
+      }
+    });
   }
 }, {once: true});
 </script>
