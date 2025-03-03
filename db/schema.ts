@@ -19,8 +19,9 @@ export const users = sqliteTable("users", {
   roles: text().notNull().default(JSON.stringify([Roles.Editor])),
 });
 
-export const usersSubscriptions = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many }) => ({
 	subscriptions: many(subscriptions),
+  credentials: many(credentials),
 }));
 
 export const userInsertSchema = createInsertSchema(users);
@@ -29,7 +30,7 @@ export type GetUser = Prettify<Omit<InferSelectModel<typeof users>, 'roles'> & {
 export type InsertUser = InferInsertModel<typeof users>;
 
 export const credentials = sqliteTable("credentials", {
-  userId: integer("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id, {onDelete: 'cascade'}),
   id: text().notNull().unique(),
   publicKey: text("public_key").notNull(),
   counter: integer().notNull(),
@@ -41,10 +42,6 @@ export const credentials = sqliteTable("credentials", {
 
 export type Credential = InferSelectModel<typeof credentials>;
 export type InsertCredential = InferInsertModel<typeof credentials>;
-
-export const usersRelations = relations(users, ({ many }) => ({
-	credentials: many(credentials),
-}));
 
 export const invites = sqliteTable("invites", {
   id: text().primaryKey(),
@@ -140,7 +137,7 @@ export type SubscriptionDetails = {
 
 export const subscriptions = sqliteTable("subscriptions", {
   id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
-  userId: integer("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id, {onDelete: 'cascade'}),
   details: text({ mode: 'json' }).notNull().$type<SubscriptionDetails>(),
   deletedAt: integer("deleted_at", { mode: 'timestamp' }),
 });
@@ -149,8 +146,7 @@ export const subscriptionsInsertSchema = createInsertSchema(subscriptions);
 export type SelectSubscription = InferSelectModel<typeof subscriptions>;
 export type InsertSubscription = InferInsertModel<typeof subscriptions>;
 
-export const subscriptionsRelations = relations(subscriptions, ({ many, one }) => ({
-  broadcasts: many(broadcasts),
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
 	subscriber: one(users, {
 		fields: [subscriptions.userId],
 		references: [users.id],

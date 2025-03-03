@@ -16,14 +16,6 @@ export default defineEventHandler(async (event) => {
 
   try {
     await db.transaction(async (tx) => {
-      await Promise.all([
-        tx.delete(credentialsTable)
-          .where(eq(credentialsTable.userId, userId))
-          .limit(1),
-        tx.delete(subscriptionsTable)
-          .where(eq(subscriptionsTable.userId, userId))
-          .limit(1)
-      ]);
       await tx.delete(usersTable)
         .where(eq(usersTable.id, userId))
         .limit(1);
