@@ -34,10 +34,9 @@
       </template>
       <div>
         <ol v-if="broadcasts && broadcasts.result.length">
-          <li v-for="broadcast in broadcasts.result">
+          <li v-for="broadcast in broadcasts.result" class="border-gray-200 dark:border-gray-800 w-full border-b border-solid pb-3 mb-3 last:border-b-0 last:pb-0 last:mb-0">
             {{ broadcast.message }}
             <span class="text-xs italic">{{ formatDistanceToNow(broadcast.createdAt) }} ago</span>
-            <UDivider class="my-2"/>
           </li>
         </ol>
         <ol v-else>
@@ -56,6 +55,10 @@ import { sub, formatDistanceToNow } from 'date-fns';
 
 definePageMeta({
   middleware: ['auth']
+});
+
+useHead({
+  title: 'UnfareSF'
 });
 
 const reviewedStatuses = [{
@@ -81,7 +84,7 @@ async function dismiss(row:SelectReport) {
         approved: false
       }
     });
-    await refresh();
+    await refreshReports();
   } catch (err:any) {
     toast.add({
       color: 'red',
@@ -99,8 +102,11 @@ async function openPostModel(row:SelectReport) {
       return modal.close();
     },
     async onSuccess() {
-      await refresh();
-      return modal.close();
+      return Promise.all([
+        refreshReports(),
+        refreshBroadcasts(),
+        modal.close(),
+      ]);
     },
   });
 }
@@ -109,7 +115,7 @@ type ReportsGetResp = {
   count: number,
   result: SelectReport[]
 }
-const { data:unreviewedReports, status:reportsStatus, refresh } = await useLazyFetch<ReportsGetResp>("/api/reports", {
+const { data:unreviewedReports, status:reportsStatus, refresh: refreshReports } = await useLazyFetch<ReportsGetResp>("/api/reports", {
   server: false,
   query: { page: page, limit: limit, reviewed: reviewed },
   default: () => ({count: 0, result: []}),
@@ -122,7 +128,7 @@ const { data:unreviewedReports, status:reportsStatus, refresh } = await useLazyF
   }
 });
 
-const { data: broadcasts } = await useLazyFetch(`/api/broadcasts`, {
+const { data: broadcasts, refresh: refreshBroadcasts } = await useLazyFetch(`/api/broadcasts`, {
   server: false,
   query: {
     from: sub(new Date(), {hours: 12}).toISOString(),

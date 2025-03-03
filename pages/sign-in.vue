@@ -20,6 +20,10 @@ const { fetch } = useUserSession()
 const { authenticate } = useWebAuthn()
 const toast = useToast()
 
+useHead({
+  title: 'UnfareSF - Sign In'
+});
+
 const logging = ref(false);
 
 async function signIn() {

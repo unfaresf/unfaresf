@@ -31,6 +31,10 @@ const { register } = useWebAuthn()
 const toast = useToast()
 const { query } = useRoute();
 
+useHead({
+  title: 'UnfareSF - Sign Up'
+});
+
 const logging = ref(false);
 const signUpUserName = ref('');
 const formError = ref('');
