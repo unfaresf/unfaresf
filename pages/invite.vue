@@ -20,6 +20,10 @@ definePageMeta({
   middleware: ['auth']
 });
 
+useHead({
+  title: 'UnfareSF - Invite'
+});
+
 async function getInvite() {
   const res = await $fetch('/api/invite', {
     method: 'POST'

@@ -1,9 +1,5 @@
 <template>
-  <h1 class="text-xl my-4">Settings</h1>
-  <UCard>
-    <template #header>
-      <h2 class="text-lg text-center">Users</h2>
-    </template>
+  <UCard class="mt-6" :ui="{body:{padding:'px-4 py-0 sm:p-6 sm:py-0 '}}">
     <UTable
       v-model:expand="usersExpand"
       :loading="usersStatus === 'pending' || users === null"
@@ -28,9 +24,8 @@
         </div>
       </template>
     </UTable>
-    <template #footer>
+    <template v-if="users && users.count > limit" #footer>
       <UPagination
-        v-if="users && users.count > limit"
         v-model="page"
         :page-count="limit"
         :total="users.count"
@@ -73,8 +68,12 @@ import { UButton, UCard, UIcon } from '#components';
 import MastodonSettingsUpdate from '~/components/mastodon-settings-update.vue';
 
 definePageMeta({
-  middleware: ['admin']
+  middleware: ['admin'],
 });
+
+useHead({
+  title: 'UnfareSF - Settings'
+})
 
 const limit = ref(10);
 const page = ref(1);

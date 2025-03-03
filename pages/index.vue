@@ -49,6 +49,10 @@ const submitting = ref(false);
 const form = ref<Form<ReportPostSchema>>();
 const geoLocation = ref<GeolocationPosition>();
 
+useHead({
+  title: 'UnfareSF - Report'
+});
+
 const reportSchema = z.object({
   route: routeSchema,
   stop: stopPostResponseSchema,

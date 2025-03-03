@@ -7,3 +7,9 @@
     <UButton to="/" class="mt-4">Submit another report</UButton>
   </UCard>
 </template>
+
+<script setup lang="ts">
+useHead({
+  title: 'UnfareSF - Thank you'
+});
+</script>

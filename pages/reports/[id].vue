@@ -31,6 +31,10 @@ definePageMeta({
   middleware: ['auth']
 });
 
+useHead({
+  title: 'UnfareSF - Report'
+});
+
 const route = useRoute();
 
 const { data: report } = await useLazyFetch<SelectReport>(`/api/reports/${route.params.id}`, {
