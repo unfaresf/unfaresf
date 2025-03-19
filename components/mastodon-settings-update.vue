@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { type SelectIntegration, type MastodonOption, type Prettify } from '../db/schema';
+import { type SelectIntegration, type MastodonOptions, type Prettify } from '../db/schema';
 import type { FormSubmitEvent } from '#ui/types';
 import { z } from 'zod';
 
@@ -38,15 +38,16 @@ const integrationsFormSchema = z.object({
   accountName: z.string().optional(),
 });
 
-type IntegrationFormData = Prettify<{enable: boolean} & MastodonOption>;
+type IntegrationFormData = Prettify<{enable: boolean} & MastodonOptions>;
 
 const props = defineProps<{
-  integration?: Prettify<Omit<SelectIntegration, 'options'> & {name: 'mastodon', options: MastodonOption|null}>,
+  integration?: Prettify<Omit<SelectIntegration, 'options'> & {name: 'mastodon', options: MastodonOptions|null}>,
 }>();
 
 const toast = useToast();
 const pendingReq = ref(false);
 const state = reactive<IntegrationFormData>({
+  type: 'mastodon',
   enable: false,
   token: undefined,
   url: undefined,

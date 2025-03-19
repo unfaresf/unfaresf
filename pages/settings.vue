@@ -49,6 +49,20 @@
   </UCard>
   <UCard class="my-8">
     <template #header>
+      <h2 class="text-lg text-center">Twitter</h2>
+    </template>
+    <TwitterSettings v-if="integrationsStatus === 'success'" :integration="twitterInt" />
+    <div v-else-if="integrationsStatus === 'error'" class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
+      <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+      <p class="text-sm text-center text-gray-900 dark:text-white">Error retrieving settings</p>
+    </div>
+    <div v-else class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
+      <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4 animate-spin" />
+      <p class="text-sm text-center text-gray-900 dark:text-white">Loading...</p>
+    </div>
+  </UCard>
+  <UCard class="my-8">
+    <template #header>
       <h2 class="text-lg text-center">Map</h2>
     </template>
     <MapSettings v-if="integrationsStatus === 'success'" :integration="mapInt" />
@@ -84,6 +98,7 @@ const usersExpand = ref({
 });
 const mastoInt = ref();
 const mapInt = ref();
+const twitterInt = ref();
 
 const { data: users, status:usersStatus, refresh } = await useLazyFetch("/api/users", {
   server: false,
@@ -113,6 +128,7 @@ watch(integrations, (newIntegrations) => {
   if (newIntegrations) {
     mastoInt.value = newIntegrations.find((integ) => integ.name === 'mastodon');
     mapInt.value = newIntegrations.find((integ) => integ.name === 'map');
+    twitterInt.value = newIntegrations.find((integ) => integ.name === 'twitter');
   }
 }, {once: true});
 </script>

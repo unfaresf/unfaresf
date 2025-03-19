@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import type { SelectIntegration, InsertIntegration, MapOption, Prettify } from '../db/schema';
+import type { SelectIntegration, InsertIntegration, MapOptions, Prettify } from '../db/schema';
 import type { FormSubmitEvent } from '#ui/types';
 import z from 'zod';
 
@@ -34,25 +34,26 @@ const mapIntegrationsFormSchema = z.object({
     tileServerDomain: z.string().url().or(z.literal('')),
   }),
 });
-type updateMapIntegration = Prettify<Omit<SelectIntegration, 'options'> & {name: 'map', options?: MapOption}>;
+type UpdateMapIntegration = Prettify<Omit<SelectIntegration, 'options'> & {name: 'map', options: MapOptions}>;
 
 const props = defineProps<{
-  integration?: updateMapIntegration,
+  integration?: UpdateMapIntegration,
 }>();
 
 const toast = useToast();
 const pendingReq = ref(false);
-const state = reactive({
+const state = reactive<UpdateMapIntegration>({
   id: props.integration?.id ?? -1,
   enable: props.integration?.enable ?? false,
   name: 'map',
   options: {
+    type: 'map',
     mapStylesUrl: props.integration?.options?.mapStylesUrl ?? '',
     tileServerDomain: props.integration?.options?.tileServerDomain ?? '',
   }
 });
 
-async function updateIntegrationsOptions(id:number, integration:updateMapIntegration) {
+async function updateIntegrationsOptions(id:number, integration:UpdateMapIntegration) {
   const body = {...integration};
   body.name = 'map';
   if (integration.options && integration.options.mapStylesUrl === '') {
@@ -76,11 +77,11 @@ async function createIntegrationsOptions(integration:InsertIntegration) {
   });
 }
 
-async function onSubmit(event: FormSubmitEvent<InsertIntegration|updateMapIntegration>) {
+async function onSubmit(event: FormSubmitEvent<InsertIntegration|UpdateMapIntegration>) {
   try {
     pendingReq.value = true;
     if (props.integration?.id) {
-      await updateIntegrationsOptions(props.integration.id, event.data as updateMapIntegration);
+      await updateIntegrationsOptions(props.integration.id, event.data as UpdateMapIntegration);
     } else {
       await createIntegrationsOptions(event.data);
     }
