@@ -124,8 +124,8 @@ export type MastodonOptions = z.infer<typeof mastodonIntegrationOptionSchema>;
 export type MapOptions = z.infer<typeof mapIntegrationOptionSchema>;
 export type TwitterOptions = z.infer<typeof twitterIntegrationOptionSchema>;
 
-const integrationOptionsSchema = z.discriminatedUnion('type', [mapIntegrationOptionSchema, mastodonIntegrationOptionSchema, twitterIntegrationOptionSchema])
-type IntegrationOptions = z.infer<typeof integrationOptionsSchema>
+export const integrationOptionsSchema = z.discriminatedUnion('type', [mapIntegrationOptionSchema, mastodonIntegrationOptionSchema, twitterIntegrationOptionSchema])
+export type IntegrationOptions = z.infer<typeof integrationOptionsSchema>
 
 export const integrations = sqliteTable("integrations", {
   id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),

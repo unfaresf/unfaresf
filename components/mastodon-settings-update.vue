@@ -38,15 +38,15 @@ const integrationsFormSchema = z.object({
   accountName: z.string().optional(),
 });
 
-type IntegrationFormData = Prettify<{enable: boolean} & MastodonOptions>;
+type MastodonIntegrationFormData = Prettify<{enable: boolean} & MastodonOptions>;
 
 const props = defineProps<{
-  integration?: Prettify<Omit<SelectIntegration, 'options'> & {name: 'mastodon', options: MastodonOptions|null}>,
+  integration?: Prettify<Omit<SelectIntegration, 'options'> & { options: MastodonOptions|null}>,
 }>();
 
 const toast = useToast();
 const pendingReq = ref(false);
-const state = reactive<IntegrationFormData>({
+const state = reactive<MastodonIntegrationFormData>({
   type: 'mastodon',
   enable: false,
   token: undefined,
@@ -60,21 +60,21 @@ if (props.integration) {
   state.accountName = props.integration.options?.accountName || undefined;
 }
 
-async function updateMastodonOptions(id:number, options:IntegrationFormData) {
+async function updateMastodonOptions(id:number, options:MastodonIntegrationFormData) {
   return $fetch(`/api/integrations/${id}`, {
     method: 'PUT',
     body: options,
   });
 }
 
-async function createMastodonOptions(options:IntegrationFormData) {
+async function createMastodonOptions(options:MastodonIntegrationFormData) {
   return $fetch(`/api/integrations`, {
     method: 'POST',
     body: options,
   });
 }
 
-async function onSubmit(event: FormSubmitEvent<IntegrationFormData>) {
+async function onSubmit(event: FormSubmitEvent<MastodonIntegrationFormData>) {
   try {
     pendingReq.value = true;
     if (props.integration) {

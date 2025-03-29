@@ -2,11 +2,11 @@
   <UContainer :ui="{base: 'mx-auto', padding: 'py-4', constrained: 'max-w-lg'}">
     <UForm :schema="mapIntegrationsFormSchema" :state="state" class="space-y-4 flex flex-col" @submit.prevent="onSubmit">
       <UFormGroup label="Base Map Styles URL" name="options.mapStylesUrl" description="URL (including API key) of base map styles." help="Example: https://api.maptiler.com/maps/basic/style.json?key=abc123">
-        <UInput v-model="state.options.mapStylesUrl" :disabled="pendingReq" />
+        <UInput v-model="state.mapStylesUrl" :disabled="pendingReq" />
       </UFormGroup>
 
       <UFormGroup label="Tileserver Server Domain" name="options.tileServerDomain" description="Domain where custom tiles can be loaded for routes and stops." help="Example: https://tiles.unfaresf.org">
-        <UInput v-model="state.options.tileServerDomain" :disabled="pendingReq" />
+        <UInput v-model="state.tileServerDomain" :disabled="pendingReq" />
       </UFormGroup>
 
       <div class="flex">
@@ -34,56 +34,50 @@ const mapIntegrationsFormSchema = z.object({
     tileServerDomain: z.string().url().or(z.literal('')),
   }),
 });
-type UpdateMapIntegration = Prettify<Omit<SelectIntegration, 'options'> & {name: 'map', options: MapOptions}>;
+type MapIntegrationFormData = Prettify<{enable: boolean} & MapOptions>;
 
 const props = defineProps<{
-  integration?: UpdateMapIntegration,
+  integration?: Prettify<Omit<SelectIntegration, 'options'> & { options: MapOptions}>,
 }>();
 
 const toast = useToast();
 const pendingReq = ref(false);
-const state = reactive<UpdateMapIntegration>({
-  id: props.integration?.id ?? -1,
-  enable: props.integration?.enable ?? false,
-  name: 'map',
-  options: {
+const state = reactive<MapIntegrationFormData>({
+  enable: false,
     type: 'map',
-    mapStylesUrl: props.integration?.options?.mapStylesUrl ?? '',
-    tileServerDomain: props.integration?.options?.tileServerDomain ?? '',
-  }
+    mapStylesUrl: undefined,
+    tileServerDomain: undefined,
+
 });
 
-async function updateIntegrationsOptions(id:number, integration:UpdateMapIntegration) {
-  const body = {...integration};
-  body.name = 'map';
-  if (integration.options && integration.options.mapStylesUrl === '') {
-    delete body.options?.mapStylesUrl;
-  }
-  if (integration.options && integration.options.tileServerDomain === '') {
-    delete body.options?.tileServerDomain;
-  }
+if (props.integration) {
+  state.enable = props.integration.enable;
+  state.mapStylesUrl = props.integration.options?.mapStylesUrl || undefined;
+  state.tileServerDomain = props.integration.options?.tileServerDomain || undefined;
+}
+
+
+async function updateMapOptions(id:number, options:MapIntegrationFormData) {
   return $fetch(`/api/integrations/${id}`, {
     method: 'PUT',
-    body,
+    body: options,
   });
 }
 
-async function createIntegrationsOptions(integration:InsertIntegration) {
-  const body = {...integration};
-  body.name = 'map';
+async function createMapOptions(options:MapIntegrationFormData) {
   return $fetch(`/api/integrations`, {
     method: 'POST',
-    body: body,
+    body: options,
   });
 }
 
-async function onSubmit(event: FormSubmitEvent<InsertIntegration|UpdateMapIntegration>) {
+async function onSubmit(event: FormSubmitEvent<MapIntegrationFormData>) {
   try {
     pendingReq.value = true;
     if (props.integration?.id) {
-      await updateIntegrationsOptions(props.integration.id, event.data as UpdateMapIntegration);
+      await updateMapOptions(props.integration.id, event.data as MapIntegrationFormData);
     } else {
-      await createIntegrationsOptions(event.data);
+      await createMapOptions(event.data);
     }
     toast.add({
       color: 'green',
@@ -102,10 +96,9 @@ async function onSubmit(event: FormSubmitEvent<InsertIntegration|UpdateMapIntegr
 
 watch(() => props.integration, (newIntegration) => {
   if (newIntegration) {
-    state.id = newIntegration.id;
     state.enable = newIntegration.enable;
-    state.options.mapStylesUrl = newIntegration.options?.mapStylesUrl || '';
-    state.options.tileServerDomain = newIntegration.options?.tileServerDomain || '';
+    state.mapStylesUrl = newIntegration.options?.mapStylesUrl || undefined;
+    state.tileServerDomain = newIntegration.options?.tileServerDomain || undefined;
   }
 });
 </script>

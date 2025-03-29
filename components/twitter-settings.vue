@@ -32,7 +32,7 @@
   type IntegrationFormData = Prettify<{enable: boolean} & TwitterOptions>;
   
   const props = defineProps<{
-    integration?: Prettify<Omit<SelectIntegration, 'options'> & {name: 'twitter', options: TwitterOptions|null}>,
+    integration?: Prettify<Omit<SelectIntegration, 'options'> & { options: TwitterOptions|null}>,
   }>();
   
   const toast = useToast();
