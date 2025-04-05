@@ -1,16 +1,16 @@
 <template>
   <UContainer :ui="{base: 'mx-auto', padding: 'py-4', constrained: 'max-w-lg'}">
-    <UForm :schema="integrationsFormSchema" :state="state" class="space-y-4 flex flex-col" @submit.prevent="onSubmit">
+    <UForm :schema="mastodonIntegrationFormSchema" :state="state" class="space-y-4 flex flex-col" @submit.prevent="onSubmit">
       <UFormGroup label="Account Name" name="accountName" description="The account name for which you want mentions." help="Example: unfaresf">
-        <UInput v-model="state.accountName" :disabled="pendingReq" />
+        <UInput v-model="state.options.accountName" :disabled="pendingReq" />
       </UFormGroup>
 
       <UFormGroup label="URL" name="url" description="The domain of your server." help="Example: https://mastodon.social/ or https://sfba.social">
-        <UInput v-model="state.url" :disabled="pendingReq" />
+        <UInput v-model="state.options.url" :disabled="pendingReq" />
       </UFormGroup>
 
       <UFormGroup label="Token" name="token" Description="The access token for the applcation in your account." help="Tokens are at `/settings/applications` at your server's URL.">
-        <UInput v-model="state.token" type="password" :disabled="pendingReq" />
+        <UInput v-model="state.options.token" type="password" :disabled="pendingReq" />
       </UFormGroup>
 
       <div class="flex">
@@ -27,50 +27,52 @@
 </template>
 
 <script setup lang="ts">
-import { type SelectIntegration, type MastodonOptions, type Prettify } from '../db/schema';
+import { type SelectIntegration, mastodonIntegrationOptionSchema } from '../db/schema';
 import type { FormSubmitEvent } from '#ui/types';
 import { z } from 'zod';
 
-const integrationsFormSchema = z.object({
+const mastodonIntegrationFormSchema = z.object({
   enable: z.boolean(),
-  token: z.string().optional(),
-  url: z.string().url().optional(),
-  accountName: z.string().optional(),
+  name: mastodonIntegrationOptionSchema.shape.type,
+  options: mastodonIntegrationOptionSchema,
 });
 
-type MastodonIntegrationFormData = Prettify<{enable: boolean} & MastodonOptions>;
+type MastodonIntegrationFormData = z.infer<typeof mastodonIntegrationFormSchema>;
 
 const props = defineProps<{
-  integration?: Prettify<Omit<SelectIntegration, 'options'> & { options: MastodonOptions|null}>,
+  integration?: MastodonIntegrationFormData & {id: SelectIntegration['id']},
 }>();
 
 const toast = useToast();
 const pendingReq = ref(false);
 const state = reactive<MastodonIntegrationFormData>({
-  type: 'mastodon',
   enable: false,
-  token: undefined,
-  url: undefined,
-  accountName: undefined,
+  name: 'mastodon',
+  options: {
+    type: 'mastodon',
+    token: undefined,
+    url: undefined,
+    accountName: undefined,
+  }
 });
 if (props.integration) {
   state.enable = props.integration.enable;
-  state.token = props.integration.options?.token || undefined;
-  state.url = props.integration.options?.url || undefined;
-  state.accountName = props.integration.options?.accountName || undefined;
+  state.options.token = props.integration.options?.token || undefined;
+  state.options.url = props.integration.options?.url || undefined;
+  state.options.accountName = props.integration.options?.accountName || undefined;
 }
 
-async function updateMastodonOptions(id:number, options:MastodonIntegrationFormData) {
+async function updateMastodonOptions(id:number, formData: MastodonIntegrationFormData) {
   return $fetch(`/api/integrations/${id}`, {
     method: 'PUT',
-    body: options,
+    body: formData,
   });
 }
 
-async function createMastodonOptions(options:MastodonIntegrationFormData) {
+async function createMastodonOptions(formData: MastodonIntegrationFormData) {
   return $fetch(`/api/integrations`, {
     method: 'POST',
-    body: options,
+    body: formData,
   });
 }
 
@@ -100,9 +102,9 @@ async function onSubmit(event: FormSubmitEvent<MastodonIntegrationFormData>) {
 watch(() => props.integration, (newIntegration) => {
   if (newIntegration) {
     state.enable = newIntegration.enable;
-    state.token = newIntegration.options?.token || undefined;
-    state.url = newIntegration.options?.url || undefined;
-    state.accountName = newIntegration.options?.accountName || undefined;
+    state.options.token = newIntegration.options?.token || undefined;
+    state.options.url = newIntegration.options?.url || undefined;
+    state.options.accountName = newIntegration.options?.accountName || undefined;
   }
 });
 </script>

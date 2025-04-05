@@ -64,7 +64,7 @@
 import { MglMap, useMap, MglNavigationControl, MglVectorSource, MglLineLayer, MglCircleLayer, MglGeolocateControl, MglSymbolLayer } from '@indoorequal/vue-maplibre-gl';
 import type { CircleLayerSpecification, LineLayerSpecification, LngLatLike } from 'maplibre-gl';
 import type { RouteResponse } from "./select/route.vue";
-import type { MapOption } from '../db/schema';
+import type { MapOptions } from '../db/schema';
 
 const center:LngLatLike = [-122.4404,37.7549];
 const zoom = 10.5;
@@ -108,7 +108,7 @@ const props = defineProps<{
   route: RouteResponse|null,
   stopId: string|null,
   showBroadcasts?: boolean,
-  config: MapOption,
+  config: MapOptions,
 }>();
 
 const tripsSourceTiles = [ `${props.config.tileServerDomain}/data/trips/{z}/{x}/{y}.pbf` ];

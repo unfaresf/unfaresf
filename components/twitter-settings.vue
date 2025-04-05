@@ -1,9 +1,9 @@
 <template>
     <UContainer :ui="{base: 'mx-auto', padding: 'py-4', constrained: 'max-w-lg'}">
-      <UForm :schema="twitterOptionsFormSchema" :state="state" class="space-y-4 flex flex-col" @submit.prevent="onSubmit">
+      <UForm :schema="twitterIntegrationFormSchema" :state="state" class="space-y-4 flex flex-col" @submit.prevent="onSubmit">
   
         <UFormGroup label="Bearer Token" name="bearer-token" Description="The bearer access token for the Twitter API." help="Bearer tokens are generated in the Twitter developer console.">
-          <UInput v-model="state.bearerToken" type="password" :disabled="pendingReq" />
+          <UInput v-model="state.options.bearerToken" type="password" :disabled="pendingReq" />
         </UFormGroup>
   
         <div class="flex">
@@ -20,48 +20,52 @@
   </template>
   
   <script setup lang="ts">
-  import { type SelectIntegration, type TwitterOptions, type Prettify } from '../db/schema';
+  import { type SelectIntegration, type TwitterOptions, type Prettify, twitterIntegrationOptionSchema } from '../db/schema';
   import type { FormSubmitEvent } from '#ui/types';
   import { z } from 'zod';
   
-  const twitterOptionsFormSchema = z.object({
+  const twitterIntegrationFormSchema = z.object({
     enable: z.boolean(),
-    bearerToken: z.string().optional(),
+    name: twitterIntegrationOptionSchema.shape.type,
+    options: twitterIntegrationOptionSchema,
   });
   
-  type IntegrationFormData = Prettify<{enable: boolean} & TwitterOptions>;
+  type TwitterIntegrationFormData = z.infer<typeof twitterIntegrationFormSchema>;
   
   const props = defineProps<{
-    integration?: Prettify<Omit<SelectIntegration, 'options'> & { options: TwitterOptions|null}>,
+    integration?: TwitterIntegrationFormData & {id: SelectIntegration['id']},
   }>();
   
   const toast = useToast();
   const pendingReq = ref(false);
-  const state = reactive<IntegrationFormData>({
-    type: 'twitter',
+  const state = reactive<TwitterIntegrationFormData>({
     enable: false,
-    bearerToken: undefined,
+    name: 'twitter',
+    options: {
+      type: 'twitter',
+      bearerToken: undefined,
+    }
   });
   if (props.integration) {
     state.enable = props.integration.enable;
-    state.bearerToken = props.integration.options?.bearerToken || undefined;
+    state.options.bearerToken = props.integration.options?.bearerToken || undefined;
   }
   
-  async function updateTwitterOptions(id:number, options:IntegrationFormData) {
+  async function updateTwitterOptions(id:number, formData: TwitterIntegrationFormData) {
     return $fetch(`/api/integrations/${id}`, {
       method: 'PUT',
-      body: options,
+      body: formData,
     });
   }
   
-  async function createTwitterOptions(options:IntegrationFormData) {
+  async function createTwitterOptions(formData: TwitterIntegrationFormData) {
     return $fetch(`/api/integrations`, {
       method: 'POST',
-      body: options,
+      body: formData,
     });
   }
   
-  async function onSubmit(event: FormSubmitEvent<IntegrationFormData>) {
+  async function onSubmit(event: FormSubmitEvent<TwitterIntegrationFormData>) {
     try {
       pendingReq.value = true;
       if (props.integration) {
@@ -71,12 +75,12 @@
       }
       toast.add({
         color: 'green',
-        title: 'Updated mastodon settings',
+        title: 'Updated twitter settings',
       });
     } catch (err:any) {
       toast.add({
         color: 'red',
-        title: 'Error updating mastodon settings',
+        title: 'Error updating twitter settings',
         description: err.message
       });
     } finally {
@@ -87,7 +91,7 @@
   watch(() => props.integration, (newIntegration) => {
     if (newIntegration) {
       state.enable = newIntegration.enable;
-      state.bearerToken = newIntegration.options?.bearerToken || undefined;
+      state.options.bearerToken = newIntegration.options?.bearerToken || undefined;
     }
   });
   </script>
