@@ -103,24 +103,35 @@ export type SelectChallenge = InferSelectModel<typeof challenges>;
 export type InsertChallenge = InferInsertModel<typeof challenges>;
 
 export const mastodonIntegrationOptionSchema = z.object({
+  type: z.literal("mastodon"),
   token: z.string().optional(),
   url: z.string().url().optional(),
   accountName: z.string().optional(),
 });
 
 export const mapIntegrationOptionSchema = z.object({
+  type: z.literal('map'),
   mapStylesUrl: z.string().url().optional(),
   tileServerDomain: z.string().url().optional(),
 });
 
-export type MastodonOption = z.infer<typeof mastodonIntegrationOptionSchema>;
-export type MapOption = z.infer<typeof mapIntegrationOptionSchema>;
+export const twitterIntegrationOptionSchema = z.object({
+  type: z.literal('twitter'),
+  bearerToken: z.string().optional(),
+});
+
+export type MastodonOptions = z.infer<typeof mastodonIntegrationOptionSchema>;
+export type MapOptions = z.infer<typeof mapIntegrationOptionSchema>;
+export type TwitterOptions = z.infer<typeof twitterIntegrationOptionSchema>;
+
+export const integrationOptionsSchema = z.discriminatedUnion('type', [mapIntegrationOptionSchema, mastodonIntegrationOptionSchema, twitterIntegrationOptionSchema])
+export type IntegrationOptions = z.infer<typeof integrationOptionsSchema>
 
 export const integrations = sqliteTable("integrations", {
   id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
   name: text().notNull().unique(),
   enable: integer({ mode: 'boolean' }).notNull().default(false),
-  options: text({ mode: 'json' }).$type<MastodonOption|MapOption>(),
+  options: text({ mode: 'json' }).$type<IntegrationOptions>(),
 });
 
 export const integrationsInsertSchema = createInsertSchema(integrations);
