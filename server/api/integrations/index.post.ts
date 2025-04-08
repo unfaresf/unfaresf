@@ -13,15 +13,7 @@ export default defineEventHandler(async (event) => {
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
   await authorize(event, updateIntegrations);
 
-  const maybeIntegrationBody = await readValidatedBody(event, integrationBodySchema.safeParse);
-  if (!maybeIntegrationBody.success) {
-    throw createError({
-      statusCode: 422,
-      statusMessage: 'Unprocessable Content',
-    });
-  }
-
-  const integrationBody = maybeIntegrationBody.data
+  const integrationBody = await readValidatedBody(event, integrationBodySchema.parse);
 
   try {
     await db.insert(integrationsTable)
