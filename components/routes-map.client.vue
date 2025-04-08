@@ -3,9 +3,12 @@
     :map-style="props.config.mapStylesUrl"
     :zoom="zoom"
     :center="center"
-    :height="mapHeight"
+    :height="props.mapHeight"
+    :width="props.mapWidth"
+    :attributionControl="false"
   >
     <MglGeolocateControl />
+    <MglAttributionControl position="bottom-left" :compact="true"/>
     <MglNavigationControl :showCompass="false" />
 
     <MglVectorSource
@@ -61,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import { MglMap, useMap, MglNavigationControl, MglVectorSource, MglLineLayer, MglCircleLayer, MglGeolocateControl, MglSymbolLayer } from '@indoorequal/vue-maplibre-gl';
+import { MglMap, useMap, MglNavigationControl, MglVectorSource, MglLineLayer, MglCircleLayer, MglGeolocateControl, MglSymbolLayer, MglAttributionControl } from '@indoorequal/vue-maplibre-gl';
 import type { CircleLayerSpecification, LineLayerSpecification, LngLatLike } from 'maplibre-gl';
 import type { RouteResponse } from "./select/route.vue";
 import type { MapOptions } from '../db/schema';
@@ -109,6 +112,8 @@ const props = defineProps<{
   stopId: string|null,
   showBroadcasts?: boolean,
   config: MapOptions,
+  mapHeight: string,
+  mapWidth: string,
 }>();
 
 const tripsSourceTiles = [ `${props.config.tileServerDomain}/data/trips/{z}/{x}/{y}.pbf` ];
@@ -118,9 +123,6 @@ const { isMobile } = useDevice();
 const transitMap = useMap();
 const visibleRouteIds = ref<string[]>([]);
 const visibleStopIds = ref<string[]>([]);
-const mapHeight = computed(() => {
-  return isMobile ? '500px': '362px'
-});
 
 const tripFilter = computed(() => {
   return props.route ? ["==", "route_id", props.route.routeId] : ["all", false];
