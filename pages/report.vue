@@ -1,13 +1,18 @@
 <template>
-  <div class="grid grid-cols-4 gap-0 mt-0">
-    <div class="col-span-1 hidden lg:block p-4">
+  <div class="grid grid-cols-8 gap-4 mt-4">
+    <UCard class="col-span-8 lg:col-span-5 xs:mt-10 md:mt-0">
+      <template #header>
+        <h2 class="text-xl mb-4">Report Sighting</h2>
+        <p>Use this form to report fare inspectors on San Francisco Bay Area public transit.</p>
+      </template>
       <UForm class="flex flex-col gap-2 max-w-prose" ref="form" @submit="onSubmit" :state="formState" :schema="reportSchema">
         <SelectRoute :geo="geoLocation" @on-change="(newRoute:RouteResponse) => formState.route = newRoute" />
         <SelectStop :route-id="formState.route?.routeId" :geo="geoLocation" @on-change="(newStop:StopPostResponse) => formState.stop = newStop" />
         <UFormGroup label="Inspectors onboard" name="passenger" help="Enable if inspectors are currently onboard.">
           <UToggle v-model="formState.passenger" />
         </UFormGroup>
-
+      </UForm>
+      <template #footer>
         <div class="flex">
           <ClientOnly>
             <geolocate @on-geolocate="(newGeolocation) => geoLocation = newGeolocation">
@@ -18,27 +23,9 @@
           </ClientOnly>
           <UButton type="submit" label="Report Sighting" class="ml-auto" @click="submitReport"  :disabled="submitting"/>
         </div>
-      </UForm>
-    </div>
-    <div class="col-span-4 lg:col-span-3">
-      <routes-map
-        v-if="mapIntegration && mapIntegration.enable"
-        :config="mapIntegration.options"
-        :route="formState.route ?? null"
-        :stop-id="formState.stop?.stopId ?? null"
-        :mapHeight="mapHeight"
-        :mapWidth="mapWidth"
-        show-broadcasts
-      />
-    </div>
+      </template>
+    </UCard>
   </div>
-  <UButton
-    class="shadow-lg fixed bottom-8 right-8"
-    size="xl"
-    :ui="{ rounded: 'rounded-full' }"
-    icon="i-heroicons-pencil-square"
-    to="/report"
-  />
 </template>
 
 <script lang="ts" setup>
@@ -55,10 +42,6 @@ const submitting = ref(false);
 const form = ref<Form<ReportPostSchema>>();
 const geoLocation = ref<GeolocationPosition>();
 
-definePageMeta({
-  layout: 'full-screen'
-});
-
 useHead({
   title: 'UnfareSF - Report'
 });
@@ -70,12 +53,6 @@ const reportSchema = z.object({
 }).required();
 type ReportPostSchema = z.output<typeof reportSchema>;
 
-const mapHeight = computed(() => {
-  return 'calc(100vh - 51px)';
-});
-const mapWidth = computed(() => {
-  return '100%';
-});
 async function onSubmit(event: FormSubmitEvent<ReportPostSchema>) {
   submitting.value = true;
   try {
@@ -100,7 +77,6 @@ async function onSubmit(event: FormSubmitEvent<ReportPostSchema>) {
 }
 type mapInt = Prettify<Omit<SelectIntegration, 'options'> & {options: MapOption}> | null;
 const {data} = await useFetch('/api/integrations/map');
-const mapIntegration = data.value as mapInt;
 
 async function submitReport() {
   await form.value?.submit();
