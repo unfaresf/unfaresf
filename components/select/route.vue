@@ -6,6 +6,7 @@
       :loading="loading"
       :searchable="search"
       :searchableLazy="true"
+      :options="defaultOptions"
       searchable-placeholder="Search for a transit route"
       placeholder="Find a route"
       option-attribute="routeShortName"
@@ -47,6 +48,7 @@ const loading = ref(false);
 const { isMobile } = useDevice();
 const route = ref<RouteResponse>();
 const routeQuery = ref("");
+const defaultOptions = ref([]);
 const props = defineProps<{
   geo?: GeolocationPosition,
 }>();
@@ -70,13 +72,10 @@ async function search(q:string) {
     loading.value = false;
   }
 }
+
 watch(() => props.geo, async (newGeo, oldGeo) => {
-  const newPos = `${newGeo?.coords.latitude}${newGeo?.coords.longitude}`;
-  const oldPos = `${oldGeo?.coords.latitude}${oldGeo?.coords.longitude}`;
-  if (newPos !== oldPos && routeQuery.value !== "") {
-    await search(routeQuery.value);
-  }
-});
+  defaultOptions.value = await search(routeQuery.value);
+}, { once: true });
 watch(route, (newRoute) => {
   if (newRoute) {
     emit('onChange', newRoute);
