@@ -100,10 +100,8 @@ async function getRoutesByLocation(q:string, agencyIds:string[], lat:number, lng
     .innerJoin(routes, eq(routes.routeId, trips.routeId))
     .innerJoin(agency, eq(agency.agencyId, routes.agencyId))
     .innerJoin(directions, eq(directions.routeId, routes.routeId))
-    .innerJoin(calendar, eq(calendar.serviceId, trips.serviceId))
     .where(
       and(
-        eq(calendarDayCols[new Date().getDay()], 1),
         or(
           like(routes.routeShortName, `${q}%`),
           like(routes.routeLongName, `${q}%`)
@@ -128,11 +126,8 @@ async function getRoutes(query:string, agencyIds:string[]) {
     .from(routes)
     .innerJoin(agency, eq(routes.agencyId, agency.agencyId))
     .innerJoin(directions, eq(directions.routeId, routes.routeId))
-    // .innerJoin(trips, eq(trips.routeId, routes.routeId))
-    // .innerJoin(calendar, eq(calendar.serviceId, trips.serviceId))
     .where(
       and(
-        // eq(calendarDayCols[new Date().getDay()], 1),
         (agencyIds.length ? inArray(agency.agencyId, agencyIds) : undefined),
         ...queryTokens.map(token => or(
             like(routes.routeShortName, `%${token}%`),
