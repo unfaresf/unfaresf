@@ -25,6 +25,10 @@ export default defineCronHandler('everyMinute', async () => {
     where: eq(integrations.name, 'twitter')
   });
 
+  if (!integration || !integration.enable) {
+    return;
+  }
+
   let unpublishedBroadcasts
   try {
     unpublishedBroadcasts = await db
@@ -53,7 +57,7 @@ export default defineCronHandler('everyMinute', async () => {
       unfareLogger.log(`twitter-poster: tweet: ${JSON.stringify(broadcastObj)}`);
       unfareLogger.log(`twitter-poster: DB update: ${platformList}`);
     } else {
-      await createTweet(integration?.options?.bearerToken, broadcastObj);
+      await createTweet(integration.options?.bearerToken, broadcastObj);
       unfareLogger.debug(`twitter-poster: tweet: ${JSON.stringify(broadcastObj)}`);
       await db.update(broadcastsTable).set({platforms: platformList});
       unfareLogger.debug(`twitter-poster: DB update: ${platformList}`);
