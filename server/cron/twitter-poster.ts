@@ -25,9 +25,11 @@ export default defineCronHandler('everyMinute', async () => {
     where: eq(integrations.name, 'twitter')
   });
 
-  if (!integration || !integration.enable) {
+  if (!integration || !integration.enable || !(integration.options?.type === 'twitter')) {
     return;
   }
+
+  const {options} = integration;
 
   let unpublishedBroadcasts
   try {
@@ -57,10 +59,12 @@ export default defineCronHandler('everyMinute', async () => {
       unfareLogger.log(`twitter-poster: tweet: ${JSON.stringify(broadcastObj)}`);
       unfareLogger.log(`twitter-poster: DB update: ${platformList}`);
     } else {
-      await createTweet(integration.options?.bearerToken, broadcastObj);
-      unfareLogger.debug(`twitter-poster: tweet: ${JSON.stringify(broadcastObj)}`);
-      await db.update(broadcastsTable).set({platforms: platformList});
-      unfareLogger.debug(`twitter-poster: DB update: ${platformList}`);
+      if (options.bearerToken) {
+        await createTweet(options.bearerToken, broadcastObj);
+        unfareLogger.debug(`twitter-poster: tweet: ${JSON.stringify(broadcastObj)}`);
+        await db.update(broadcastsTable).set({platforms: platformList});
+        unfareLogger.debug(`twitter-poster: DB update: ${platformList}`);
+      }
     }
   });
 
