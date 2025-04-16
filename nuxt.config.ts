@@ -86,6 +86,13 @@ export default defineNuxtConfig({
       name: "unfare-session",
       password: process.env.NUXT_SESSION_PASSWORD || '',
       maxAge: 60 * 60 * 24 * 7 // 1 week
+    },
+    webauthn: {
+      register: {
+        authenticatorSelection: {
+          residentKey: 'required'
+        }
+      }
     }
   },
   icon: {
