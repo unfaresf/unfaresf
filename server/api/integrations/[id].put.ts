@@ -1,5 +1,5 @@
 import { DB as db } from "../../sqlite-service";
-import { integrations as integrationsTable, mastodonIntegrationOptionSchema, mapIntegrationOptionSchema } from "../../../db/schema";
+import { integrations as integrationsTable, mastodonIntegrationOptionSchema, mapIntegrationOptionSchema, twitterIntegrationOptionSchema } from "../../../db/schema";
 import { updateIntegrations } from "../../../shared/utils/abilities";
 import { z } from 'zod';
 
@@ -19,6 +19,12 @@ const postMapBodySchema = z.object({
   options: mapIntegrationOptionSchema,
 });
 
+const postTwitterBodySchema = z.object({
+  enable: z.boolean({coerce: true}),
+  name: z.literal("twitter"),
+  options: twitterIntegrationOptionSchema,
+});
+
 export default defineEventHandler(async (event) => {
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
   await authorize(event, updateIntegrations);
@@ -33,6 +39,9 @@ export default defineEventHandler(async (event) => {
   }
   else if (name === 'map') {
     integrationData = await readValidatedBody(event, postMapBodySchema.parse);
+  }
+  else if (name === 'twitter') {
+    integrationData = await readValidatedBody(event, postTwitterBodySchema.parse);
   }
   else {
     throw createError({

@@ -74,6 +74,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     signUpKey: process.env.SIGN_UP_KEY,
     mastodonDryRun: process.env.MASTODON_DRY_RUN == 'true',
+    twitterDryRun: process.env.MASTODON_DRY_RUN == 'true',
     gtfsDbFilePath: process.env.GTFS_DB_FILE_PATH,
     dbFileName: process.env.DB_FILE_NAME,
     agencyAltNames: process.env.AGENCY_ALT_NAMES,
