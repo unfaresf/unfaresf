@@ -3,16 +3,25 @@ import { DB as db } from "../sqlite-service";
 import { broadcasts as broadcastsTable, integrations, type SelectIntegration } from "../../db/schema";
 import { sql, isNull, or, eq } from 'drizzle-orm';
 import unfareLogger from '../../shared/utils/unfareLogger';
+import { TwitterApi } from 'twitter-api-v2';
 
 type BroadcastObj = {
   status: string;
 };
 
-async function createTweet(token:string, status:BroadcastObj) {
+async function createTweetViaHttp(token:string, status:BroadcastObj) {
   return $fetch('https://api.twitter.com/2/tweets', {
     method: 'post',
     headers: {Authorization: `Bearer ${token}`, 'Content-Type': 'application/json'},
-    body: {text:status.status}
+    body: {text: status.status}
+  });
+}
+
+async function createTweetViaLib(token:string, status:BroadcastObj) {
+  return $fetch('https://api.twitter.com/2/tweets', {
+    method: 'post',
+    headers: {Authorization: `Bearer ${token}`, 'Content-Type': 'application/json'},
+    body: {text: status.status}
   });
 }
 
@@ -60,11 +69,19 @@ export default defineCronHandler('everyMinute', async () => {
       unfareLogger.log(`twitter-poster: DB update: ${platformList}`);
     } else {
       if (options.bearerToken) {
-        await createTweet(options.bearerToken, broadcastObj);
-        unfareLogger.debug(`twitter-poster: tweet: ${JSON.stringify(broadcastObj)}`);
-        await db.update(broadcastsTable).set({platforms: platformList});
-        unfareLogger.debug(`twitter-poster: DB update: ${platformList}`);
+        createTweetViaHttp(options.bearerToken, broadcastObj);
+      } else {
+        const twitterClient = new TwitterApi({
+          appKey: 'XXX',
+          appSecret: 'XXX',
+          accessToken: 'XXX',
+          accessSecret: 'XXX',
+        });
+        await twitterClient.v2.tweet(broadcastObj.status);
       }
+      unfareLogger.debug(`twitter-poster: tweet: ${JSON.stringify(broadcastObj)}`);
+      await db.update(broadcastsTable).set({platforms: platformList});
+      unfareLogger.debug(`twitter-poster: DB update: ${platformList}`);
     }
   });
 
