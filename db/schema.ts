@@ -120,11 +120,19 @@ export const twitterIntegrationOptionSchema = z.object({
   bearerToken: z.string().optional(),
 });
 
+export const bskyIntegrationOptionSchema = z.object({
+  type: z.literal('bsky'),
+  identifier: z.string().max(128).optional(),
+  appPassword: z.string().max(128).optional(),
+});
+
 export type MastodonOptions = z.infer<typeof mastodonIntegrationOptionSchema>;
 export type MapOptions = z.infer<typeof mapIntegrationOptionSchema>;
 export type TwitterOptions = z.infer<typeof twitterIntegrationOptionSchema>;
+export type BskyOptions = z.infer<typeof bskyIntegrationOptionSchema>;
 
-export const integrationOptionsSchema = z.discriminatedUnion('type', [mapIntegrationOptionSchema, mastodonIntegrationOptionSchema, twitterIntegrationOptionSchema])
+
+export const integrationOptionsSchema = z.discriminatedUnion('type', [mapIntegrationOptionSchema, mastodonIntegrationOptionSchema, twitterIntegrationOptionSchema, bskyIntegrationOptionSchema])
 export type IntegrationOptions = z.infer<typeof integrationOptionsSchema>
 
 export const integrations = sqliteTable("integrations", {
