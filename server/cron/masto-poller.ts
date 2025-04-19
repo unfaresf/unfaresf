@@ -18,24 +18,16 @@ async function getLatestMentionId(): Promise<string|null> {
   return latesetUriPathParts[latesetUriPathParts.length-1];
 }
 
-// export default defineCronHandler('everyTwoMinutes', async () => {
-export default defineCronHandler('everyTwoMinutes', async () => {
-  unfareLogger.debug('masto-poller: running masto-poller');
+export default defineCronHandler('everyMinute', async () => {
+  unfareLogger.debug('masto-poller: running');
   const { mastodonDryRun } = useRuntimeConfig();
   unfareLogger.debug(`masto-poller: dry run: ${mastodonDryRun}`);
 
-  let integration:SelectIntegration;
-  try {
-    const [firstRow] = await db.select().from(integrations).limit(1);
+  const integration = await db.query.integrations.findFirst({
+    where: eq(integrations.name, 'mastodon')
+  });
 
-    if (!firstRow || !firstRow.enable) {
-      return;
-    }
-    integration = firstRow;
-  } catch (err:any) {
-    unfareLogger.info('Unable to read options form DB.');
-    return;
-  }
+  if (!integration || !integration.options || !(integration.options.type === 'mastodon')) return;
 
   const masto = createRestAPIClient({
     url: integration.options?.url || '',

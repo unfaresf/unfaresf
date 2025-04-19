@@ -25,9 +25,10 @@ export default defineCronHandler('everyMinute', async () => {
   unfareLogger.debug(`bsky-poster: dry run: ${bskyDryRun}`);
 
   const integration = await db.query.integrations.findFirst({
-    where: eq(integrations.name, 'twitter')
+    where: eq(integrations.name, 'bsky')
   });
 
+  console.debug('bsky:', integration);
   if (!integration || !integration.enable || !(integration?.options?.type === 'bsky')) return;
 
   const {options} = integration;
@@ -36,10 +37,12 @@ export default defineCronHandler('everyMinute', async () => {
   if (!options.identifier || !options.appPassword) return;
 
   const agent = new AtpAgent({ service: 'https://public.api.bsky.app' });
-  await agent.login({
+
+  const login = await agent.login({
     identifier: options.identifier,
     password: options.appPassword,
   });
+  console.debug(login);
 
   let unpublishedBroadcasts
   try {
