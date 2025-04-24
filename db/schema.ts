@@ -123,7 +123,25 @@ export const twitterIntegrationOptionSchema = z.object({
 export const bskyIntegrationOptionSchema = z.object({
   type: z.literal('bsky'),
   user: z.object({
-    did: z.string()                               // 'did:plc:123acb',
+    did: z.string(),
+    handle: z.string().optional(),
+    displayName: z.string().optional(),
+    avatar: z.string().url().optional(),
+    associated: z.object({
+      lists: z.number().optional(),
+      feedgens: z.number().optional(),
+      starterPacks: z.number().optional(),
+      labeler: z.boolean().optional(),
+    }).optional(),
+    viewer: z.object({
+      muted: z.boolean().optional(),
+      blockedBy: z.boolean().optional(),
+    }).optional(),
+    createdAt: z.string().datetime().optional(),
+    indexedAt: z.string().datetime().optional(),
+    followersCount: z.number().optional(),
+    followsCount: z.number().optional(),
+    postsCount: z.number().optional(),
   }).optional(),
   tokens: z.object({
     aud: z.string().url(),                        // 'https://goldenear.us-west.host.bsky.network/',

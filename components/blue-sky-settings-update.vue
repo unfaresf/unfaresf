@@ -1,6 +1,5 @@
 <template>
   <UContainer :ui="{base: 'mx-auto', padding: 'py-4', constrained: 'max-w-lg'}">
-    <p>Work in progress. Please do not touch the bluesky settings for now.</p>
     <UForm :schema="bskyOAuthFormSchema" :state="oAuthFormState" class="space-y-4 flex flex-col mb-4" @submit="handleBlueskyAuthClick">
       <UFormGroup label="Account Name" name="handle" description="The account name for which you want mentions." help="Example: unfaresf.bsky.social">
         <UInput v-model="oAuthFormState.handle" :disabled="pendingReq" />
@@ -36,6 +35,7 @@ function handleBlueskyAuthClick() {
     });
   }
 }
+
 const bskyOAuthFormSchema = z.object({
   handle: z.string().max(253)
 });
@@ -64,8 +64,10 @@ const state = reactive<BskyIntegrationFormData>({
     type: 'bsky',
   }
 });
+
 if (props.integration) {
   state.enable = props.integration.enable;
+  oAuthFormState.handle = props.integration.options.user?.handle;
 }
 
 async function updateBskyOptions(id:number, formData: BskyIntegrationFormData) {
@@ -108,7 +110,7 @@ async function onSubmit(event: FormSubmitEvent<BskyIntegrationFormData>) {
 watch(() => props.integration, (newIntegration) => {
   if (newIntegration) {
     state.enable = newIntegration.enable;
-    oAuthFormState.handle = newIntegration.options.user?.did;
+    oAuthFormState.handle = newIntegration.options.user?.handle;
   }
 });
 </script>
