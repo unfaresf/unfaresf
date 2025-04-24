@@ -19,7 +19,7 @@ export default defineOAuthBlueskyEventHandler({
         .values(formattedValues)
         .onConflictDoUpdate({target: integrationsTable.name, set: formattedValues});
     } catch (error: any) {
-      console.error('Bluesky OAuth error:', error);
+      console.error('BlueskyOAuthDBInsertError:', error);
     }
     return sendRedirect(event, '/settings');
   },

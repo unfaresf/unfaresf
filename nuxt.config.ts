@@ -90,6 +90,7 @@ export default defineNuxtConfig({
     },
     oauth: {
       bluesky: {
+        redirectUris: ['/api/auth/bluesky'],
         scope: ['atproto', 'transition:generic'],
         grantTypes: ['authorization_code', 'refresh_token'],
       }
