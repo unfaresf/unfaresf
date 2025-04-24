@@ -88,6 +88,12 @@ export default defineNuxtConfig({
       password: process.env.NUXT_SESSION_PASSWORD || '',
       maxAge: 60 * 60 * 24 * 7 // 1 week
     },
+    oauth: {
+      bluesky: {
+        scope: ['atproto', 'transition:generic'],
+        grantTypes: ['authorization_code', 'refresh_token'],
+      }
+    },
     webauthn: {
       register: {
         authenticatorSelection: {
@@ -115,7 +121,8 @@ export default defineNuxtConfig({
     }
   },
   auth: {
-    webAuthn: true
+    webAuthn: true,
+    atproto: true,
   },
   nuxtRateLimit: {
     routes: {

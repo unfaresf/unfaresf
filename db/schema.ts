@@ -122,15 +122,25 @@ export const twitterIntegrationOptionSchema = z.object({
 
 export const bskyIntegrationOptionSchema = z.object({
   type: z.literal('bsky'),
-  identifier: z.string().max(128).optional(),
-  appPassword: z.string().max(128).optional(),
-});
+  user: z.object({
+    did: z.string()                               // 'did:plc:123acb',
+  }).optional(),
+  tokens: z.object({
+    aud: z.string().url(),                        // 'https://goldenear.us-west.host.bsky.network/',
+    sub: z.string(),                              // 'did:plc:123acb',
+    iss: z.string().url(),                        // 'https://bsky.social',
+    scope: z.string(),                            // 'atproto',
+    refresh_token: z.string().optional(),         // 'ref-acb123',
+    access_token: z.string().jwt(),               // 'abc.a1b2c3.xyz',
+    token_type: z.string(),                       // 'DPoP',
+    expires_at: z.string().datetime().optional()  // '2025-04-23T22:35:13.158Z'
+  }).optional()
+})
 
 export type MastodonOptions = z.infer<typeof mastodonIntegrationOptionSchema>;
 export type MapOptions = z.infer<typeof mapIntegrationOptionSchema>;
 export type TwitterOptions = z.infer<typeof twitterIntegrationOptionSchema>;
 export type BskyOptions = z.infer<typeof bskyIntegrationOptionSchema>;
-
 
 export const integrationOptionsSchema = z.discriminatedUnion('type', [mapIntegrationOptionSchema, mastodonIntegrationOptionSchema, twitterIntegrationOptionSchema, bskyIntegrationOptionSchema])
 export type IntegrationOptions = z.infer<typeof integrationOptionsSchema>

@@ -28,7 +28,6 @@ export default defineCronHandler('everyMinute', async () => {
     where: eq(integrations.name, 'bsky')
   });
 
-  console.debug('bsky:', integration);
   if (!integration || !integration.enable || !(integration?.options?.type === 'bsky')) return;
 
   const {options} = integration;

@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "@atproto/api": "^0.13.35",
+    "@atproto/oauth-client-node": "^0.2.16",
     "@iconify-json/heroicons": "^1.2.2",
     "@indoorequal/vue-maplibre-gl": "^8.2.2",
     "@simplewebauthn/browser": "^11.0.0",

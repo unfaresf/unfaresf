@@ -49,7 +49,7 @@
   </UCard>
   <UCard class="my-8">
     <template #header>
-      <h2 class="text-lg text-center">Blue Sky</h2>
+      <h2 class="text-lg text-center">Bluesky</h2>
     </template>
     <BlueSkySettingsUpdate v-if="integrationsStatus === 'success'" :integration="bskyInt" />
     <div v-else-if="integrationsStatus === 'error'" class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
@@ -61,7 +61,7 @@
       <p class="text-sm text-center text-gray-900 dark:text-white">Loading...</p>
     </div>
   </UCard>
-  <UCard class="my-8">
+  <!-- <UCard class="my-8">
     <template #header>
       <h2 class="text-lg text-center">Twitter</h2>
     </template>
@@ -74,7 +74,7 @@
       <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4 animate-spin" />
       <p class="text-sm text-center text-gray-900 dark:text-white">Loading...</p>
     </div>
-  </UCard>
+  </UCard> -->
   <UCard class="my-8">
     <template #header>
       <h2 class="text-lg text-center">Map</h2>
