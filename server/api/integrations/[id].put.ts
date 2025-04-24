@@ -1,5 +1,5 @@
 import { DB as db } from "../../sqlite-service";
-import { integrations as integrationsTable, mastodonIntegrationOptionSchema, mapIntegrationOptionSchema } from "../../../db/schema";
+import { integrations as integrationsTable, mastodonIntegrationOptionSchema, mapIntegrationOptionSchema, bskyIntegrationOptionSchema } from "../../../db/schema";
 import { updateIntegrations } from "../../../shared/utils/abilities";
 import { z } from 'zod';
 
@@ -11,6 +11,11 @@ const postMastodonBodySchema = z.object({
   enable: z.boolean({coerce: true}),
   name: z.literal("mastodon"),
   options: mastodonIntegrationOptionSchema,
+});
+
+const postBskyBodySchema = z.object({
+  enable: z.boolean({coerce: true}),
+  name: z.literal("bsky")
 });
 
 const postMapBodySchema = z.object({
@@ -28,17 +33,21 @@ export default defineEventHandler(async (event) => {
 
   let integrationData;
 
-  if (name === 'mastodon') {
-    integrationData = await readValidatedBody(event, postMastodonBodySchema.parse);
-  }
-  else if (name === 'map') {
-    integrationData = await readValidatedBody(event, postMapBodySchema.parse);
-  }
-  else {
-    throw createError({
-      statusCode: 422,
-      statusMessage: 'Unprocessable Content',
-    });
+  switch(name) {
+    case 'mastodon':
+      integrationData = await readValidatedBody(event, postMastodonBodySchema.parse);
+      break;
+    case 'map':
+      integrationData = await readValidatedBody(event, postMapBodySchema.parse);
+      break;
+    case 'bsky':
+      integrationData = await readValidatedBody(event, postBskyBodySchema.parse);
+      break;
+    default:
+      throw createError({
+        statusCode: 422,
+        statusMessage: 'Unprocessable Content',
+      });
   }
 
   const formattedValues = {

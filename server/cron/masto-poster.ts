@@ -1,8 +1,8 @@
 import { defineCronHandler } from '#nuxt/cron'
 import { createRestAPIClient } from "masto";
 import { DB as db } from "../sqlite-service";
-import { broadcasts as broadcastsTable, type SelectIntegration, integrations } from "../../db/schema";
-import { sql, isNull, or } from 'drizzle-orm';
+import { broadcasts as broadcastsTable, integrations } from "../../db/schema";
+import { sql, isNull, or, eq } from 'drizzle-orm';
 import unfareLogger from '../../shared/utils/unfareLogger';
 
 export default defineCronHandler('everyMinute', async () => {
@@ -10,18 +10,11 @@ export default defineCronHandler('everyMinute', async () => {
   const { mastodonDryRun } = useRuntimeConfig();
   unfareLogger.debug(`masto-poster: dry run: ${mastodonDryRun}`);
 
-  let integration:SelectIntegration;
-  try {
-    const [firstRow] = await db.select().from(integrations).limit(1);
+  const integration = await db.query.integrations.findFirst({
+    where: eq(integrations.name, 'mastodon')
+  });
 
-    if (!firstRow || !firstRow.enable) {
-      return;
-    }
-    integration = firstRow;
-  } catch (err:any) {
-    unfareLogger.info('Unable to read options form DB.');
-    return;
-  }
+  if (!integration || !integration.options || !(integration.options.type === 'mastodon')) return;
 
   const masto = createRestAPIClient({
     url: integration.options?.url || '',
