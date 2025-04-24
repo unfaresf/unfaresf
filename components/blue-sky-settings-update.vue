@@ -1,5 +1,6 @@
 <template>
   <UContainer :ui="{base: 'mx-auto', padding: 'py-4', constrained: 'max-w-lg'}">
+    <p>Work in progress. Please do not touch the bluesky settings for now.</p>
     <UForm :schema="bskyOAuthFormSchema" :state="oAuthFormState" class="space-y-4 flex flex-col mb-4" @submit="handleBlueskyAuthClick">
       <UFormGroup label="Account Name" name="handle" description="The account name for which you want mentions." help="Example: unfaresf.bsky.social">
         <UInput v-model="oAuthFormState.handle" :disabled="pendingReq" />
