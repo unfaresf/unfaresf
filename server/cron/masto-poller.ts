@@ -27,7 +27,7 @@ export default defineCronHandler('everyMinute', async () => {
     where: eq(integrations.name, 'mastodon')
   });
 
-  if (!integration || !integration.options || !(integration.options.type === 'mastodon')) return;
+  if (!integration || !integration.enable || !integration.options || !(integration.options.type === 'mastodon')) return;
 
   const masto = createRestAPIClient({
     url: integration.options?.url || '',
