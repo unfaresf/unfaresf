@@ -75,6 +75,7 @@ export default defineNuxtConfig({
     signUpKey: process.env.SIGN_UP_KEY,
     mastodonDryRun: process.env.MASTODON_DRY_RUN == 'true',
     bskyDryRun: process.env.BSKY_DRY_RUN == 'true',
+    bskyHost: process.env.BSKY_HOST || 'https://localhost:3000',
     gtfsDbFilePath: process.env.GTFS_DB_FILE_PATH,
     dbFileName: process.env.DB_FILE_NAME,
     agencyAltNames: process.env.AGENCY_ALT_NAMES,
