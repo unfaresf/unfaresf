@@ -4,9 +4,10 @@ import { broadcasts as broadcastsTable, integrations } from "../../db/schema";
 import { or, sql, isNull, eq } from 'drizzle-orm';
 import unfareLogger from '../../shared/utils/unfareLogger';
 import { RichText, Agent } from '@atproto/api';
-import { NodeOAuthClient } from '@atproto/oauth-client-node'
+import { NodeOAuthClient, type ClientMetadata } from '@atproto/oauth-client-node';
 import { ATProtoStateStore } from '../utils/at-proto-state-store';
 import { ATProtoSessionStore } from '../utils/at-proto-session-store';
+import { URL } from 'url';
 
 async function postToBsky(agent:Agent, text:string) {
   const rt = new RichText({
@@ -24,15 +25,17 @@ async function postToBsky(agent:Agent, text:string) {
 
 export default defineCronHandler('everyMinute', async () => {
   unfareLogger.debug('bsky-poster: running');
-  const { bskyDryRun } = useRuntimeConfig();
+  const { bskyDryRun, bskyHost } = useRuntimeConfig();
   unfareLogger.debug(`bsky-poster: dry run: ${bskyDryRun}`);
 
 
   const gettingIntegration = db.query.integrations.findFirst({
     where: eq(integrations.name, 'bsky')
   });
-  const gettingClientMetaData = $fetch('/bluesky/client-metadata.json');
 
+  const clientMetaDataURL = new URL('/bluesky/client-metadata.json', bskyHost);
+
+  const gettingClientMetaData = $fetch<ClientMetadata>(clientMetaDataURL.href);
 
   const [integration, clientMetaData] = await Promise.all([gettingIntegration, gettingClientMetaData]);
 
