@@ -33,7 +33,13 @@ export default defineCronHandler('everyMinute', async () => {
   });
   const gettingClientMetaData = $fetch('/bluesky/client-metadata.json');
 
+
   const [integration, clientMetaData] = await Promise.all([gettingIntegration, gettingClientMetaData]);
+
+  unfareLogger.debug(JSON.stringify({
+    clientMetaData,
+    integration
+  }));
 
   if (!integration || !integration.enable || !(integration?.options?.type === 'bsky')) {
     unfareLogger.debug('bsky-poster: integration disabled or not configured. Exitting...');
@@ -54,24 +60,19 @@ export default defineCronHandler('everyMinute', async () => {
     stateStore,
     sessionStore
   });
-
+  unfareLogger.debug(`created NodeOAuthClient`);
   const agent = new Agent((await client.restore(options.user?.did)));
+  unfareLogger.debug(`created NodeOAuthClient agent`);
 
-  let unpublishedBroadcasts;
-  try {
-    unpublishedBroadcasts = await db
-      .select()
-      .from(broadcastsTable)
-      .where(
-        or(
-          sql`lower(${broadcastsTable.platforms}) NOT like lower('%bsky%')`,
-          isNull(broadcastsTable.platforms)
-        )
-      );
-  } catch (err) {
-    unfareLogger.error('bsky-poster:', err);
-    return
-  }
+  const unpublishedBroadcasts = await db
+    .select()
+    .from(broadcastsTable)
+    .where(
+      or(
+        sql`lower(${broadcastsTable.platforms}) NOT like lower('%bsky%')`,
+        isNull(broadcastsTable.platforms)
+      )
+    );
 
   unfareLogger.debug(`bsky-poster: Posting ${unpublishedBroadcasts.length} items`);
 
@@ -82,8 +83,8 @@ export default defineCronHandler('everyMinute', async () => {
     };
 
     if (bskyDryRun) {
-      unfareLogger.log(`bsky-poster: toot: ${JSON.stringify(broadcastObj)}`);
-      unfareLogger.log(`bsky-poster: DB update: ${platformList}`);
+      unfareLogger.log(`bsky-poster: dryrun toot: ${JSON.stringify(broadcastObj)}`);
+      unfareLogger.log(`bsky-poster: dryrun  DB update: ${platformList}`);
     } else {
       await postToBsky(agent, broadcastObj.status);
       unfareLogger.debug(`bsky-poster: toot: ${JSON.stringify(broadcastObj)}`);
