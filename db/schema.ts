@@ -224,3 +224,17 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 export const notificationsInsertSchema = createInsertSchema(notifications);
 export type SelectNotification = InferSelectModel<typeof notifications>;
 export type InsertNotification = InferInsertModel<typeof notifications>;
+
+export type KeyValue = {
+  key: string;
+  value: string
+};
+
+export const keyValue = sqliteTable("key_value", {
+  key: text().notNull().primaryKey(),
+  value: text()
+});
+
+export const keyValueInsertSchema = createInsertSchema(keyValue);
+export type SelectKeyValue = InferSelectModel<typeof keyValue>;
+export type InsertKeyValue = InferInsertModel<typeof keyValue>;

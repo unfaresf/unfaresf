@@ -1,11 +1,14 @@
 import { defineCronHandler } from '#nuxt/cron'
 import { DB as db } from "../sqlite-service";
 import { broadcasts as broadcastsTable, integrations } from "../../db/schema";
-import { sql, isNull, or, eq } from 'drizzle-orm';
+import { or, sql, isNull, eq } from 'drizzle-orm';
 import unfareLogger from '../../shared/utils/unfareLogger';
-import { AtpAgent, RichText } from '@atproto/api';
+import { RichText, Agent } from '@atproto/api';
+import { NodeOAuthClient } from '@atproto/oauth-client-node'
+import { ATProtoStateStore } from '../utils/at-proto-state-store';
+import { ATProtoSessionStore } from '../utils/at-proto-session-store';
 
-async function postToBsky(agent:AtpAgent, text:string) {
+async function postToBsky(agent:Agent, text:string) {
   const rt = new RichText({
     text
   });
@@ -24,26 +27,37 @@ export default defineCronHandler('everyMinute', async () => {
   const { bskyDryRun } = useRuntimeConfig();
   unfareLogger.debug(`bsky-poster: dry run: ${bskyDryRun}`);
 
-  const integration = await db.query.integrations.findFirst({
+
+  const gettingIntegration = db.query.integrations.findFirst({
     where: eq(integrations.name, 'bsky')
   });
+  const gettingClientMetaData = $fetch('/bluesky/client-metadata.json');
 
-  if (!integration || !integration.enable || !(integration?.options?.type === 'bsky')) return;
+  const [integration, clientMetaData] = await Promise.all([gettingIntegration, gettingClientMetaData]);
 
-  const {options} = integration;
+  if (!integration || !integration.enable || !(integration?.options?.type === 'bsky')) {
+    unfareLogger.debug('bsky-poster: integration disabled or not configured. Exitting...');
+    return;
+  }
 
-  // bail if required options haven't been set yet
-  if (!options.identifier || !options.appPassword) return;
+  const { options } = integration;
 
-  const agent = new AtpAgent({ service: 'https://public.api.bsky.app' });
+  if (!options.tokens?.iss || !options.user?.did) {
+    throw new Error('bsky-poster: integration option missing tokens.iss or user.did');
+  }
 
-  const login = await agent.login({
-    identifier: options.identifier,
-    password: options.appPassword,
+  const sessionStore = new ATProtoSessionStore();
+  const stateStore = new ATProtoStateStore();
+
+  const client = new NodeOAuthClient({
+    clientMetadata: clientMetaData,
+    stateStore,
+    sessionStore
   });
-  console.debug(login);
 
-  let unpublishedBroadcasts
+  const agent = new Agent((await client.restore(options.user?.did)));
+
+  let unpublishedBroadcasts;
   try {
     unpublishedBroadcasts = await db
       .select()

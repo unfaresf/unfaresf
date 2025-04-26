@@ -3,6 +3,9 @@ import { integrations as integrationsTable, type BskyOptions} from "../../../db/
 import { updateIntegrations } from "../../../shared/utils/abilities";
 
 export default defineOAuthBlueskyEventHandler({
+  config: {
+
+  },
   async onSuccess(event, result) {
     await authorize(event, updateIntegrations);
     const bskyOptions:BskyOptions = {
