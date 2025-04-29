@@ -41,6 +41,7 @@ export default defineCronHandler('everyMinute', async () => {
     throw new Error('bsky-poster: integration option missing appPassword or handle');
   }
 
+  // TODO: if bsky is ever actually federated, make this configurable
   const agent = new AtpAgent({
     service: 'https://bsky.social'
   })
