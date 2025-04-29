@@ -4,9 +4,8 @@ import { broadcasts as broadcastsTable, integrations } from "../../db/schema";
 import { or, sql, isNull, eq } from 'drizzle-orm';
 import unfareLogger from '../../shared/utils/unfareLogger';
 import { RichText, Agent } from '@atproto/api';
+import { AtpAgent, AtpSessionEvent, AtpSessionData } from '@atproto/api'
 import { NodeOAuthClient, type ClientMetadata } from '@atproto/oauth-client-node';
-import { ATProtoStateStore } from '../utils/at-proto-state-store';
-import { ATProtoSessionStore } from '../utils/at-proto-session-store';
 import { URL } from 'url';
 
 async function postToBsky(agent:Agent, text:string) {
@@ -25,24 +24,13 @@ async function postToBsky(agent:Agent, text:string) {
 
 export default defineCronHandler('everyMinute', async () => {
   unfareLogger.debug('bsky-poster: running');
-  const { bskyDryRun, bskyHost } = useRuntimeConfig();
+  const { bskyDryRun } = useRuntimeConfig();
   unfareLogger.debug(`bsky-poster: dry run: ${bskyDryRun}`);
 
-
-  const gettingIntegration = db.query.integrations.findFirst({
+  const integration = await db.query.integrations.findFirst({
     where: eq(integrations.name, 'bsky')
   });
 
-  const clientMetaDataURL = new URL('/bluesky/client-metadata.json', bskyHost);
-
-  const gettingClientMetaData = $fetch<ClientMetadata>(clientMetaDataURL.href);
-
-  const [integration, clientMetaData] = await Promise.all([gettingIntegration, gettingClientMetaData]);
-
-  unfareLogger.debug(JSON.stringify({
-    clientMetaData,
-    integration
-  }));
 
   if (!integration || !integration.enable || !(integration?.options?.type === 'bsky')) {
     unfareLogger.debug('bsky-poster: integration disabled or not configured. Exitting...');
@@ -51,21 +39,15 @@ export default defineCronHandler('everyMinute', async () => {
 
   const { options } = integration;
 
-  if (!options.tokens?.iss || !options.user?.did) {
-    throw new Error('bsky-poster: integration option missing tokens.iss or user.did');
+  if (!options.handle || !options.appPassword) {
+    throw new Error('bsky-poster: integration option missing appPassword or handle');
   }
 
-  const sessionStore = new ATProtoSessionStore();
-  const stateStore = new ATProtoStateStore();
+  const agent = new AtpAgent({
+    service: 'https://bsky.social'
+  })
 
-  const client = new NodeOAuthClient({
-    clientMetadata: clientMetaData,
-    stateStore,
-    sessionStore
-  });
-  unfareLogger.debug(`created NodeOAuthClient`);
-  const agent = new Agent((await client.restore(options.user?.did)));
-  unfareLogger.debug(`created NodeOAuthClient agent`);
+  await agent.login({ identifier: options.handle, password: options.appPassword });
 
   const unpublishedBroadcasts = await db
     .select()
