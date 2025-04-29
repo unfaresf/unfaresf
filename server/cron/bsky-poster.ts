@@ -4,9 +4,7 @@ import { broadcasts as broadcastsTable, integrations } from "../../db/schema";
 import { or, sql, isNull, eq } from 'drizzle-orm';
 import unfareLogger from '../../shared/utils/unfareLogger';
 import { RichText, Agent } from '@atproto/api';
-import { AtpAgent, AtpSessionEvent, AtpSessionData } from '@atproto/api'
-import { NodeOAuthClient, type ClientMetadata } from '@atproto/oauth-client-node';
-import { URL } from 'url';
+import { AtpAgent } from '@atproto/api'
 
 async function postToBsky(agent:Agent, text:string) {
   const rt = new RichText({
