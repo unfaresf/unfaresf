@@ -1,12 +1,12 @@
 <template>
   <UContainer :ui="{base: 'mx-auto', padding: 'py-4', constrained: 'max-w-lg'}">
-    <UForm :schema="bskyOAuthFormSchema" :state="oAuthFormState" class="space-y-4 flex flex-col mb-4" @submit="handleBlueskyAuthClick">
-      <UFormGroup label="Account Name" name="handle" description="The account name for which you want mentions." help="Example: unfaresf.bsky.social">
-        <UInput v-model="oAuthFormState.handle" :disabled="pendingReq" />
-      </UFormGroup>
-      <UButton type="submit" color="blue">Sign into Bluesky</UButton>
-    </UForm>
     <UForm :schema="bskyIntegrationFormSchema" :state="state" class="space-y-4 flex flex-col" @submit.prevent="onSubmit">
+      <UFormGroup label="Account Name" name="handle" description="The account handle to post too." help="Example: unfaresf.bsky.social">
+        <UInput v-model="state.options.handle" :disabled="pendingReq" />
+      </UFormGroup>
+      <UFormGroup label="App Password" name="appPassword" description="UnfareSF specific password generated in your Bluesky settings." help="Generate at: https://bsky.app/settings/app-passwords">
+        <UInput type="password" v-model="state.options.appPassword" :disabled="pendingReq" />
+      </UFormGroup>
       <div class="flex">
         <UFormGroup label="Enable" name="enable">
           <UToggle v-model="state.enable" :disabled="pendingReq" />
@@ -25,21 +25,6 @@ import { type SelectIntegration, bskyIntegrationOptionSchema } from '../db/schem
 import type { FormSubmitEvent } from '#ui/types';
 import { z } from 'zod';
 
-function handleBlueskyAuthClick() {
-  if (oAuthFormState.handle) {
-    navigateTo({
-      path: '/api/auth/bluesky',
-      query: { handle: oAuthFormState.handle },
-    }, {
-      external: true,
-    });
-  }
-}
-
-const bskyOAuthFormSchema = z.object({
-  handle: z.string().max(253)
-});
-
 const bskyIntegrationFormSchema = z.object({
   enable: z.boolean(),
   name: bskyIntegrationOptionSchema.shape.type,
@@ -54,9 +39,6 @@ const props = defineProps<{
 
 const toast = useToast();
 const pendingReq = ref(false);
-const oAuthFormState = reactive<{handle: string|undefined}>({
-  handle: undefined
-});
 const state = reactive<BskyIntegrationFormData>({
   enable: false,
   name: 'bsky',
@@ -67,7 +49,7 @@ const state = reactive<BskyIntegrationFormData>({
 
 if (props.integration) {
   state.enable = props.integration.enable;
-  oAuthFormState.handle = props.integration.options.user?.handle;
+  state.options = props.integration.options;
 }
 
 async function updateBskyOptions(id:number, formData: BskyIntegrationFormData) {
@@ -110,7 +92,7 @@ async function onSubmit(event: FormSubmitEvent<BskyIntegrationFormData>) {
 watch(() => props.integration, (newIntegration) => {
   if (newIntegration) {
     state.enable = newIntegration.enable;
-    oAuthFormState.handle = newIntegration.options.user?.handle;
+    state.options = newIntegration.options;
   }
 });
 </script>

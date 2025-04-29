@@ -75,7 +75,6 @@ export default defineNuxtConfig({
     signUpKey: process.env.SIGN_UP_KEY,
     mastodonDryRun: process.env.MASTODON_DRY_RUN == 'true',
     bskyDryRun: process.env.BSKY_DRY_RUN == 'true',
-    bskyHost: process.env.BSKY_HOST || 'https://localhost:3000',
     gtfsDbFilePath: process.env.GTFS_DB_FILE_PATH,
     dbFileName: process.env.DB_FILE_NAME,
     agencyAltNames: process.env.AGENCY_ALT_NAMES,
@@ -88,13 +87,6 @@ export default defineNuxtConfig({
       name: "unfare-session",
       password: process.env.NUXT_SESSION_PASSWORD || '',
       maxAge: 60 * 60 * 24 * 7 // 1 week
-    },
-    oauth: {
-      bluesky: {
-        redirectUris: ['/api/auth/bluesky'],
-        scope: ['atproto', 'transition:generic'],
-        grantTypes: ['authorization_code', 'refresh_token'],
-      }
     },
     webauthn: {
       register: {
@@ -123,8 +115,7 @@ export default defineNuxtConfig({
     }
   },
   auth: {
-    webAuthn: true,
-    atproto: true,
+    webAuthn: true
   },
   nuxtRateLimit: {
     routes: {

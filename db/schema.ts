@@ -122,37 +122,8 @@ export const twitterIntegrationOptionSchema = z.object({
 
 export const bskyIntegrationOptionSchema = z.object({
   type: z.literal('bsky'),
-  user: z.object({
-    did: z.string(),
-    handle: z.string().optional(),
-    displayName: z.string().optional(),
-    avatar: z.string().url().optional(),
-    associated: z.object({
-      lists: z.number().optional(),
-      feedgens: z.number().optional(),
-      starterPacks: z.number().optional(),
-      labeler: z.boolean().optional(),
-    }).optional(),
-    viewer: z.object({
-      muted: z.boolean().optional(),
-      blockedBy: z.boolean().optional(),
-    }).optional(),
-    createdAt: z.string().datetime().optional(),
-    indexedAt: z.string().datetime().optional(),
-    followersCount: z.number().optional(),
-    followsCount: z.number().optional(),
-    postsCount: z.number().optional(),
-  }).optional(),
-  tokens: z.object({
-    aud: z.string().url(),                        // 'https://goldenear.us-west.host.bsky.network/',
-    sub: z.string(),                              // 'did:plc:123acb',
-    iss: z.string().url(),                        // 'https://bsky.social',
-    scope: z.string(),                            // 'atproto',
-    refresh_token: z.string().optional(),         // 'ref-acb123',
-    access_token: z.string().jwt(),               // 'abc.a1b2c3.xyz',
-    token_type: z.string(),                       // 'DPoP',
-    expires_at: z.string().datetime().optional()  // '2025-04-23T22:35:13.158Z'
-  }).optional()
+  handle: z.string().max(256).optional(),
+  appPassword: z.string().max(256).optional(),
 })
 
 export type MastodonOptions = z.infer<typeof mastodonIntegrationOptionSchema>;
