@@ -40,7 +40,7 @@ const gtfsGetRouteQuerySchema = z.object({
   longitude: z.number({ coerce: true }).optional(),
 });
 
-function getAngecyIdFromAltName(query?:string):string[] {
+function getAgencyIdFromAltName(query?:string):string[] {
   if (!query) return [];
   const altNames = getAltAgencyNames();
   return Object.entries(altNames).filter(([key]) => query.includes(key)).map(([key, value]) => value);
@@ -144,7 +144,7 @@ export default defineEventHandler(async (event) => {
   await authorize(event, getGtfs);
 
   const { q: rawQuery, latitude, longitude } = await getValidatedQuery(event, gtfsGetRouteQuerySchema.parse);
-  const agencyIds = getAngecyIdFromAltName(rawQuery);
+  const agencyIds = getAgencyIdFromAltName(rawQuery);
   const q = removeAgencyAltNamesFromQuery(rawQuery);
   try {
     if (latitude !== undefined && longitude !== undefined) {
