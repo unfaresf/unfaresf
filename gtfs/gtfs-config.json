@@ -5,9 +5,6 @@
       "exclude": [
         "areas",
         "attributions",
-        "calendar",
-        "calendar_attributes",
-        "calendar_dates",
         "fare_leg_rules",
         "fare_media",
         "fare_products",
@@ -18,7 +15,6 @@
         "pathways",
         "rider_categories",
         "route_attributes",
-        "shapes",
         "stop_areas",
         "transfers"
       ]
@@ -26,5 +22,5 @@
   ],
   "ignoreDuplicates": true,
   "ignoreErrors": true,
-  "sqlitePath": "db/data/gtfs-blue.db"
+  "sqlitePath": "db/data/gtfs-green.db"
 }
