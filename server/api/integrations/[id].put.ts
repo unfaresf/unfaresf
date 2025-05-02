@@ -15,7 +15,8 @@ const postMastodonBodySchema = z.object({
 
 const postBskyBodySchema = z.object({
   enable: z.boolean({coerce: true}),
-  name: z.literal("bsky")
+  name: z.literal("bsky"),
+  options: bskyIntegrationOptionSchema,
 });
 
 const postMapBodySchema = z.object({
