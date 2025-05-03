@@ -41,13 +41,6 @@ export default defineCronHandler('everyMinute', async () => {
     throw new Error('bsky-poster: integration option missing appPassword or handle');
   }
 
-  // TODO: if bsky is ever actually federated, make this configurable
-  const agent = new AtpAgent({
-    service: 'https://bsky.social'
-  })
-
-  await agent.login({ identifier: options.handle, password: options.appPassword });
-
   const unpublishedBroadcasts = await db
     .select()
     .from(broadcastsTable)
@@ -59,6 +52,16 @@ export default defineCronHandler('everyMinute', async () => {
     );
 
   unfareLogger.debug(`bsky-poster: Posting ${unpublishedBroadcasts.length} items`);
+
+  const agent = new AtpAgent({
+    service: 'https://bsky.social'
+  });
+
+  // login is a rate limits API call, so only do it if we need too.
+  if (unpublishedBroadcasts.length > 0) {
+    // TODO: if bsky is ever actually federated, make this configurable
+    await agent.login({ identifier: options.handle, password: options.appPassword });
+  }
 
   const tootings = unpublishedBroadcasts.map(async cast => {
     const platformList = cast.platforms === null ? 'bsky' : `${cast.platforms},bsky`;
