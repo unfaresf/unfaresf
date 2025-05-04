@@ -1,68 +1,78 @@
 <template>
-  <MglMap
-    :map-style="props.config.mapStylesUrl"
-    :zoom="zoom"
-    :center="center"
-    :height="props.mapHeight"
-    :width="props.mapWidth"
-    :attributionControl="false"
+  <div
+    class="fixed map-size"
   >
-    <MglGeolocateControl />
-    <MglAttributionControl position="bottom-left" :compact="true"/>
-    <MglNavigationControl :showCompass="false" />
-
-    <MglVectorSource
-      source-id="stops"
-      :url="props.config.tileServerDomain+'/data/stops.json'"
-      :tiles="stopsSourceTiles"
+    <MglMap
+      :map-style="props.config.mapStylesUrl"
+      :zoom="zoom"
+      :center="center"
+      height="calc(100vh - 51px)"
+      width="100%"
+      :attributionControl="false"
     >
-      <MglCircleLayer
-        layer-id="hot-stops"
-        source-layer="stops"
-        :paint="hotStopsLayerCirclesPaint"
-        :filter="hotStops"
-        :minzoom="7"
-      />
-      <MglCircleLayer
-        layer-id="transit-stops"
-        source-layer="stops"
-        :paint="stopsLayerCirclesPaint"
-        :filter="stopFilter"
-        :minzoom="10",
-      />
-    </MglVectorSource>
+      <MglGeolocateControl />
+      <MglAttributionControl position="bottom-left" :compact="true"/>
+      <MglNavigationControl :showCompass="false" />
 
-    <MglVectorSource
-      source-id="trips"
-      :url="props.config.tileServerDomain+'/data/trips.json'"
-      :tiles="tripsSourceTiles"
-      :minzoom="6"
-    >
-      <MglLineLayer
-        layer-id="hot-trips"
-        source-layer="trips"
-        :paint="hotPaint"
-        :filter="hotTrips"
-      />
-      <MglLineLayer
-        layer-id="transit-trips"
-        source-layer="trips"
-        :paint="paint"
-        :filter="tripFilter"
-      />
-      <MglSymbolLayer
-        layer-id="transit-trips-labels"
-        source-layer="trips"
+      <MglVectorSource
+        source-id="stops"
+        :url="props.config.tileServerDomain+'/data/stops.json'"
+        :tiles="stopsSourceTiles"
+      >
+        <MglCircleLayer
+          layer-id="hot-stops"
+          source-layer="stops"
+          :paint="hotStopsLayerCirclesPaint"
+          :filter="hotStops"
+          :minzoom="7"
+        />
+        <MglCircleLayer
+          layer-id="transit-stops"
+          source-layer="stops"
+          :paint="stopsLayerCirclesPaint"
+          :filter="stopFilter"
+          :minzoom="10",
+        />
+      </MglVectorSource>
+
+      <MglVectorSource
+        source-id="trips"
+        :url="props.config.tileServerDomain+'/data/trips.json'"
+        :tiles="tripsSourceTiles"
         :minzoom="6"
-        :layout="routeSymbolLayout"
-        :paint="routeSymbolPaint"
-        :filter="routeLabels"
-      />
-    </MglVectorSource>
+      >
+        <MglLineLayer
+          layer-id="hot-trips"
+          source-layer="trips"
+          :paint="hotPaint"
+          :filter="hotTrips"
+        />
+        <MglLineLayer
+          layer-id="transit-trips"
+          source-layer="trips"
+          :paint="paint"
+          :filter="tripFilter"
+        />
+        <MglSymbolLayer
+          layer-id="transit-trips-labels"
+          source-layer="trips"
+          :minzoom="6"
+          :layout="routeSymbolLayout"
+          :paint="routeSymbolPaint"
+          :filter="routeLabels"
+        />
+      </MglVectorSource>
 
-  </MglMap>
+    </MglMap>
+  </div>
 </template>
 
+<style scoped>
+.map-size {
+  height: calc(100vh - 51px);
+  width: 100%;
+}
+</style>
 <script setup lang="ts">
 import { MglMap, useMap, MglNavigationControl, MglVectorSource, MglLineLayer, MglCircleLayer, MglGeolocateControl, MglSymbolLayer, MglAttributionControl } from '@indoorequal/vue-maplibre-gl';
 import type { CircleLayerSpecification, LineLayerSpecification, LngLatLike } from 'maplibre-gl';
@@ -112,8 +122,7 @@ const props = defineProps<{
   stopId: string|null,
   showBroadcasts?: boolean,
   config: MapOptions,
-  mapHeight: string,
-  mapWidth: string,
+  fixed?: boolean,
 }>();
 
 const tripsSourceTiles = [ `${props.config.tileServerDomain}/data/trips/{z}/{x}/{y}.pbf` ];
