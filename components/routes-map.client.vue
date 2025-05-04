@@ -11,7 +11,7 @@
       :attributionControl="false"
     >
       <MglGeolocateControl />
-      <MglAttributionControl position="bottom-left" :compact="true"/>
+      <MglAttributionControl :position="isMobile ? 'top-left': 'bottom-left'" :compact="true"/>
       <MglNavigationControl :showCompass="false" />
 
       <MglVectorSource

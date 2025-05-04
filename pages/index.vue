@@ -43,7 +43,15 @@
       />
       <div class="flex lg:hidden flex-col items-center h-lvh overflow-y-scroll overscroll-y-contain z-10 snap-y snap-mandatory">
         <div class="basis-10/12 grow-0 shrink-0 snap-start"></div>
-        <div class="grow-1 w-full bg-gray-100 z-20 p-4 pb-24 shadow-[0px_0px_25px_-10px_rgba(0,0,0,0.75)] rounded-t-xl before:w-8 before:h-1 before:bg-mid-gray before:rounded before:mx-auto before:block before:-mt-2">
+        <div class="relative grow-1 w-full bg-gray-100 z-20 p-4 pb-24 shadow-[0px_0px_25px_-10px_rgba(0,0,0,0.75)] rounded-t-xl before:w-8 before:h-1 before:bg-mid-gray before:rounded before:mx-auto before:block before:-mt-2">
+          <UButton
+            class="shadow-lg absolute -top-16 right-8 lg:hidden"
+            size="xl"
+            :ui="{ rounded: 'rounded-full' }"
+            icon="i-heroicons-pencil-square"
+            to="/report"
+          />
+
           <ol v-if="broadcasts && broadcasts.result.length" class="snap-start scroll-mt-4">
             <li v-for="broadcast in broadcasts.result" class="border-gray-200 dark:border-gray-800 w-full border-b border-solid pb-3 mb-3 last:border-b-0 last:pb-0 last:mb-0">
               {{ broadcast.message }}
@@ -57,13 +65,6 @@
       </div>
     </div>
   </div>
-  <UButton
-    class="shadow-lg fixed bottom-8 right-8 lg:hidden"
-    size="xl"
-    :ui="{ rounded: 'rounded-full' }"
-    icon="i-heroicons-pencil-square"
-    to="/report"
-  />
 </template>
 
 <script lang="ts" setup>
