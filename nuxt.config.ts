@@ -80,6 +80,7 @@ export default defineNuxtConfig({
     agencyAltNames: process.env.AGENCY_ALT_NAMES,
     vapidPrivateKey: process.env.VAPID_PRIVATE_KEY,
     public: {
+      shiftLength: Number(process.env.SHIFT_LENGTH) || 8,
       logLevel: Number(process.env.LOG_LEVEL) || 3,
       vapidPublicKey: process.env.VAPID_PUBLIC_KEY,
     },

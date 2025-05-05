@@ -1,6 +1,6 @@
-import { desc, gte, lte, and } from 'drizzle-orm';
+import { desc, gte, lte, and, eq, getTableColumns } from 'drizzle-orm';
 import { DB as db } from "../../sqlite-service";
-import { broadcasts as broadcastsTable } from "../../../db/schema";
+import { reports as reportsTable, broadcasts as broadcastsTable } from "../../../db/schema";
 import { listBroadcasts } from "../../../shared/utils/abilities";
 import { z } from "zod";
 
@@ -22,8 +22,14 @@ export default defineEventHandler(async (event) => {
         from ? gte(broadcastsTable.createdAt, from) : undefined,
         to ? lte(broadcastsTable.createdAt, to) : undefined,
       )),
-      db.select()
+      db.select({
+        ...getTableColumns(broadcastsTable),
+        route: reportsTable.route,
+        stop: reportsTable.stop,
+        passenger: reportsTable.passenger,
+      })
         .from(broadcastsTable)
+        .innerJoin(reportsTable, eq(reportsTable.id, broadcastsTable.reportId))
         .where(
           and(
             from ? gte(broadcastsTable.createdAt, from) : undefined,
