@@ -45,8 +45,7 @@
         <div class="basis-[calc(35dvh)] grow-0 shrink-0 snap-start"></div>
         <div class="basis-[calc(50dvh)] grow-0 shrink-0 snap-start"></div>
         <div
-          class="relative w-full bg-gray-100 dark:bg-gray-900 z-20 p-4 shadow-[0px_0px_25px_-10px_rgba(0,0,0,0.75)] rounded-t-xl before:w-8 before:h-1 before:bg-gray-200 before:dark:bg-gray-100 before:rounded before:mx-auto before:block before:-mt-2"
-          :class="{ 'pb-24': isStandAlone, 'pb-48': !isStandAlone }"
+          class="relative w-full bg-gray-100 dark:bg-gray-900 z-20 p-4 pb-48 shadow-[0px_0px_25px_-10px_rgba(0,0,0,0.75)] rounded-t-xl before:w-8 before:h-1 before:bg-gray-200 before:dark:bg-gray-100 before:rounded before:mx-auto before:block before:-mt-2"
           >
           <UButton
             class="shadow-lg absolute -top-16 right-8 lg:hidden"
@@ -84,7 +83,6 @@ import { type RouteResponse, routeSchema } from "../components/select/route.vue"
 import { type StopPostResponse, stopPostResponseSchema } from "../components/select/stop.vue";
 import type { MapOptions, SelectIntegration, Prettify } from '../db/schema';
 import { formatDistanceToNow } from 'date-fns';
-import { onMounted } from 'vue'
 
 const toast = useToast();
 const initialFormState = { passenger: false };
@@ -92,8 +90,6 @@ const formState = ref<Partial<ReportPostSchema>>(initialFormState);
 const submitting = ref(false);
 const form = ref<Form<ReportPostSchema>>();
 const geoLocation = ref<GeolocationPosition>();
-const windowType = ref('');
-const isStandAlone = computed(() => windowType.value === 'standalone');
 const { public: {shiftLength} } = useRuntimeConfig();
 
 definePageMeta({
@@ -151,29 +147,7 @@ const { data:broadcasts, status:broadcastsStatus } = await useLazyFetch('/api/br
   }
 });
 
-function getPWADisplayMode() {
-  if (document.referrer.startsWith('android-app://'))
-    return 'twa';
-  if (window.matchMedia('(display-mode: browser)').matches)
-    return 'browser';
-  if (window.matchMedia('(display-mode: standalone)').matches)
-    return 'standalone';
-  if (window.matchMedia('(display-mode: minimal-ui)').matches)
-    return 'minimal-ui';
-  if (window.matchMedia('(display-mode: fullscreen)').matches)
-    return 'fullscreen';
-  if (window.matchMedia('(display-mode: window-controls-overlay)').matches)
-    return 'window-controls-overlay';
-
-  return 'unknown';
-}
-
 async function submitReport() {
   await form.value?.submit();
 }
-
-onMounted(() => {
-  // adjust padding depending on if app is installed or not.
-  windowType.value = getPWADisplayMode();
-})
 </script>
