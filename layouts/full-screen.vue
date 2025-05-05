@@ -20,13 +20,6 @@
                   <UIcon name="i-heroicons-document-magnifying-glass" class="w-5 h-5 mr-1" />Reports
                 </NuxtLink>
               </li>
-              <li>
-                <NuxtLink to="/report" icon="i-heroicons-document"
-                  exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"
-                  class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white">
-                  <UIcon name="i-heroicons-document-plus" class="w-5 h-5 mr-1" />Report
-                </NuxtLink>
-              </li>
               <ClientOnly>
                 <li>
                   <notifications></notifications>
@@ -67,13 +60,6 @@
                   exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"
                   class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white">
                   <UIcon name="i-heroicons-document" class="w-5 h-5 mr-1" />Reports
-                </NuxtLink>
-              </li>
-              <li>
-                <NuxtLink to="/report" icon="i-heroicons-document"
-                  exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"
-                  class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white">
-                  <UIcon name="i-heroicons-document-plus" class="w-5 h-5 mr-1" />Report
                 </NuxtLink>
               </li>
               <li>
