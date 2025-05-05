@@ -6,7 +6,7 @@
       :map-style="props.config.mapStylesUrl"
       :zoom="zoom"
       :center="center"
-      height="calc(100vh - 51px)"
+      height="calc(100dvh - 51px)"
       width="100%"
       :attributionControl="false"
     >
@@ -69,7 +69,7 @@
 
 <style scoped>
 .map-size {
-  height: calc(100vh - 51px);
+  height: calc(100dvh - 51px);
   width: 100%;
 }
 </style>

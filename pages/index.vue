@@ -32,7 +32,7 @@
         </ol>
       </div>
     </div>
-    <div class="col-span-4 lg:col-span-3 overflow-hidden">
+    <div class="col-span-4 lg:col-span-3 h-full overflow-hidden">
       <routes-map
         v-if="mapIntegration && mapIntegration.enable"
         :config="mapIntegration.options"
@@ -41,9 +41,13 @@
         show-broadcasts
         :fixed="true"
       />
-      <div class="flex lg:hidden flex-col items-center h-lvh overflow-y-scroll overscroll-y-contain z-10 snap-y snap-mandatory">
-        <div class="basis-10/12 grow-0 shrink-0 snap-start"></div>
-        <div class="relative grow-1 w-full bg-gray-100 z-20 p-4 pb-24 shadow-[0px_0px_25px_-10px_rgba(0,0,0,0.75)] rounded-t-xl before:w-8 before:h-1 before:bg-mid-gray before:rounded before:mx-auto before:block before:-mt-2">
+      <div class="flex lg:hidden flex-col items-center h-lvh overflow-y-scroll overscroll-y-contain z-10 snap-y snap-mandatory scrollbar-none">
+        <div class="basis-[calc(35dvh)] grow-0 shrink-0 snap-start"></div>
+        <div class="basis-[calc(50dvh)] grow-0 shrink-0 snap-start"></div>
+        <div
+          class="relative w-full bg-gray-100 dark:bg-gray-900 z-20 p-4 shadow-[0px_0px_25px_-10px_rgba(0,0,0,0.75)] rounded-t-xl before:w-8 before:h-1 before:bg-gray-200 before:dark:bg-gray-100 before:rounded before:mx-auto before:block before:-mt-2"
+          :class="{ 'pb-24': isStandAlone, 'pb-48': !isStandAlone }"
+          >
           <UButton
             class="shadow-lg absolute -top-16 right-8 lg:hidden"
             size="xl"
@@ -51,21 +55,27 @@
             icon="i-heroicons-pencil-square"
             to="/report"
           />
-
-          <ol v-if="broadcasts && broadcasts.result.length" class="snap-start scroll-mt-4">
-            <li v-for="broadcast in broadcasts.result" class="border-gray-200 dark:border-gray-800 w-full border-b border-solid pb-3 mb-3 last:border-b-0 last:pb-0 last:mb-0">
+          <ol v-if="broadcasts && broadcasts.result.length">
+            <li v-for="broadcast in broadcasts.result" class="border-gray-200 dark:border-gray-800 w-full border-b border-solid pb-3 mb-3 last:border-b-0 last:pb-0 last:mb-0 snap-start scroll-mt-6">
               {{ broadcast.message }}
               <span class="text-xs italic">{{ formatDistanceToNow(broadcast.createdAt) }} ago</span>
             </li>
           </ol>
           <ol v-else class="snap-start scroll-mt-4">
-            <li>No recent sighting</li>
+            <li v-if="broadcastsStatus === 'success' || broadcastsStatus === 'error'">No recent sighting</li>
+            <li v-else>Loading recent sighting...</li>
           </ol>
         </div>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.scrollbar-none {
+  scrollbar-width: none;
+}
+</style>
 
 <script lang="ts" setup>
 import { z } from "zod";
@@ -74,6 +84,7 @@ import { type RouteResponse, routeSchema } from "../components/select/route.vue"
 import { type StopPostResponse, stopPostResponseSchema } from "../components/select/stop.vue";
 import type { MapOptions, SelectIntegration, Prettify } from '../db/schema';
 import { formatDistanceToNow } from 'date-fns';
+import { onMounted } from 'vue'
 
 const toast = useToast();
 const initialFormState = { passenger: false };
@@ -81,6 +92,9 @@ const formState = ref<Partial<ReportPostSchema>>(initialFormState);
 const submitting = ref(false);
 const form = ref<Form<ReportPostSchema>>();
 const geoLocation = ref<GeolocationPosition>();
+const windowType = ref('');
+const isStandAlone = computed(() => windowType.value === 'standalone');
+const { public: {shiftLength} } = useRuntimeConfig();
 
 definePageMeta({
   layout: 'full-screen'
@@ -119,15 +133,47 @@ async function onSubmit(event: FormSubmitEvent<ReportPostSchema>) {
     submitting.value = false;
   }
 }
-type mapInt = Prettify<Omit<SelectIntegration, 'options'> & {options: MapOptions}> | null;
-const {data} = await useFetch('/api/integrations/map');
-const mapIntegration = data.value as mapInt;
 
-const { data:broadcasts } = await useLazyFetch('/api/broadcasts/', {
+function getDateMinusNHours(n:number) {
+  const now = new Date();
+  now.setHours(now.getHours() - n);
+  return now;
+}
+
+type mapInt = Prettify<Omit<SelectIntegration, 'options'> & {options: MapOptions}> | null;
+const { data:mapIntegration } = await useFetch<mapInt>('/api/integrations/map');
+
+const shiftStartTime = getDateMinusNHours(shiftLength);
+const { data:broadcasts, status:broadcastsStatus } = await useLazyFetch('/api/broadcasts', {
   server: false,
+  query: {
+    from: shiftStartTime.toISOString()
+  }
 });
+
+function getPWADisplayMode() {
+  if (document.referrer.startsWith('android-app://'))
+    return 'twa';
+  if (window.matchMedia('(display-mode: browser)').matches)
+    return 'browser';
+  if (window.matchMedia('(display-mode: standalone)').matches)
+    return 'standalone';
+  if (window.matchMedia('(display-mode: minimal-ui)').matches)
+    return 'minimal-ui';
+  if (window.matchMedia('(display-mode: fullscreen)').matches)
+    return 'fullscreen';
+  if (window.matchMedia('(display-mode: window-controls-overlay)').matches)
+    return 'window-controls-overlay';
+
+  return 'unknown';
+}
 
 async function submitReport() {
   await form.value?.submit();
 }
+
+onMounted(() => {
+  // adjust padding depending on if app is installed or not.
+  windowType.value = getPWADisplayMode();
+})
 </script>
