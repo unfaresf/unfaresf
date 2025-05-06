@@ -2,8 +2,9 @@ import { defineCronHandler } from '#nuxt/cron'
 import { createRestAPIClient } from "masto";
 import { DB as db } from "../sqlite-service";
 import { broadcasts as broadcastsTable, integrations } from "../../db/schema";
-import { sql, isNull, or, eq } from 'drizzle-orm';
+import { isNull, or, eq, lt, and, notLike } from 'drizzle-orm';
 import unfareLogger from '../../shared/utils/unfareLogger';
+import { sub } from 'date-fns';
 
 export default defineCronHandler('everyMinute', async () => {
   unfareLogger.debug('masto-poster: running');
@@ -16,26 +17,32 @@ export default defineCronHandler('everyMinute', async () => {
 
   if (!integration || !integration.enable || !integration.options || !(integration.options.type === 'mastodon')) return;
 
-  const masto = createRestAPIClient({
-    url: integration.options?.url || '',
-    accessToken: integration.options?.token || '',
-  });
-
   let unpublishedBroadcasts
   try {
+    const beginningOfPostWindow = sub(new Date(), {
+      minutes: 30
+    });
     unpublishedBroadcasts = await db
       .select()
       .from(broadcastsTable)
       .where(
-        or(
-          sql`${broadcastsTable.platforms} NOT like lower('%mastodon%')`,
-          isNull(broadcastsTable.platforms)
+        and(
+          lt(broadcastsTable.createdAt, beginningOfPostWindow),
+          or(
+            notLike(broadcastsTable.platforms, "%mastodon%"),
+            isNull(broadcastsTable.platforms)
+          )
         )
       );
   } catch (err) {
     unfareLogger.error('masto-poster:', err);
     return
   }
+
+  const masto = createRestAPIClient({
+    url: integration.options?.url || '',
+    accessToken: integration.options?.token || '',
+  });
 
   unfareLogger.debug(`masto-poster: Posting ${unpublishedBroadcasts.length} items`);
 
