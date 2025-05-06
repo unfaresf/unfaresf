@@ -28,7 +28,7 @@ export default defineCronHandler('everyMinute', async () => {
       .from(broadcastsTable)
       .where(
         or(
-          sql`lower(${broadcastsTable.platforms}) NOT like lower('%mastodon%')`,
+          sql`${broadcastsTable.platforms} NOT like lower('%mastodon%')`,
           isNull(broadcastsTable.platforms)
         )
       );
