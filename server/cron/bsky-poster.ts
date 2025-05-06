@@ -1,10 +1,11 @@
 import { defineCronHandler } from '#nuxt/cron'
 import { DB as db } from "../sqlite-service";
 import { broadcasts as broadcastsTable, integrations } from "../../db/schema";
-import { or, sql, isNull, eq } from 'drizzle-orm';
+import { or, isNull, eq, and, lt, notLike } from 'drizzle-orm';
 import unfareLogger from '../../shared/utils/unfareLogger';
 import { RichText, Agent } from '@atproto/api';
 import { AtpAgent } from '@atproto/api'
+import { sub } from 'date-fns';
 
 async function postToBsky(agent:Agent, text:string) {
   const rt = new RichText({
@@ -41,25 +42,31 @@ export default defineCronHandler('everyMinute', async () => {
     throw new Error('bsky-poster: integration option missing appPassword or handle');
   }
 
+  const beginningOfPostWindow = sub(new Date(), {
+    minutes: 30
+  });
   const unpublishedBroadcasts = await db
     .select()
     .from(broadcastsTable)
     .where(
-      or(
-        sql`${broadcastsTable.platforms} NOT like lower('%bsky%')`,
-        isNull(broadcastsTable.platforms)
+      and(
+        lt(broadcastsTable.createdAt, beginningOfPostWindow),
+        or(
+          notLike(broadcastsTable.platforms, "%bsky%"),
+          isNull(broadcastsTable.platforms)
+        )
       )
     );
 
   unfareLogger.debug(`bsky-poster: Posting ${unpublishedBroadcasts.length} items`);
 
+  // TODO: if bsky is ever actually federated, make this configurable
   const agent = new AtpAgent({
     service: 'https://bsky.social'
   });
 
   // login is a rate limits API call, so only do it if we need too.
   if (unpublishedBroadcasts.length > 0) {
-    // TODO: if bsky is ever actually federated, make this configurable
     await agent.login({ identifier: options.handle, password: options.appPassword });
   }
 
