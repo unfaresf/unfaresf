@@ -42,21 +42,7 @@ export default defineCronHandler('everyMinute', async () => {
     throw new Error('bsky-poster: integration option missing appPassword or handle');
   }
 
-  const beginningOfPostWindow = sub(new Date(), {
-    minutes: 30
-  });
-  const unpublishedBroadcasts = await db
-    .select()
-    .from(broadcastsTable)
-    .where(
-      and(
-        lt(broadcastsTable.createdAt, beginningOfPostWindow),
-        or(
-          notLike(broadcastsTable.platforms, "%bsky%"),
-          isNull(broadcastsTable.platforms)
-        )
-      )
-    );
+  const unpublishedBroadcasts = await fetchUnpublishedBroadcasts('bsky', 30);
 
   unfareLogger.debug(`bsky-poster: Posting ${unpublishedBroadcasts.length} items`);
 

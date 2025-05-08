@@ -5,6 +5,7 @@ import { broadcasts as broadcastsTable, integrations } from "../../db/schema";
 import { isNull, or, eq, lt, and, notLike } from 'drizzle-orm';
 import unfareLogger from '../../shared/utils/unfareLogger';
 import { sub } from 'date-fns';
+import { fetchUnpublishedBroadcasts } from '#imports';
 
 export default defineCronHandler('everyMinute', async () => {
   unfareLogger.debug('masto-poster: running');
@@ -17,27 +18,7 @@ export default defineCronHandler('everyMinute', async () => {
 
   if (!integration || !integration.enable || !integration.options || !(integration.options.type === 'mastodon')) return;
 
-  let unpublishedBroadcasts
-  try {
-    const beginningOfPostWindow = sub(new Date(), {
-      minutes: 30
-    });
-    unpublishedBroadcasts = await db
-      .select()
-      .from(broadcastsTable)
-      .where(
-        and(
-          lt(broadcastsTable.createdAt, beginningOfPostWindow),
-          or(
-            notLike(broadcastsTable.platforms, "%mastodon%"),
-            isNull(broadcastsTable.platforms)
-          )
-        )
-      );
-  } catch (err) {
-    unfareLogger.error('masto-poster:', err);
-    return
-  }
+  const unpublishedBroadcasts = await fetchUnpublishedBroadcasts('mastodon', 30);
 
   const masto = createRestAPIClient({
     url: integration.options?.url || '',
