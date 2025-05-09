@@ -1,6 +1,6 @@
 <template>
   <div
-    class="fixed map-size"
+    class="fixed map-size w-full lg:w-3/4"
   >
     <MglMap
       :map-style="props.config.mapStylesUrl"
@@ -70,7 +70,6 @@
 <style scoped>
 .map-size {
   height: calc(100dvh - 51px);
-  width: 100%;
 }
 </style>
 <script setup lang="ts">
@@ -122,7 +121,6 @@ const props = defineProps<{
   stopId: string|null,
   showBroadcasts?: boolean,
   config: MapOptions,
-  fixed?: boolean,
 }>();
 
 const tripsSourceTiles = [ `${props.config.tileServerDomain}/data/trips/{z}/{x}/{y}.pbf` ];

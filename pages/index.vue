@@ -39,7 +39,6 @@
         :route="formState.route ?? null"
         :stop-id="formState.stop?.stopId ?? null"
         show-broadcasts
-        :fixed="true"
       />
       <div class="flex lg:hidden flex-col items-center h-lvh overflow-y-scroll overscroll-y-contain z-10 snap-y snap-mandatory scrollbar-none">
         <div class="basis-[calc(35dvh)] grow-0 shrink-0 snap-start"></div>
