@@ -134,6 +134,7 @@ const { data: broadcasts, refresh: refreshBroadcasts } = await useLazyFetch(`/ap
     from: sub(new Date(), {hours: 12}).toISOString(),
   },
 });
+
 watch(broadcasts, newBroadcasts => {
   if (newBroadcasts) {
     broadcasts.value = newBroadcasts;
@@ -142,4 +143,14 @@ watch(broadcasts, newBroadcasts => {
 watch(reviewed, () => {
   page.value = 1;
 });
+
+if (import.meta.client) {
+  try {
+    const swRegistration = await navigator.serviceWorker.ready;
+    const notifications = await swRegistration.getNotifications();
+    notifications.forEach(notification => notification.close());
+  } catch (err) {
+    console.debug('Error attempting to close notifications', err);
+  }
+}
 </script>
