@@ -19,6 +19,9 @@ self.addEventListener('push', function(event) {
           }
         })
       );
+      try {
+        promises.push(WorkerNavigator.setAppBadge(pushBody.unhandledReportsCount));
+      } catch(err) {}
       break;
     default:
       break;

@@ -52,6 +52,7 @@ import { type SelectReport } from '../../db/schema';
 import { PostModal } from '#components';
 import ReportCard from '~/components/report-card.vue';
 import { sub, formatDistanceToNow } from 'date-fns';
+const { $pwa } = useNuxtApp();
 
 definePageMeta({
   middleware: ['auth']
@@ -134,6 +135,7 @@ const { data: broadcasts, refresh: refreshBroadcasts } = await useLazyFetch(`/ap
     from: sub(new Date(), {hours: 12}).toISOString(),
   },
 });
+
 watch(broadcasts, newBroadcasts => {
   if (newBroadcasts) {
     broadcasts.value = newBroadcasts;
@@ -142,4 +144,17 @@ watch(broadcasts, newBroadcasts => {
 watch(reviewed, () => {
   page.value = 1;
 });
+
+if (import.meta.client) {
+  try {
+    const registration = $pwa.registration;
+    if (registration.value) {
+      const notifications = await registration.value.getNotifications({ tag: 'new-report' });
+      notifications.forEach(notification => notification.close());
+      await navigator.clearAppBadge();
+    }
+  } catch (err) {
+    console.debug('Error attempting to close notifications', err);
+  }
+}
 </script>
