@@ -172,6 +172,7 @@ export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
 }));
 
 export type NotificationDetail = {
+  unhandledReportsCount: number;
   reportUrl: string;
   title: string;
   body: string;

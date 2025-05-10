@@ -70,6 +70,7 @@ function formatReportAsNotification(reports:SelectReport[]):NotificationDetail {
     body,
     tag: 'new-report',
     reportUrl: reports.length === 1 ? `/reports/${reports[0].id}` : `/reports`,
+    unhandledReportsCount: reports.length,
   }
 }
 

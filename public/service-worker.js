@@ -19,6 +19,10 @@ self.addEventListener('push', function(event) {
           }
         })
       );
+      try {
+        self.registration.setAppBadge
+        promises.push(WorkerNavigator.setAppBadge(pushBody.unhandledReportsCount));
+      } catch(err) {}
       break;
     default:
       break;
