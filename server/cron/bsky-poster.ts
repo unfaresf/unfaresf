@@ -1,11 +1,10 @@
 import { defineCronHandler } from '#nuxt/cron'
 import { DB as db } from "../sqlite-service";
 import { broadcasts as broadcastsTable, integrations } from "../../db/schema";
-import { or, isNull, eq, and, lt, notLike } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import unfareLogger from '../../shared/utils/unfareLogger';
 import { RichText, Agent } from '@atproto/api';
 import { AtpAgent } from '@atproto/api'
-import { sub } from 'date-fns';
 
 async function postToBsky(agent:Agent, text:string) {
   const rt = new RichText({
@@ -57,7 +56,7 @@ export default defineCronHandler('everyMinute', async () => {
   }
 
   const tootings = unpublishedBroadcasts.map(async cast => {
-    const platformList = cast.platforms === null ? 'bsky' : `${cast.platforms},bsky`;
+    const platformList = sql`${broadcastsTable.platforms} || 'bsky',`;
     const broadcastObj = {
       status: cast.message,
     };
