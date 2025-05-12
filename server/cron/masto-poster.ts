@@ -2,9 +2,8 @@ import { defineCronHandler } from '#nuxt/cron'
 import { createRestAPIClient } from "masto";
 import { DB as db } from "../sqlite-service";
 import { broadcasts as broadcastsTable, integrations } from "../../db/schema";
-import { isNull, or, eq, lt, and, notLike } from 'drizzle-orm';
+import { eq, sql} from 'drizzle-orm';
 import unfareLogger from '../../shared/utils/unfareLogger';
-import { sub } from 'date-fns';
 import { fetchUnpublishedBroadcasts } from '#imports';
 
 export default defineCronHandler('everyMinute', async () => {
@@ -28,7 +27,7 @@ export default defineCronHandler('everyMinute', async () => {
   unfareLogger.debug(`masto-poster: Posting ${unpublishedBroadcasts.length} items`);
 
   const tootings = unpublishedBroadcasts.map(async cast => {
-    const platformList = cast.platforms === null ? 'mastodon' : `${cast.platforms},mastodon`;
+    const platformList = sql`${broadcastsTable.platforms} || 'mastodon',`;
     const broadcastObj = {
       status: cast.message,
     };

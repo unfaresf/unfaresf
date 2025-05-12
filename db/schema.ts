@@ -81,7 +81,7 @@ export const broadcasts = sqliteTable("broadcasts", {
   id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
   createdAt: integer("created_at", { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
   message: text({ length: 1024 }).notNull(),
-  platforms: text(),
+  platforms: text().notNull().default(''),
   reportId: integer("report_id", { mode: 'number' }).unique().references(() => reports.id),
 });
 

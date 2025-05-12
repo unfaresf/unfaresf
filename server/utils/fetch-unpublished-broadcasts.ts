@@ -10,10 +10,7 @@ export default async function fetchUnpublishedBroadcasts(platform:string, ttl=30
     .where(
       and(
         gte(broadcastsTable.createdAt, subMinutes(new Date(), ttl)),
-        or(
-          notLike(broadcastsTable.platforms, `%${platform}%`),
-          isNull(broadcastsTable.platforms)
-        )
+        notLike(broadcastsTable.platforms, `%${platform}%`)
       )
     );
 }

@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
   try {
     await db.transaction(async (tx) => {
       return Promise.all([
-        tx.insert(broadcastsTable).values({message, reportId}).returning(),
+        tx.insert(broadcastsTable).values({ message, reportId, platforms: '' }).returning(),
         tx.update(reportsTable).set({reviewedAt: new Date()}).where(eq(reportsTable.id, reportId)),
       ]);
     });
