@@ -43,6 +43,7 @@ The certificate is at "./certs/cert.pem" and the key at "./certs/key.pem" ✅
 
 It will expire on 20 May 2027 🗓
 ```
+Make sure to update `LOCAL_DEV_TLS_KEY_PATH=` and `LOCAL_DEV_TLS_CERT_PATH` variables in your `.env` file to point to the generated keys.
 
 ### GTFS/database setup
 
