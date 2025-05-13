@@ -56,19 +56,17 @@ export default defineCronHandler('everyMinute', async () => {
   }
 
   const tootings = unpublishedBroadcasts.map(async cast => {
-    const platformList = sql`${broadcastsTable.platforms} || 'bsky',`;
+    const platformList = sql`CONCAT_WS(',', ${broadcastsTable.platforms}, 'bsky')`
     const broadcastObj = {
       status: cast.message,
     };
 
     if (bskyDryRun) {
       unfareLogger.log(`bsky-poster: dryrun toot: ${JSON.stringify(broadcastObj)}`);
-      unfareLogger.log(`bsky-poster: dryrun  DB update: ${platformList}`);
     } else {
       await postToBsky(agent, broadcastObj.status);
       unfareLogger.debug(`bsky-poster: toot: ${JSON.stringify(broadcastObj)}`);
-      await db.update(broadcastsTable).set({ platforms: platformList });
-      unfareLogger.debug(`bsky-poster: DB update: ${platformList}`);
+      await db.update(broadcastsTable).set({ platforms: platformList }).where(eq(broadcastsTable.id, cast.id));
     }
   });
 
