@@ -27,19 +27,17 @@ export default defineCronHandler('everyMinute', async () => {
   unfareLogger.debug(`masto-poster: Posting ${unpublishedBroadcasts.length} items`);
 
   const tootings = unpublishedBroadcasts.map(async cast => {
-    const platformList = sql`${broadcastsTable.platforms} || 'mastodon',`;
+    const platformList = sql`CONCAT_WS(',', ${broadcastsTable.platforms}, 'mastodon')`
     const broadcastObj = {
       status: cast.message,
     };
 
     if (mastodonDryRun) {
       unfareLogger.log(`masto-poster: toot: ${JSON.stringify(broadcastObj)}`);
-      unfareLogger.log(`masto-poster: DB update: ${platformList}`);
     } else {
       await masto.v1.statuses.create(broadcastObj);
       unfareLogger.debug(`masto-poster: toot: ${JSON.stringify(broadcastObj)}`);
-      await db.update(broadcastsTable).set({platforms: platformList});
-      unfareLogger.debug(`masto-poster: DB update: ${platformList}`);
+      await db.update(broadcastsTable).set({ platforms: platformList }).where(eq(broadcastsTable.id, cast.id));
     }
   });
 
