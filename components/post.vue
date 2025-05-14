@@ -179,12 +179,18 @@ watch([
 () => externalSourceBroadcast.stop,
 () => externalSourceBroadcast.passenger
 ], ([newRoute, newStop, newPass]) => {
-  const newMessage = getPlainTextSummary({
-    routeShortName: newRoute?.routeShortName,
-    direction: newRoute?.direction,
-    stopName: newStop?.stopName,
-    passenger: newPass,
-    message: props.report.message ?? undefined,
+  const newMessage =  props.report.message ? props.report.message : getPlainTextSummary({
+    createdAt: props.report.createdAt,
+    route:{
+      ...props.report.route,
+      routeShortName: newRoute?.routeShortName,
+      direction: newRoute?.direction
+    },
+    stop: {
+      stopName: newStop?.stopName,
+    },
+    passenger: newPass ?? null,
+    message: props.report.message ?? null,
   });
   externalSourceBroadcast.message = newMessage;
 });

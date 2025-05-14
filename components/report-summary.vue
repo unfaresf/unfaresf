@@ -1,8 +1,7 @@
 <template>
   <div v-if="props.report" ref="summary-ref">
     <span v-if="props.report.message">{{ props.report.message }}</span>
-    <span v-else-if="props.report.passenger">Fare inspectors on <strong>{{ props.report.route?.routeShortName }}</strong> headed <strong>{{ getDirection(props.report) }}</strong> from <strong>{{ props.report.stop?.stopName }}</strong></span>
-    <span v-else>Fare inspectors at <strong>{{ props.report.stop?.stopName }}</strong> for the <strong>{{ getDirection(props.report) }}</strong> bound <strong>{{ props.report.route?.routeShortName }}</strong></span>
+    <span v-else>{{ getPlainTextSummary(props.report) }}</span>
   </div>
   <div v-else class="space-y-2">
     <USkeleton class="h-4" />
@@ -10,25 +9,28 @@
 </template>
 
 <script lang="ts">
-type ReportSummary = {
-  routeShortName?: string;
-  direction?: string;
-  stopName?: string;
-  message?: string;
-  passenger?: boolean;
-};
-export function getPlainTextSummary(report?:ReportSummary) {
+
+type PartialReport = Omit<SelectReport, 'route' | 'stop' | 'source' | 'id'| 'uri'| 'reviewedAt'| 'direction'> & {
+  route: Partial<SelectReport['route']>
+  stop: Partial<SelectReport['stop']>
+}
+
+export function getPlainTextSummary(report: PartialReport) {
   if (!report) return '';
 
+  const formattedDate =  formatDate(report.createdAt, 'p')
+
   if (report.passenger) {
-    return `Fare inspectors on ${report.routeShortName } headed ${ report.direction } from ${ report.stopName }`;
+    return `${formattedDate}: Fare inspectors on ${report.route?.routeShortName } headed ${ report.route?.direction } from ${ report.stop?.stopName }`;
   } else {
-    return `Fare inspectors at ${ report.stopName } for the ${ report.direction } bound ${ report.routeShortName }`;
+    const directionString = `${ report.route?.direction }${report.route?.direction?.toLowerCase().includes('bound') ? ' bound' : ''}`
+    return `${formattedDate}: Fare inspectors at ${ report.stop?.stopName } for the ${directionString} ${ report.route?.routeShortName }`;
   }
 }
 </script>
 
 <script setup lang="ts">
+import { formatDate } from 'date-fns/format';
 import type { SelectReport } from '../db/schema';
 import { useTemplateRef } from 'vue';
 
@@ -37,15 +39,6 @@ const props = defineProps<{
 }>();
 
 const summary = useTemplateRef('summary-ref');
-
-function getDirection(report:SelectReport): string {
-  if (report.route?.direction) {
-    return report.route.direction;
-  } else if (report.direction?.direction) { // remove this case after removing col from DB
-    return  report.direction.direction;
-  }
-  return '';
-}
 
 defineExpose({
   summary

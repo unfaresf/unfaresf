@@ -116,7 +116,7 @@ type ReportsGetResp = {
   count: number,
   result: SelectReport[]
 }
-const { data:unreviewedReports, status:reportsStatus, refresh: refreshReports } = await useLazyFetch<ReportsGetResp>("/api/reports", {
+const { data:unreviewedReports, refresh: refreshReports } = await useLazyFetch<ReportsGetResp>("/api/reports", {
   server: false,
   query: { page: page, limit: limit, reviewed: reviewed },
   default: () => ({count: 0, result: []}),
