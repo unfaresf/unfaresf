@@ -65,7 +65,25 @@ const internalSourceBroadcast:Partial<InternalSourceBroadcastSchema> = reactive(
   message: undefined,
 });
 
-const externalSourceBroadcast:Partial<ExternalSourceBroadcastSchema> = reactive({});
+const externalSourceBroadcast = computed(():Partial<ExternalSourceBroadcastSchema> => {
+  const msg = props.report.message || getPlainTextSummary({
+    createdAt: props.report.createdAt,
+    route:{
+      ...props.report.route,
+      routeShortName: externalSourceBroadcast.value.route?.routeShortName,
+      direction: externalSourceBroadcast.value.route?.direction
+    },
+    stop: {
+      stopName: externalSourceBroadcast.value.stop?.stopName,
+    },
+    passenger: externalSourceBroadcast.value.passenger ?? null,
+    message: props.report.message ?? null,
+  });
+  return {
+    ...externalSourceBroadcast,
+    message: msg,
+  }
+});
 
 const toast = useToast();
 const pending = ref(false);
@@ -174,18 +192,4 @@ async function onClose(event: FormSubmitEvent<InternalSourceBroadcastSchema>) {
   emit('close');
 }
 
-watch([
-() => externalSourceBroadcast.route,
-() => externalSourceBroadcast.stop,
-() => externalSourceBroadcast.passenger
-], ([newRoute, newStop, newPass]) => {
-  const newMessage = getPlainTextSummary({
-    routeShortName: newRoute?.routeShortName,
-    direction: newRoute?.direction,
-    stopName: newStop?.stopName,
-    passenger: newPass,
-    message: props.report.message ?? undefined,
-  });
-  externalSourceBroadcast.message = newMessage;
-});
 </script>
