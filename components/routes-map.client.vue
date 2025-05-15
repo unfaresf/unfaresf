@@ -185,6 +185,7 @@ watch(() => props.route, async (newRoute) => {
     const routeDetails = await $fetch(`/api/gtfs/routes/${newRoute.routeId}`);
 
     if (routeDetails) {
+      // @ts-ignore: Property 'bbox' does not exist on type SerializeObject
       transitMap.map?.fitBounds(routeDetails.bbox, {
         padding: mapPadding
       });
@@ -195,6 +196,7 @@ watch(() => props.route, async (newRoute) => {
 watch(() => props.stopId, async (newStopId) => {
   if (newStopId) {
     const [stopDetails] = await $fetch(`/api/gtfs/stops/${newStopId}`);
+    // @ts-ignore: Property 'stopLon|stopLat' does not exist on type SerializeObject
     transitMap.map?.easeTo({zoom:17, duration:1500, center: [stopDetails.stopLon, stopDetails.stopLat]});
   }
 });
