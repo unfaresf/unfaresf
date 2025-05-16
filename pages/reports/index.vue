@@ -52,6 +52,7 @@ import { type SelectReport } from '../../db/schema';
 import { PostModal } from '#components';
 import ReportCard from '~/components/report-card.vue';
 import { sub, formatDistanceToNow } from 'date-fns';
+import { asWriteable } from '~/shared/types/utils';
 const { $pwa } = useNuxtApp();
 
 definePageMeta({
@@ -62,13 +63,14 @@ useHead({
   title: 'UnfareSF'
 });
 
-const reviewedStatuses = [{
+const reviewedStatuses = asWriteable([{
   name: 'Old',
   value: 'true'
 }, {
   name: 'New',
   value: 'false'
-}];
+}] as const);
+
 const reviewed = ref(reviewedStatuses[1].value);
 const limit = ref(10);
 const page = ref(1);

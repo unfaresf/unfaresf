@@ -1,6 +1,6 @@
 import { getGtfs } from "../../../shared/utils/abilities";
 import { gtfsDB } from "../../sqlite-service";
-import { routes, agency, directions, stops, stopTimes, trips, calendar } from "../../../db/gtfs-migrations/schema";
+import { agency } from "../../../db/gtfs-migrations/schema";
 
 const getAgencies = () => {
   return gtfsDB.select({
