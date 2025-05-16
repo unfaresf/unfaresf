@@ -5,7 +5,7 @@ import type { SelectReport } from '../db/schema';
 
 const mockReport: SelectReport = {
   id: 123,
-  createdAt: new Date(),
+  createdAt: new Date("May 15, 2025 04:00:00"),
   source: 'test',
   uri: null,
   reviewedAt: null,
@@ -38,6 +38,6 @@ it('can mount report-summary component', async () => {
     }
   });
   expect(component.text()).toMatchInlineSnapshot(
-    `"Fare inspectors at Mission for the south bound 22"`
+    `"4:00 AM: Fare inspectors at Mission for the south 22"`
   )
 });

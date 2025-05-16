@@ -42,5 +42,5 @@ export default defineCronHandler('everyMinute', async () => {
   });
 
   const settledP = await Promise.allSettled(tootings);
-  settledP.filter(r => r.status === 'rejected').forEach(r => unfareLogger.error('masto-poster: ', r.reason));
+  settledP.filter((r): r is PromiseRejectedResult => r.status === 'rejected').forEach(r => unfareLogger.error('masto-poster: ', r.reason));
 });
