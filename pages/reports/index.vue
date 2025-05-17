@@ -8,7 +8,7 @@
             <p class="text-xs text-gray-500">Recent reports of cop sightings from various platforms.</p>
           </div>
           <div class="basis-1/4 ml-auto">
-            <USelect v-model="reviewed" :options="reviewedStatuses" option-attribute="name"/>
+            <USelect v-model="reviewed" :options="reviewedStatuses" option-attribute="name" @change="() => page = 1"/>
           </div>
         </div>
       </template>
@@ -134,15 +134,6 @@ const { data: broadcasts, refresh: refreshBroadcasts } = await useLazyFetch(`/ap
   query: {
     from: sub(new Date(), {hours: 12}).toISOString(),
   },
-});
-
-watch(broadcasts, newBroadcasts => {
-  if (newBroadcasts) {
-    broadcasts.value = newBroadcasts;
-  }
-}, {once: true});
-watch(reviewed, () => {
-  page.value = 1;
 });
 
 if (import.meta.client) {
