@@ -48,7 +48,7 @@ const loading = ref(false);
 const { isMobile } = useDevice();
 const route = ref<RouteResponse>();
 const routeQuery = ref("");
-const defaultOptions = ref([]);
+const defaultOptions = ref<RouteResponse[]>([]);
 const props = defineProps<{
   geo?: GeolocationPosition,
 }>();

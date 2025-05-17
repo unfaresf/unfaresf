@@ -180,24 +180,47 @@ if (transitMap && transitMap.map) {
   transitMap.map.touchZoomRotate.disableRotation();
 }
 
+let pendingRouteDetailsReq:AbortController|null = null;
 watch(() => props.route, async (newRoute) => {
   if (newRoute) {
-    const routeDetails = await $fetch(`/api/gtfs/routes/${newRoute.routeId}`);
+    if (pendingRouteDetailsReq) {
+      pendingRouteDetailsReq.abort('stale request');
+    }
+    pendingRouteDetailsReq = new AbortController();
 
-    if (routeDetails) {
-      // @ts-ignore: Property 'bbox' does not exist on type SerializeObject
-      transitMap.map?.fitBounds(routeDetails.bbox, {
-        padding: mapPadding
+    try {
+      const routeDetails = await $fetch(`/api/gtfs/routes/${newRoute.routeId}`, {
+        signal: pendingRouteDetailsReq.signal
       });
+
+      if (routeDetails) {
+        // @ts-ignore: Property 'bbox' does not exist on type SerializeObject
+        transitMap.map?.fitBounds(routeDetails.bbox, {
+          padding: mapPadding
+        });
+      }
+    } finally {
+      pendingRouteDetailsReq = null;
     }
   }
 });
 
+let pendingStopDetailsReq:AbortController|null = null;
 watch(() => props.stopId, async (newStopId) => {
   if (newStopId) {
-    const [stopDetails] = await $fetch(`/api/gtfs/stops/${newStopId}`);
-    // @ts-ignore: Property 'stopLon|stopLat' does not exist on type SerializeObject
-    transitMap.map?.easeTo({zoom:17, duration:1500, center: [stopDetails.stopLon, stopDetails.stopLat]});
+    if (pendingStopDetailsReq) {
+      pendingStopDetailsReq.abort('stale request');
+    }
+    pendingStopDetailsReq = new AbortController();
+    try {
+      const [stopDetails] = await $fetch(`/api/gtfs/stops/${newStopId}`, {
+        signal: pendingStopDetailsReq.signal
+      });
+      // @ts-ignore: Property 'stopLon|stopLat' does not exist on type SerializeObject
+      transitMap.map?.easeTo({zoom:17, duration:1500, center: [stopDetails.stopLon, stopDetails.stopLat]});
+    } finally {
+      pendingStopDetailsReq = null;
+    }
   }
 });
 </script>

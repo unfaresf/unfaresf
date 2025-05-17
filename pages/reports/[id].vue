@@ -27,24 +27,20 @@
 <script lang="ts" setup>
 import type { SelectReport } from '../../db/schema';
 import { sub, formatDistanceToNow } from 'date-fns';
+
+const route = useRoute();
+
 definePageMeta({
   middleware: ['auth']
 });
 
 useHead({
-  title: 'UnfareSF - Report'
+  title: `UnfareSF - Report ${route.params.id}`
 });
-
-const route = useRoute();
 
 const { data: report } = await useLazyFetch<SelectReport>(`/api/reports/${route.params.id}`, {
   server: false,
 });
-watch(report, newReport => {
-  if (newReport) {
-    report.value = newReport;
-  }
-}, {once: true});
 
 const { data: broadcasts } = await useLazyFetch(`/api/broadcasts`, {
   server: false,
@@ -52,11 +48,6 @@ const { data: broadcasts } = await useLazyFetch(`/api/broadcasts`, {
     from: sub(new Date(), {hours: 12}).toISOString(),
   },
 });
-watch(broadcasts, newBroadcasts => {
-  if (newBroadcasts) {
-    broadcasts.value = newBroadcasts;
-  }
-}, {once: true});
 
 async function onClose() {
   await navigateTo('/reports');

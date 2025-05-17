@@ -131,7 +131,7 @@ export type MapOptions = z.infer<typeof mapIntegrationOptionSchema>;
 export type TwitterOptions = z.infer<typeof twitterIntegrationOptionSchema>;
 export type BskyOptions = z.infer<typeof bskyIntegrationOptionSchema>;
 
-export const integrationOptionsSchema = z.discriminatedUnion('type', [mapIntegrationOptionSchema, mastodonIntegrationOptionSchema, twitterIntegrationOptionSchema, bskyIntegrationOptionSchema])
+export const integrationOptionsSchema = z.discriminatedUnion('type', [mapIntegrationOptionSchema, mastodonIntegrationOptionSchema, twitterIntegrationOptionSchema, bskyIntegrationOptionSchema]);
 export type IntegrationOptions = z.infer<typeof integrationOptionsSchema>
 
 export const integrations = sqliteTable("integrations", {
