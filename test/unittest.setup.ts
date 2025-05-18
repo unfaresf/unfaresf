@@ -1,8 +1,13 @@
-import { vi } from 'vitest'
+import { defineComponent } from 'vue'
+import { mockComponent } from '@nuxt/test-utils/runtime';
 
-vi.mock('./components/routes-map.client.vue', () => ({
-  default: {
-    name: 'MockedMap',
-    template: '<div data-testid="mocked-map">Mocked Map</div>'
-  }
-})) 
+mockComponent('RoutesMap', () => {
+  return defineComponent(
+    {
+      default: {
+        name: 'RoutesMap',
+        template: '<div data-testid="mocked-map">Mocked Map</div>'
+      }
+    }
+  )}
+);
