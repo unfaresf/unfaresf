@@ -13,8 +13,8 @@
       <ReportSummary :report="props.report" class="mt-2"></ReportSummary>
     </div>
     <div v-if="!props.report.reviewedAt" class="flex flex-col ml-auto">
-      <UButton class="mb-auto" color="red" variant="ghost" size="md" icon="i-heroicons-x-circle" :disabled="!report" @click="report && emit('onDismiss', report)"/>
-      <UButton class="mt-auto" color="green" variant="soft" size="md" icon="i-heroicons-check-circle" :disabled="!report" @click="report && emit('onApprove', report)"/>
+      <UButton class="mb-auto" id="report-card-dismiss" color="red" variant="ghost" size="md" icon="i-heroicons-x-circle" aria-label="Dismiss report" :disabled="!report" @click="report && emit('onDismiss', report)"  />
+      <UButton class="mt-auto" id="report-card-approve" color="green" variant="soft" size="md" icon="i-heroicons-check-circle" aria-label="Approve report" :disabled="!report" @click="report && emit('onApprove', report)" />
     </div>
   </div>
   <div v-else>
