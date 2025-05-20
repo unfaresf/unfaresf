@@ -1,3 +1,5 @@
+import { defineComponent } from 'vue'
+import { mockComponent } from '@nuxt/test-utils/runtime';
 import { beforeAll } from 'vitest'
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
@@ -20,6 +22,18 @@ async function destroyTestDB(db:BetterSQLite3Database) {
 }
 
 beforeAll(async () => {
+
+  mockComponent('RoutesMap', () => {
+  return defineComponent(
+    {
+      default: {
+        name: 'RoutesMap',
+        template: '<div data-testid="mocked-map">Mocked Map</div>'
+      }
+    }
+  )}
+);
+
   const config = useRuntimeConfig();
   const sqlite = new Database(config.dbFileName!, {
     readonly: false
@@ -29,7 +43,7 @@ beforeAll(async () => {
   try {
     await destroyTestDB(db);
   } catch (err) {}
-  
+
   await runAppMigrations(db);
 
   sqlite.close();
