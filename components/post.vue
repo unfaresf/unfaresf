@@ -6,7 +6,7 @@
     </template>
 
     <div class="p-2 rounded bg-gray-100 text-gray-600 text-sm mb-4">
-      <ReportSummary ref="report-summary-ref" :report="props.report"></ReportSummary>
+      <ReportSummary ref="report-summary-ref" :report="props.report" />
     </div>
 
     <UForm v-if="sourceInternal" class="space-y-4" id="internal-source-broadcast-form" :schema="internalSourceBroadcastSchema" :state="internalSourceBroadcast" @submit="onSubmitInternalSource">
@@ -15,7 +15,7 @@
       </UFormGroup>
     </UForm>
 
-    <UForm v-else class="space-y-4" id="internal-source-broadcast-form" :schema="externalSourceBroadcastSchema" :state="externalSourceBroadcast" @submit="onSubmitExternalSource">
+    <UForm v-else class="space-y-4" id="external-source-broadcast-form" :schema="externalSourceBroadcastSchema" :state="externalSourceBroadcast" @submit="onSubmitExternalSource">
       <SelectRoute @on-change="(newRoute:RouteResponse) => externalSourceBroadcast.route = newRoute" />
 
       <SelectStop :route-id="externalSourceBroadcast.route?.routeId" @on-change="(newStop:StopPostResponse) => externalSourceBroadcast.stop = newStop" />
@@ -31,9 +31,9 @@
 
     <template v-if="!props.report?.reviewedAt" #footer>
       <div class="flex flex-col md:flex-row flex-grow md:flex-grow-0 gap-y-3">
-        <UButton color="green" class="justify-center md:order-4 md:ml-3" type="submit" form="internal-source-broadcast-form">Post</UButton>
+        <UButton color="green" class="justify-center md:order-4 md:ml-3" type="submit" form="external-source-broadcast-form">Post</UButton>
         <div class="flex flex-grow items-center md:order-1">
-          <UButton color="orange" class="justify-center grow md:flex-grow-0 mr-2" @click="postInternalSourceSummary" :disabled="!sourceInternal">Post Summary</UButton>
+          <UButton id="post-post-button" color="orange" class="justify-center grow md:flex-grow-0 mr-2" @click="postInternalSourceSummary" :disabled="!sourceInternal">Post Summary</UButton>
           <UTooltip text="Tooltip example" :popper="{ placement: 'top' }">
             <UIcon name="i-heroicons:question-mark-circle" class="w-5 h-5" />
             <template #text>
@@ -41,7 +41,7 @@
             </template>
           </UTooltip>
         </div>
-        <UButton color="red" class="justify-center md:order-2" :disabled="pending" v-if="report" @click="dismiss(report?.id)">Dismiss</UButton>
+        <UButton id="post-dismiss-button" color="red" class="justify-center md:order-2" :disabled="pending" v-if="report" @click="dismiss(report?.id)">Dismiss</UButton>
       </div>
     </template>
   </UCard>
@@ -56,7 +56,10 @@ import { type RouteResponse, routeSchema } from "../components/select/route.vue"
 import { type StopPostResponse, stopPostResponseSchema } from "../components/select/stop.vue";
 import { getPlainTextSummary } from './report-summary.vue';
 
-const emit = defineEmits(['success', 'close']);
+const emit = defineEmits<{
+  success: []
+  close: []
+}>()
 const props = defineProps<{
   report: SelectReport,
 }>();
@@ -186,10 +189,4 @@ async function onSubmitExternalSource(event: FormSubmitEvent<ExternalSourceBroad
   await postExternalSourceBroadcast(event.data);
   emit('success');
 }
-
-async function onClose(event: FormSubmitEvent<InternalSourceBroadcastSchema>) {
-  event.preventDefault();
-  emit('close');
-}
-
 </script>
