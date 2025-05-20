@@ -10,7 +10,7 @@
     "test": "vitest --config ./test/unittest.config.ts run",
     "test:watch": "vitest --config ./test/unittest.config.ts watch",
     "test:update": "vitest --config ./test/unittest.config.ts -u",
-    "test:coverage": "vitest --config ./test/unittest.config.tsrun --coverage",
+    "test:coverage": "vitest --config ./test/unittest.config.ts --coverage",
     "test:integration": "vitest --config ./test/integrationtest.config.ts run",
     "tsc": "npx nuxi@latest typecheck",
     "start": "node .output/server/index.mjs",

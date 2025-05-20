@@ -1,5 +1,4 @@
 import { it, expect } from 'vitest';
-import { mount } from '@vue/test-utils';
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { ReportCard, ReportSummary } from '#components';
 import type { SelectReport }  from '../db/schema';
@@ -54,7 +53,7 @@ it('should emit an approved event with approved report when approve button click
   expect(component.emitted()).toHaveProperty('onApprove');
 });
 
-it.skip('should emit an dismiss event with dismissed report when dismiss button clicked', async () => {
+it('should emit an dismiss event with dismissed report when dismiss button clicked', async () => {
   const component = await mountSuspended(ReportCard, {
     props: {
       report: mockReport
