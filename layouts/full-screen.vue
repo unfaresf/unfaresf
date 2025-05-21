@@ -32,24 +32,18 @@
                     </li>
                   </template>
                 </ClientOnly>
-                <UPopover :popper="{ placement: 'bottom-end' }">
-                  <UButton color="neutral" icon="i-heroicons-bars-3" class="m-2" />
-                  <template #panel="{ close }">
-                    <ul class="p-1 bg-white  dark:bg-gray-800  min-w-44">
-                      <li v-for="link in authedDropdown" class="flex w-full items-center flex-row-reverse mb-1 last:mb-0">
-                        <UButton v-if="link.onClick" @onClick="async () => { close(); return link.onClick(); }" variant="ghost"
-                          color="neutral" class="w-full justify-between dark:hover:bg-gray-900">
-                          <UIcon :name="link.icon" class="ml-2" /><span>{{ link.label }}</span>
-                        </UButton>
-                        <NuxtLink v-else
-                          class="flex px-2 py-1 w-full rounded-md justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-900"
-                          active-class="bg-gray-50 dark:bg-gray-900" :to="link.to" @click="close">
-                          <UIcon :name="link.icon" class="ml-2" /><span>{{ link.label }}</span>
-                        </NuxtLink>
-                      </li>
-                    </ul>
-                  </template>
-                </UPopover>
+                <UPopover :content="{ align: 'end', side: 'bottom' }" :open="popoverOpen">
+                    <UButton color="neutral" variant="subtle" icon="i-heroicons-bars-3" class="cursor-pointer m-2" @click="() => {popoverOpen = !popoverOpen}"/>
+
+                    <template #content>
+                      <ul class="p-1 bg-white dark:bg-gray-800 min-w-44">
+                        <li v-for="link in authedDropdown" class="flex w-full items-center flex-row-reverse mb-1 last:mb-0">
+                          <UButton v-if="link.onClick" @click="async () => { closePopover(); await link.onClick();}" variant="ghost" color="neutral" class="cursor-pointer w-full justify-between dark:hover:bg-gray-900"><UIcon :name="link.icon" class="ml-2"/><span>{{ link.label }}</span></UButton>
+                          <NuxtLink v-else class="flex px-2 py-1 w-full rounded-md justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-900" active-class="bg-gray-50 dark:bg-gray-900" :to="link.to" @click="closePopover"><UIcon :name="link.icon" class="ml-2"/><span>{{ link.label }}</span></NuxtLink>
+                        </li>
+                      </ul>
+                    </template>
+                  </UPopover>
               </ul>
             </UContainer>
           </div>
@@ -121,6 +115,7 @@ import { computed } from 'vue';
 
 const { clear, user } = useUserSession();
 const { $pwa } = useNuxtApp();
+const popoverOpen = ref(false);
 
 // is this really the best way to do this?!
 useHead({
@@ -157,6 +152,10 @@ async function disableNotifications() {
       deleteSubscription(subscriptions),
     ]);
   }
+}
+
+function closePopover() {
+  popoverOpen.value = false;
 }
 
 async function logout() {
