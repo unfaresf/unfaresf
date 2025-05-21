@@ -1,12 +1,12 @@
 <template>
-  <UFormGroup label="Route" name="route" description="Route name, e.g. 38 Geary or Bart Green line" required>
+  <UFormField label="Route" name="route" description="Route name, e.g. 38 Geary or Bart Green line" required>
     <USelectMenu
       v-model="route"
       v-model:query="routeQuery"
       :loading="loading"
       :searchable="search"
       :searchableLazy="true"
-      :options="defaultOptions"
+      :items="defaultOptions"
       searchable-placeholder="Search for a transit route"
       placeholder="Find a route"
       option-attribute="routeShortName"
@@ -25,7 +25,7 @@
         No routes
       </template>
     </USelectMenu>
-  </UFormGroup>
+  </UFormField>
 </template>
 
 <script lang="ts">

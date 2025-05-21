@@ -8,9 +8,9 @@
       <UForm class="flex flex-col gap-2 max-w-prose" ref="form" @submit="onSubmit" :state="formState" :schema="reportSchema">
         <SelectRoute :geo="geoLocation" @on-change="(newRoute:RouteResponse) => formState.route = newRoute" />
         <SelectStop :route-id="formState.route?.routeId" :geo="geoLocation" @on-change="(newStop:StopPostResponse) => formState.stop = newStop" />
-        <UFormGroup label="Inspectors onboard" name="passenger" help="Enable if inspectors are currently onboard.">
-          <UToggle v-model="formState.passenger" />
-        </UFormGroup>
+        <UFormField label="Inspectors onboard" name="passenger" help="Enable if inspectors are currently onboard.">
+          <USwitch v-model="formState.passenger" />
+        </UFormField>
       </UForm>
       <template #footer>
         <div class="flex">
@@ -60,13 +60,13 @@ async function onSubmit(event: FormSubmitEvent<ReportPostSchema>) {
       body: event.data
     });
     toast.add({
-      color: 'green',
+      color: 'success',
       title: 'Report successful'
     });
     await navigateTo('/thank-you');
   } catch(err:any) {
     toast.add({
-      color: 'red',
+      color: 'error',
       title: 'Error submitting report',
       description: err.message
     });

@@ -1,10 +1,10 @@
 <template>
-  <UFormGroup label="Stop" name="stop" description="Current stop, e.g. Geary Blvd & 36th Ave or 16th & Mission" help="Select a route first" required>
+  <UFormField label="Stop" name="stop" description="Current stop, e.g. Geary Blvd & 36th Ave or 16th & Mission" help="Select a route first" required>
     <USelectMenu
       v-model="stop"
       v-model:query="query"
       :searchable="searchStops"
-      :options="stopOptions"
+      :items="stopOptions"
       :loading="loading"
       searchable-placeholder="Search for a transit stops"
       placeholder="Select a stop"
@@ -26,7 +26,7 @@
         No stops
       </template>
     </USelectMenu>
-  </UFormGroup>
+  </UFormField>
 </template>
 
 <script lang="ts">

@@ -122,13 +122,13 @@ async function setupNotifications() {
     await saveSubscription(pushSubscription);
     currentSubscription.value = pushSubscription;
     toast.add({
-      color: 'green',
+      color: 'success',
       title: 'Notification enabled',
       description: 'Notifications are enabled for this device/browser.'
     });
   } catch (err:any) {
     toast.add({
-      color: 'red',
+      color: 'error',
       title: 'Error disabling notifications',
       description: err.message
     });
@@ -145,7 +145,7 @@ async function tearDownNotifications() {
     ]);
     currentSubscription.value = null;
     toast.add({
-      color: 'green',
+      color: 'success',
       title: 'Notification disabled',
       description: 'Notifications are disabled for this device/browser.'
     });

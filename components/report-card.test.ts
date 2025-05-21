@@ -73,10 +73,10 @@ it('should return a skeleton the report is omitted', async () => {
   expect(component.text()).toMatchInlineSnapshot(`""`);
   expect(component.html()).toMatchInlineSnapshot(`
     "<div>
-      <div class="animate-pulse bg-gray-100 dark:bg-gray-800 rounded-full h-12 w-12"></div>
+      <div class="animate-pulse bg-neutral-100 dark:bg-neutral-800 rounded-full h-12 w-12"></div>
       <div class="space-y-2">
-        <div class="animate-pulse bg-gray-100 dark:bg-gray-800 rounded-md h-4 w-[250px]"></div>
-        <div class="animate-pulse bg-gray-100 dark:bg-gray-800 rounded-md h-4 w-[200px]"></div>
+        <div class="animate-pulse bg-neutral-100 dark:bg-neutral-800 rounded-md h-4 w-[250px]"></div>
+        <div class="animate-pulse bg-neutral-100 dark:bg-neutral-800 rounded-md h-4 w-[200px]"></div>
       </div>
     </div>"
   `);

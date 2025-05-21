@@ -5,10 +5,10 @@
         <div class="flex flex-row">
           <div class="basis-3/4">
             <h2 class="text-lg">Reports</h2>
-            <p class="text-xs text-gray-500">Recent reports of cop sightings from various platforms.</p>
+            <p class="text-xs text-neutral-500">Recent reports of cop sightings from various platforms.</p>
           </div>
           <div class="basis-1/4 ml-auto">
-            <USelect v-model="reviewed" :options="reviewedStatuses" option-attribute="name" @change="() => page = 1"/>
+            <USelect v-model="reviewed" :items="reviewedStatuses" option-attribute="name" @change="() => page = 1"/>
           </div>
         </div>
       </template>
@@ -30,7 +30,7 @@
     <UCard class="col-span-6 lg:col-span-2 xs:mt-10 md:mt-0">
       <template #header>
         <h2 class="text-lg">Recent Broadcasts</h2>
-        <p class="text-xs text-gray-500">Check recent broadcasts to avoid duplicate messages.</p>
+        <p class="text-xs text-neutral-500">Check recent broadcasts to avoid duplicate messages.</p>
       </template>
       <div>
         <ol v-if="broadcasts && broadcasts.result.length">
@@ -73,7 +73,7 @@ const reviewed = ref(reviewedStatuses[1].value);
 const limit = ref(10);
 const page = ref(1);
 const disabledRows = ref(new Set);
-const modal = useModal();
+const overlay = useOverlay();
 const toast = useToast();
 
 async function dismiss(row:SelectReport) {
@@ -88,7 +88,7 @@ async function dismiss(row:SelectReport) {
     await refreshReports();
   } catch (err:any) {
     toast.add({
-      color: 'red',
+      color: 'error',
       title: err.data?.message || err.message,
     });
   } finally {
@@ -97,16 +97,18 @@ async function dismiss(row:SelectReport) {
 }
 
 async function openPostModel(row:SelectReport) {
-  modal.open(PostModal, {
-    report: row,
-    async onClose() {
-      return modal.close();
+  overlay.create(PostModal, {
+    props: {
+      report: row,
+    },
+    async close() {
+      return overlay.close()
     },
     async onSuccess() {
       return Promise.all([
         refreshReports(),
         refreshBroadcasts(),
-        modal.close(),
+        overlay.close(),
       ]);
     },
   });
@@ -123,7 +125,7 @@ const { data:unreviewedReports, refresh: refreshReports } = await useLazyFetch<R
   watch: [reviewed, page],
   onResponseError({ response }) {
     toast.add({
-      color: 'red',
+      color: 'error',
       title: response.statusText
     });
   }

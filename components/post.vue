@@ -2,17 +2,17 @@
   <UCard>
     <template #header>
       <h3 class="text-lg">Post</h3>
-      <p class="text-xs text-gray-500">What operator, from where, which line, headed which direction.</p>
+      <p class="text-xs text-neutral-500">What operator, from where, which line, headed which direction.</p>
     </template>
 
-    <div class="p-2 rounded bg-gray-100 text-gray-600 text-sm mb-4">
+    <div class="p-2 rounded bg-neutral-100 text-neutral-600 text-sm mb-4">
       <ReportSummary ref="report-summary-ref" :report="props.report" />
     </div>
 
     <UForm v-if="sourceInternal" class="space-y-4" id="internal-source-broadcast-form" :schema="internalSourceBroadcastSchema" :state="internalSourceBroadcast" @submit="onSubmitInternalSource">
-      <UFormGroup label="Message" name="message" help="Tweet, toot, txt, etc...">
+      <UFormField label="Message" name="message" help="Tweet, toot, txt, etc...">
         <UTextarea v-model="internalSourceBroadcast.message" autofocus />
-      </UFormGroup>
+      </UFormField>
     </UForm>
 
     <UForm v-else class="space-y-4" id="external-source-broadcast-form" :schema="externalSourceBroadcastSchema" :state="externalSourceBroadcast" @submit="onSubmitExternalSource">
@@ -20,20 +20,20 @@
 
       <SelectStop :route-id="externalSourceBroadcast.route?.routeId" @on-change="(newStop:StopPostResponse) => externalSourceBroadcast.stop = newStop" />
 
-      <UFormGroup label="Inspectors onboard" name="passenger" help="Enable if inspectors are currently onboard.">
-        <UToggle v-model="externalSourceBroadcast.passenger" />
-      </UFormGroup>
+      <UFormField label="Inspectors onboard" name="passenger" help="Enable if inspectors are currently onboard.">
+        <USwitch v-model="externalSourceBroadcast.passenger" />
+      </UFormField>
 
-      <UFormGroup label="Message" name="message" help="Tweet, toot, txt, etc...">
+      <UFormField label="Message" name="message" help="Tweet, toot, txt, etc...">
         <UTextarea v-model="externalSourceBroadcast.message" />
-      </UFormGroup>
+      </UFormField>
     </UForm>
 
     <template v-if="!props.report?.reviewedAt" #footer>
       <div class="flex flex-col md:flex-row grow md:grow-0 gap-y-3">
         <UButton color="green" class="justify-center md:order-4 md:ml-3" type="submit" form="external-source-broadcast-form">Post</UButton>
         <div class="flex grow items-center md:order-1">
-          <UButton id="post-post-button" color="orange" class="justify-center grow md:grow-0 mr-2" @click="postInternalSourceSummary" :disabled="!sourceInternal">Post Summary</UButton>
+          <UButton id="post-post-button" color="warning" class="justify-center grow md:grow-0 mr-2" @click="postInternalSourceSummary" :disabled="!sourceInternal">Post Summary</UButton>
           <UTooltip text="Tooltip example" :popper="{ placement: 'top' }">
             <UIcon name="i-heroicons:question-mark-circle" class="w-5 h-5" />
             <template #text>
@@ -41,7 +41,7 @@
             </template>
           </UTooltip>
         </div>
-        <UButton id="post-dismiss-button" color="red" class="justify-center md:order-2" :disabled="pending" v-if="report" @click="dismiss(report?.id)">Dismiss</UButton>
+        <UButton id="post-dismiss-button" color="error" class="justify-center md:order-2" :disabled="pending" v-if="report" @click="dismiss(report?.id)">Dismiss</UButton>
       </div>
     </template>
   </UCard>
@@ -132,7 +132,7 @@ async function postBroadcast(msg:string) {
       });
     } else {
       toast.add({
-        color: 'red',
+        color: 'error',
         title: 'Error creating new broadcast',
         description: err.data?.message || err.message,
       });
@@ -171,7 +171,7 @@ async function dismiss(reportId:number) {
     emit('success');
   } catch (err:any) {
     toast.add({
-      color: 'red',
+      color: 'error',
       title: 'Error dismissing reprt',
       description: err.data?.message || err.message,
     });

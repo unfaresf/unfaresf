@@ -1,54 +1,55 @@
 <!-- The style classes and exactActiveClass on links is because nuxt-ui <ULink> prefetch is broken -->
 <template>
-  <NuxtLoadingIndicator />
-  <UContainer>
-    <header>
-      <AuthState>
-          <template #default="{ loggedIn }">
-            <div v-if="loggedIn" class="flex">
-              <ul class="w-full flex items-center justify-end border-b border-gray-200 dark:border-gray-800">
-                <li><NuxtLink to="/" icon="i-heroicons-home" exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white" class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"><UIcon name="i-heroicons-home" class="w-5 h-5 mr-1"/>{{user?.userName  || ''}}</NuxtLink></li>
-                <li><NuxtLink to="/reports" icon="i-heroicons-home" exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white" class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"><UIcon name="i-heroicons-document-magnifying-glass" class="w-5 h-5 mr-1"/>Reports</NuxtLink></li>
-                <ClientOnly>
-                  <li><notifications></notifications></li>
-                  <template #fallback>
-                    <!-- this will be rendered on server side -->
-                    <li><UButton color="gray" class="m-2" icon="i-heroicons-bell-slash" disabled /></li>
-                  </template>
-                </ClientOnly>
-                <UPopover :popper="{ placement: 'bottom-end' }">
-                  <UButton color="white" icon="i-heroicons-bars-3" class="m-2" />
-                  <template #panel="{close}">
-                    <ul class="p-1 bg-white  dark:bg-gray-800  min-w-44">
-                      <li v-for="link in authedDropdown" class="flex w-full items-center flex-row-reverse mb-1 last:mb-0">
-                        <UButton v-if="link.click" @click="async () => { close(); return link.click();}" variant="ghost" color="gray" class="w-full justify-between dark:hover:bg-gray-900"><UIcon :name="link.icon" class="ml-2"/><span>{{ link.label }}</span></UButton>
-                        <NuxtLink v-else class="flex px-2 py-1 w-full rounded-md justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-900" active-class="bg-gray-50 dark:bg-gray-900" :to="link.to" @click="close"><UIcon :name="link.icon" class="ml-2"/><span>{{ link.label }}</span></NuxtLink>
-                      </li>
-                    </ul>
-                  </template>
-                </UPopover>
+  <UApp>
+    <NuxtLoadingIndicator />
+    <UContainer>
+      <header>
+        <AuthState>
+            <template #default="{ loggedIn }">
+              <div v-if="loggedIn" class="flex">
+                <ul class="w-full flex items-center justify-end border-b border-gray-200 dark:border-gray-800">
+                  <li><NuxtLink to="/" icon="i-heroicons-home" exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white" class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"><UIcon name="i-heroicons-home" class="w-5 h-5 mr-1"/>{{user?.userName  || ''}}</NuxtLink></li>
+                  <li><NuxtLink to="/reports" icon="i-heroicons-home" exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white" class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"><UIcon name="i-heroicons-document-magnifying-glass" class="w-5 h-5 mr-1"/>Reports</NuxtLink></li>
+                  <ClientOnly>
+                    <li><notifications /></li>
+                    <template #fallback>
+                      <!-- this will be rendered on server side -->
+                      <li><UButton color="neutral" class="m-2" icon="i-heroicons-bell-slash" disabled /></li>
+                    </template>
+                  </ClientOnly>
+                  <UPopover :content="{ align: 'end', side: 'bottom' }" :open="popoverOpen">
+                    <UButton color="neutral" variant="subtle" icon="i-heroicons-bars-3" class="cursor-pointer m-2" @click="() => {popoverOpen = !popoverOpen}"/>
+
+                    <template #content>
+                      <ul class="p-1 bg-white dark:bg-gray-800 min-w-44">
+                        <li v-for="link in authedDropdown" class="flex w-full items-center flex-row-reverse mb-1 last:mb-0">
+                          <UButton v-if="link.onClick" @click="async () => { closePopover(); await link.onClick();}" variant="ghost" color="neutral" class="cursor-pointer w-full justify-between dark:hover:bg-gray-900"><UIcon :name="link.icon" class="ml-2"/><span>{{ link.label }}</span></UButton>
+                          <NuxtLink v-else class="flex px-2 py-1 w-full rounded-md justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-900" active-class="bg-gray-50 dark:bg-gray-900" :to="link.to" @click="closePopover"><UIcon :name="link.icon" class="ml-2"/><span>{{ link.label }}</span></NuxtLink>
+                        </li>
+                      </ul>
+                    </template>
+                  </UPopover>
+                </ul>
+              </div>
+              <ul v-else class="w-full flex items-center justify-end border-b border-gray-200 dark:border-gray-800">
+                <li><NuxtLink to="/" icon="i-heroicons-document" exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white" class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"><UIcon name="i-heroicons-document" class="w-5 h-5 mr-1"/>Reports</NuxtLink></li>
+                <li><NuxtLink to="/sign-in" icon='i-heroicons-arrow-right-end-on-rectangle' exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white" class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"><UIcon name="i-heroicons-arrow-right-end-on-rectangle" class="w-5 h-5 mr-1"/>Sign In</NuxtLink></li>
               </ul>
-            </div>
-            <ul v-else class="w-full flex items-center justify-end border-b border-gray-200 dark:border-gray-800">
-              <li><NuxtLink to="/" icon="i-heroicons-document" exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white" class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"><UIcon name="i-heroicons-document" class="w-5 h-5 mr-1"/>Reports</NuxtLink></li>
-              <li><NuxtLink to="/sign-in" icon='i-heroicons-arrow-right-end-on-rectangle' exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white" class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"><UIcon name="i-heroicons-arrow-right-end-on-rectangle" class="w-5 h-5 mr-1"/>Sign In</NuxtLink></li>
-            </ul>
-          </template>
-          <template #placeholder>
-            <ul class="w-full flex items-center justify-end border-b border-gray-200 dark:border-gray-800">
-              <li><NuxtLink to="/" icon="i-heroicons-document" exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white" class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"><UIcon name="i-heroicons-document" class="w-5 h-5 mr-1"/>Reports</NuxtLink></li>
-              <li><NuxtLink to="/sign-in" icon='i-heroicons-arrow-right-end-on-rectangle' exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white" class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"><UIcon name="i-heroicons-arrow-right-end-on-rectangle" class="w-5 h-5 mr-1"/>Sign In</NuxtLink></li>
-            </ul>
-          </template>
-      </AuthState>
-    </header>
-    <NuxtPage />
-    <footer>
-      <div class="py-2"></div>
-    </footer>
-  </UContainer>
-  <UModals />
-  <UNotifications />
+            </template>
+            <template #placeholder>
+              <ul class="w-full flex items-center justify-end border-b border-gray-200 dark:border-gray-800">
+                <li><NuxtLink to="/" icon="i-heroicons-document" exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white" class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"><UIcon name="i-heroicons-document" class="w-5 h-5 mr-1"/>Reports</NuxtLink></li>
+                <li><NuxtLink to="/sign-in" icon='i-heroicons-arrow-right-end-on-rectangle' exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white" class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"><UIcon name="i-heroicons-arrow-right-end-on-rectangle" class="w-5 h-5 mr-1"/>Sign In</NuxtLink></li>
+              </ul>
+            </template>
+        </AuthState>
+      </header>
+      <NuxtPage />
+      <footer>
+        <div class="py-2"></div>
+      </footer>
+    </UContainer>
+  </UApp>
 </template>
 
 <script lang="ts" setup>
@@ -56,6 +57,7 @@ import { computed } from 'vue';
 
 const { clear, user } = useUserSession();
 const { $pwa } = useNuxtApp();
+const popoverOpen = ref(false);
 
 async function deleteSubscription(sub:PushSubscription) {
   return $fetch('/api/subscriptions', {
@@ -84,6 +86,10 @@ async function disableNotifications() {
   }
 }
 
+function closePopover() {
+  popoverOpen.value = false;
+}
+
 async function logout() {
   try {
     await disableNotifications();
@@ -110,7 +116,7 @@ const authedDropdown = computed(() => {
     }, {
       label: `Logout`,
       icon: 'i-heroicons-arrow-right-start-on-rectangle',
-      click: logout
+      onClick: logout
     }
   ];
 });
