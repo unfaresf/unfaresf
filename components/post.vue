@@ -30,10 +30,10 @@
     </UForm>
 
     <template v-if="!props.report?.reviewedAt" #footer>
-      <div class="flex flex-col md:flex-row flex-grow md:flex-grow-0 gap-y-3">
+      <div class="flex flex-col md:flex-row grow md:grow-0 gap-y-3">
         <UButton color="green" class="justify-center md:order-4 md:ml-3" type="submit" form="external-source-broadcast-form">Post</UButton>
-        <div class="flex flex-grow items-center md:order-1">
-          <UButton id="post-post-button" color="orange" class="justify-center grow md:flex-grow-0 mr-2" @click="postInternalSourceSummary" :disabled="!sourceInternal">Post Summary</UButton>
+        <div class="flex grow items-center md:order-1">
+          <UButton id="post-post-button" color="orange" class="justify-center grow md:grow-0 mr-2" @click="postInternalSourceSummary" :disabled="!sourceInternal">Post Summary</UButton>
           <UTooltip text="Tooltip example" :popper="{ placement: 'top' }">
             <UIcon name="i-heroicons:question-mark-circle" class="w-5 h-5" />
             <template #text>
