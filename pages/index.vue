@@ -8,7 +8,7 @@
           <USwitch v-model="formState.passenger" />
         </UFormField>
 
-        <div class="flex">
+        <div class="flex mt-4">
           <ClientOnly>
             <geolocate @on-geolocate="(newGeolocation) => geoLocation = newGeolocation">
               <template #help>
@@ -16,7 +16,7 @@
               </template>
             </geolocate>
           </ClientOnly>
-          <UButton type="submit" label="Submit" class="ml-auto" @click="submitReport"  :disabled="submitting"/>
+          <UButton type="submit" label="Submit" class="ml-auto" @click="submitReport()"  :disabled="submitting"/>
         </div>
       </UForm>
       <div class="mt-8">
@@ -47,9 +47,8 @@
           class="relative w-full bg-neutral-100 dark:bg-neutral-900 z-20 p-4 pb-48 shadow-[0px_0px_25px_-10px_rgba(0,0,0,0.75)] rounded-t-xl before:w-8 before:h-1 before:bg-neutral-200 before:dark:bg-neutral-100 before:rounded before:mx-auto before:block before:-mt-2"
           >
           <UButton
-            class="shadow-lg absolute -top-16 right-8 lg:hidden"
+            class="shadow-lg absolute -top-16 right-8 lg:hidden rounded-full"
             size="xl"
-            :ui="{ rounded: 'rounded-full' }"
             icon="i-heroicons-pencil-square"
             to="/report"
           />

@@ -1,6 +1,8 @@
 <template>
-  <UModal :ui="{strategy:'merge', container:'items-start'}">
-    <post :report="props.report" @close="emit('close')" @success="emit('success')"></post>
+  <UModal>
+    <template #content>
+      <post :report="props.report" @posted="onApprove" @dismissed="onDismiss" />
+    </template>
   </UModal>
 </template>
 
@@ -10,5 +12,18 @@ import type { SelectReport } from '../db/schema';
 const props = defineProps<{
   report: SelectReport,
 }>();
-const emit = defineEmits(['success', 'close']);
+
+const emit = defineEmits<{
+  onApprove: [SelectReport],
+  onDismiss: [SelectReport]
+}>();
+
+function onApprove(report: SelectReport) {
+  emit('onApprove', report);
+}
+
+function onDismiss(report: SelectReport) {
+  emit('onDismiss', report);
+}
+
 </script>

@@ -1,11 +1,11 @@
 <template>
   <div v-if="supported">
     <UTooltip v-if="permissionGranted" :text="tooltipText">
-      <UButton v-if="currentSubscription" :loading="loading" color="white" class="m-2" icon="i-heroicons-bell" @click="toggleNotifications" />
-      <UButton v-else :loading="loading" color="white" class="m-2" icon="i-heroicons-bell-snooze" @click="toggleNotifications" />
+      <UButton v-if="currentSubscription" :loading="loading" color="neutral" variant="ghost" class="m-2 cursor-pointer" icon="i-heroicons-bell" @click="toggleNotifications" />
+      <UButton v-else :loading="loading" color="neutral" class="m-2 cursor-pointer" variant="ghost" icon="i-heroicons-bell-snooze" @click="toggleNotifications" />
     </UTooltip>
     <UTooltip v-else text="Enable new report notifications">
-      <UButton :loading="loading" color="lime" class="m-2" icon="i-heroicons-bell-slash" @click="setupNotifications" />
+      <UButton :loading="loading" color="neutral" variant="ghost" class="m-2" icon="i-heroicons-bell-slash" @click="setupNotifications" />
     </UTooltip>
   </div>
 </template>

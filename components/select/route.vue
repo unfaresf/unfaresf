@@ -10,8 +10,8 @@
       placeholder="Find a route"
       ignore-filter
       trailing
-      :popper="{
-        placement: isMobile ? 'top' : 'bottom'
+      :content="{
+        side: isMobile ? 'top' : 'bottom',
       }"
       class="w-full"
       @update:modelValue="newRoute => emit('onChange', newRoute)"
@@ -33,7 +33,6 @@
 
 <script lang="ts">
 import { z } from "zod";
-import { refDebounced } from '@vueuse/core'
 
 export const routeSchema = z.object({
   routeId: z.string(),
@@ -48,6 +47,8 @@ export type RouteResponse = z.infer<typeof routeSchema>;
 </script>
 
 <script setup lang="ts">
+import { refDebounced } from '@vueuse/core';
+
 const { isMobile } = useDevice();
 const routeQuery = ref("");
 const route = ref<RouteResponse>();

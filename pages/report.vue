@@ -13,7 +13,7 @@
         </UFormField>
       </UForm>
       <template #footer>
-        <div class="flex">
+        <div class="flex mt-4">
           <ClientOnly>
             <geolocate @on-geolocate="(newGeolocation) => geoLocation = newGeolocation">
               <template #help>
@@ -21,7 +21,7 @@
               </template>
             </geolocate>
           </ClientOnly>
-          <UButton type="submit" label="Submit" class="ml-auto" @click="submitReport"  :disabled="submitting"/>
+          <UButton type="submit" label="Submit" class="ml-auto" @click="submitReport()"  :disabled="submitting"/>
         </div>
       </template>
     </UCard>

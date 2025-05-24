@@ -14,11 +14,11 @@
                     <li><notifications /></li>
                     <template #fallback>
                       <!-- this will be rendered on server side -->
-                      <li><UButton color="neutral" class="m-2" icon="i-heroicons-bell-slash" disabled /></li>
+                      <li><UButton color="neutral" variant="ghost" class="m-2" icon="i-heroicons-bell-slash" disabled /></li>
                     </template>
                   </ClientOnly>
                   <UPopover :content="{ align: 'end', side: 'bottom' }" :open="popoverOpen">
-                    <UButton color="neutral" variant="subtle" icon="i-heroicons-bars-3" class="cursor-pointer m-2" @click="() => {popoverOpen = !popoverOpen}"/>
+                    <UButton color="neutral" variant="outline" icon="i-heroicons-bars-3" class="cursor-pointer m-2" @click="() => {popoverOpen = !popoverOpen}"/>
 
                     <template #content>
                       <ul class="p-1 bg-white dark:bg-gray-800 min-w-44">

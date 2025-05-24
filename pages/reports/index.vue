@@ -8,12 +8,18 @@
             <p class="text-xs text-neutral-500">Recent reports of cop sightings from various platforms.</p>
           </div>
           <div class="basis-1/4 ml-auto">
-            <USelect v-model="reviewed" :items="reviewedStatuses" option-attribute="name" @change="() => page = 1"/>
+            <USelect v-model="reviewed" :items="reviewedStatuses" value-key="value" label-key="name" @change="() => page = 1" class="w-full"/>
           </div>
         </div>
       </template>
-      <div v-if="unreviewedReports.result && unreviewedReports.result.length">
-        <ReportCard v-for="report in unreviewedReports.result" :report="report" @onApprove="openPostModel" @onDismiss="dismiss"/>
+      <div v-if="unreviewedReports.result.length">
+        <ReportCard v-for="report in unreviewedReports.result" :report="report" @onApprove="() => refreshReports()" @onDismiss="onDimiss" />
+      </div>
+      <div v-else-if="unreviewedReportsStatus === 'pending'">
+        <div class="space-y-2">
+          <USkeleton class="h-4 w-full" />
+          <USkeleton class="h-4 w-10/12" />
+        </div>
       </div>
       <div v-else>
         <p>No recent reports</p>
@@ -49,7 +55,6 @@
 
 <script lang="ts" setup>
 import { type SelectReport } from '../../db/schema';
-import { PostModal } from '#components';
 import ReportCard from '~/components/report-card.vue';
 import { sub, formatDistanceToNow } from 'date-fns';
 const { $pwa } = useNuxtApp();
@@ -72,53 +77,21 @@ const reviewedStatuses = [{
 const reviewed = ref(reviewedStatuses[1].value);
 const limit = ref(10);
 const page = ref(1);
-const disabledRows = ref(new Set);
-const overlay = useOverlay();
 const toast = useToast();
-
-async function dismiss(row:SelectReport) {
-  try {
-    disabledRows.value.add(row.id);
-    await $fetch(`/api/reports/${row.id}`, {
-      method: 'PUT',
-      body: {
-        approved: false
-      }
-    });
-    await refreshReports();
-  } catch (err:any) {
-    toast.add({
-      color: 'error',
-      title: err.data?.message || err.message,
-    });
-  } finally {
-    disabledRows.value.delete(row.id);
-  }
-}
-
-async function openPostModel(row:SelectReport) {
-  overlay.create(PostModal, {
-    props: {
-      report: row,
-    },
-    async close() {
-      return overlay.close()
-    },
-    async onSuccess() {
-      return Promise.all([
-        refreshReports(),
-        refreshBroadcasts(),
-        overlay.close(),
-      ]);
-    },
-  });
-}
 
 type ReportsGetResp = {
   count: number,
   result: SelectReport[]
 }
-const { data:unreviewedReports, refresh: refreshReports } = await useLazyFetch<ReportsGetResp>("/api/reports", {
+
+async function onDimiss(report: SelectReport) {
+  await Promise.all([
+    refreshReports(),
+    refreshBroadcasts()
+  ]);
+}
+
+const { data: unreviewedReports, refresh: refreshReports, status: unreviewedReportsStatus } = await useLazyFetch<ReportsGetResp>("/api/reports", {
   server: false,
   query: { page: page, limit: limit, reviewed: reviewed },
   default: () => ({count: 0, result: []}),

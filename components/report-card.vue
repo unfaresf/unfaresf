@@ -12,9 +12,9 @@
       </UTooltip>
       <ReportSummary :report="props.report" class="mt-2"></ReportSummary>
     </div>
-    <div v-if="!props.report.reviewedAt" class="flex flex-col ml-auto">
-      <UButton class="mb-auto" id="report-card-dismiss" color="error" variant="ghost" size="md" icon="i-heroicons-x-circle" aria-label="Dismiss report" :disabled="!report" @click="report && emit('onDismiss', report)"  />
-      <UButton class="mt-auto" id="report-card-approve" color="green" variant="soft" size="md" icon="i-heroicons-check-circle" aria-label="Approve report" :disabled="!report" @click="report && emit('onApprove', report)" />
+    <div v-if="report && !props.report.reviewedAt" class="flex flex-col ml-auto">
+      <UButton class="mb-auto cursor-pointer" :id="'report-card-dismiss-'+props.report.id" color="error" variant="ghost" size="md" icon="i-heroicons-x-circle" aria-label="Dismiss report" @click="onDismiss(props.report)" />
+      <UButton class="mt-auto cursor-pointer" :id="'report-card-approve-'+props.report.id" color="primary" variant="soft" size="md" icon="i-heroicons-check-circle" aria-label="Approve report" @click="onApprove(props.report)" />
     </div>
   </div>
   <div v-else>
@@ -29,18 +29,35 @@
 <script setup lang="ts">
 import { formatDistanceToNow, format as formatDate } from 'date-fns';
 import type { SelectReport } from '../db/schema';
-
-function getRouteFromReportId(reportId: number):string{
-  return `/reports/${reportId}`;
-}
+import { PostModal } from '#components';
 
 const props = defineProps<{
   report: SelectReport|null,
 }>();
 
 const emit = defineEmits<{
-  (e: 'onApprove', report: SelectReport): void,
-  (e: 'onDismiss', report: SelectReport): void
+  onApprove: [SelectReport],
+  onDismiss: [SelectReport],
 }>();
 
+const overlay = useOverlay()
+
+function getRouteFromReportId(reportId: number):string{
+  return `/reports/${reportId}`;
+}
+
+function onApprove(report: SelectReport) {
+  if (!props.report) return;
+  let modal = overlay.create(PostModal, {
+    props: {
+      report: props.report,
+    }
+  });
+  
+  modal.open();
+}
+
+function onDismiss(report: SelectReport) {
+  emit('onDismiss', report);
+}
 </script>

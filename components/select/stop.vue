@@ -2,26 +2,29 @@
   <UFormField label="Stop" name="stop" description="Current stop, e.g. Geary Blvd & 36th Ave or 16th & Mission" help="Select a route first" required>
     <USelectMenu
       v-model="stop"
-      v-model:query="query"
-      :searchable="searchStops"
-      :items="stopOptions"
+      v-model:search-term="stopQuery"
+      :items="stops"
       :loading="loading"
       searchable-placeholder="Search for a transit stops"
       placeholder="Select a stop"
-      option-attribute="stopName"
       trailing
-      :popper="{
-        placement: isMobile ? 'top' : 'bottom'
+      ignore-filter
+      :content="{
+        side: isMobile ? 'top' : 'bottom',
       }"
       :disabled="disable"
       :clearSearchOnClose="true"
+      class="w-full"
+      @update:modelValue="newStop => emit('onChange', newStop)"
     >
-      <template #label>
-        <p v-if="stop">{{ stop.stopName }}</p>
+      <template #default="{ modelValue:selectedStop }">
+        <p v-if="selectedStop">{{ selectedStop.stopName }}</p>
       </template>
-      <template #option="{ option: stop }" :loading="loading">
-        <p>{{ stop.stopName }} - {{ stop.direction }}</p>
+
+      <template #item="{ item: optionalStop }">
+        <p>{{ optionalStop.stopName }} - {{ optionalStop.direction }}</p>
       </template>
+
       <template #empty>
         No stops
       </template>
@@ -41,48 +44,53 @@ export type StopPostResponse = z.infer<typeof stopPostResponseSchema>;
 </script>
 
 <script setup lang="ts">
-const loading = ref(false);
-const { isMobile } = useDevice();
-const stopOptions = ref<StopPostResponse[]>([]);
-const stop = ref<StopPostResponse>();
-const query = ref<string>('');
+import { refDebounced } from '@vueuse/core';
+
 const props = defineProps<{
   routeId?: string,
   geo?: GeolocationPosition,
 }>();
+
 const emit = defineEmits<{
   (e: 'onChange', stop: StopPostResponse): void
 }>();
-const disable = computed(() => !props.routeId);
 
-async function searchStops(q:string) {
-  if (!props.routeId) return [];
-  try {
-    loading.value = true;
-    return $fetch<StopPostResponse[]>('/api/gtfs/stops/search', {
-      params: {
-        q: q.trim(),
-        routeId: props.routeId,
-        latitude: props.geo?.coords.latitude,
-        longitude: props.geo?.coords.longitude,
-      }
-    });
-  } finally {
-    loading.value = false;
+const { isMobile } = useDevice();
+const stop = ref<StopPostResponse>();
+const stopQuery = ref<string>('');
+const searchTermDebounced = refDebounced(stopQuery, 200);
+const disable = computed(() => !props.routeId);
+const stopsParams = computed(() => {
+  return {
+    q: searchTermDebounced.value,
+    routeId: props.routeId,
+    latitude: props.geo?.coords.latitude,
+    longitude: props.geo?.coords.longitude,
   }
-}
+});
+
+const { data: stops, status } = await useAsyncData(() => {
+  if (props.routeId) {
+    return $fetch<StopPostResponse[]>('/api/gtfs/stops/search', {
+      params: stopsParams.value,
+    });
+  } else {
+    return Promise.resolve([]);
+  }
+}, {
+  lazy: true,
+  immediate: false,
+  default: () => [],
+  watch: [stopsParams]
+});
+const loading = computed(() => status.value === 'pending');
 
 watch(() => props.routeId, async (newRouteId) => {
   if (newRouteId) {
     stop.value = undefined;
     // this is a hack because you cant manually set options on a searchable USelectMenu
     // this triggers the search but the white space is trimmed later
-    query.value = ' ';
-  }
-});
-watch(stop, (newStop) => {
-  if (newStop) {
-    emit('onChange', newStop);
+    stopQuery.value = '';
   }
 });
 </script>

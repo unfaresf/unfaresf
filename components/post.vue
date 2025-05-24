@@ -11,7 +11,7 @@
 
     <UForm v-if="sourceInternal" class="space-y-4" id="internal-source-broadcast-form" :schema="internalSourceBroadcastSchema" :state="internalSourceBroadcast" @submit="onSubmitInternalSource">
       <UFormField label="Message" name="message" help="Tweet, toot, txt, etc...">
-        <UTextarea v-model="internalSourceBroadcast.message" autofocus />
+        <UTextarea v-model="internalSourceBroadcast.message" class="w-full" autofocus />
       </UFormField>
     </UForm>
 
@@ -31,17 +31,17 @@
 
     <template v-if="!props.report?.reviewedAt" #footer>
       <div class="flex flex-col md:flex-row grow md:grow-0 gap-y-3">
-        <UButton color="green" class="justify-center md:order-4 md:ml-3" type="submit" form="external-source-broadcast-form">Post</UButton>
+        <UButton color="primary" class="justify-center md:order-4 md:ml-3 cursor-pointer" type="submit" form="external-source-broadcast-form">Post</UButton>
         <div class="flex grow items-center md:order-1">
-          <UButton id="post-post-button" color="warning" class="justify-center grow md:grow-0 mr-2" @click="postInternalSourceSummary" :disabled="!sourceInternal">Post Summary</UButton>
-          <UTooltip text="Tooltip example" :popper="{ placement: 'top' }">
+          <UButton id="post-post-button" color="warning" class="justify-center grow md:grow-0 mr-2 cursor-pointer" @click="postInternalSourceSummary" :disabled="!sourceInternal">Post Summary</UButton>
+          <UPopover mode="hover" :open-delay="300" :close-delay="200" :content="{ side: 'top' }">
             <UIcon name="i-heroicons:question-mark-circle" class="w-5 h-5" />
-            <template #text>
-              <span class="italic">Post using the text at the top of this popup.</span>
+            <template #content>
+              <span class="italic p-2">Post using the text at the top of this popup.</span>
             </template>
-          </UTooltip>
+          </UPopover>
         </div>
-        <UButton id="post-dismiss-button" color="error" class="justify-center md:order-2" :disabled="pending" v-if="report" @click="dismiss(report?.id)">Dismiss</UButton>
+        <UButton v-if="report" id="post-dismiss-button" color="error" class="justify-center md:order-2 cursor-pointer" :disabled="pending" @click="dismiss(report)">Dismiss</UButton>
       </div>
     </template>
   </UCard>
@@ -57,9 +57,10 @@ import { type StopPostResponse, stopPostResponseSchema } from "../components/sel
 import { getPlainTextSummary } from './report-summary.vue';
 
 const emit = defineEmits<{
-  success: []
-  close: []
-}>()
+  posted: [SelectReport],
+  dismissed: [SelectReport]
+}>();
+
 const props = defineProps<{
   report: SelectReport,
 }>();
@@ -107,7 +108,7 @@ type InternalSourceBroadcastSchema = z.output<typeof internalSourceBroadcastSche
 async function postInternalSourceSummary() {
   if (reportSummRef.value?.summary?.innerText) {
     await postBroadcast(reportSummRef.value?.summary?.innerText);
-    emit('success');
+    emit('posted', props.report);
   }
 }
 
@@ -126,7 +127,7 @@ async function postBroadcast(msg:string) {
   } catch (err:any) {
     if (err.message === "UNIQUE constraint failed: broadcasts.report_id") {
       toast.add({
-        color: 'orange',
+        color: 'warning',
         title: 'Someone beat you to the punch',
         description: 'Someone else created a broadcast for this report.',
       });
@@ -159,16 +160,16 @@ async function postExternalSourceBroadcast(broadcast:ExternalSourceBroadcastSche
   }
 }
 
-async function dismiss(reportId:number) {
+async function dismiss(report:SelectReport) {
+  pending.value = true;
   try {
-    pending.value = true;
-    await $fetch(`/api/reports/${reportId}`, {
+    await $fetch(`/api/reports/${report.id}`, {
       method: 'PUT',
       body: {
         approved: false
       }
     });
-    emit('success');
+    emit('dismissed', report);
   } catch (err:any) {
     toast.add({
       color: 'error',
@@ -182,11 +183,11 @@ async function dismiss(reportId:number) {
 
 async function onSubmitInternalSource(event: FormSubmitEvent<InternalSourceBroadcastSchema>) {
   await postBroadcast(event.data.message);
-  emit('success');
+  emit('posted', props.report);
 }
 
 async function onSubmitExternalSource(event: FormSubmitEvent<ExternalSourceBroadcastSchema>) {
   await postExternalSourceBroadcast(event.data);
-  emit('success');
+  emit('posted', props.report);
 }
 </script>
