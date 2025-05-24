@@ -7,7 +7,7 @@
       >
         <UButton
           type="submit"
-          color="black"
+          color="neutral"
           label="Sign in"
         />
       </form>
@@ -36,7 +36,7 @@ async function signIn() {
     })
     .catch(err => {
       toast.add({
-        color: 'red',
+        color: 'error',
         title: err.data?.message || err.message,
       })
     })

@@ -39,12 +39,12 @@
     </template>
     <MastodonSettingsUpdate v-if="integrationsStatus === 'success'" :integration="mastoInt" />
     <div v-else-if="integrationsStatus === 'error'" class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
-      <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-      <p class="text-sm text-center text-gray-900 dark:text-white">Error retrieving settings</p>
+      <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 mx-auto text-neutral-400 dark:text-neutral-500 mb-4" />
+      <p class="text-sm text-center text-neutral-900 dark:text-white">Error retrieving settings</p>
     </div>
     <div v-else class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
-      <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4 animate-spin" />
-      <p class="text-sm text-center text-gray-900 dark:text-white">Loading...</p>
+      <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-neutral-400 dark:text-neutral-500 mb-4 animate-spin" />
+      <p class="text-sm text-center text-neutral-900 dark:text-white">Loading...</p>
     </div>
   </UCard>
   <UCard class="my-8">
@@ -53,12 +53,12 @@
     </template>
     <BlueSkySettingsUpdate v-if="integrationsStatus === 'success'" :integration="bskyInt" />
     <div v-else-if="integrationsStatus === 'error'" class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
-      <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-      <p class="text-sm text-center text-gray-900 dark:text-white">Error retrieving settings</p>
+      <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 mx-auto text-neutral-400 dark:text-neutral-500 mb-4" />
+      <p class="text-sm text-center text-neutral-900 dark:text-white">Error retrieving settings</p>
     </div>
     <div v-else class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
-      <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4 animate-spin" />
-      <p class="text-sm text-center text-gray-900 dark:text-white">Loading...</p>
+      <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-neutral-400 dark:text-neutral-500 mb-4 animate-spin" />
+      <p class="text-sm text-center text-neutral-900 dark:text-white">Loading...</p>
     </div>
   </UCard>
   <!-- <UCard class="my-8">
@@ -67,12 +67,12 @@
     </template>
     <TwitterSettings v-if="integrationsStatus === 'success'" :integration="twitterInt" />
     <div v-else-if="integrationsStatus === 'error'" class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
-      <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-      <p class="text-sm text-center text-gray-900 dark:text-white">Error retrieving settings</p>
+      <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 mx-auto text-neutral-400 dark:text-neutral-500 mb-4" />
+      <p class="text-sm text-center text-neutral-900 dark:text-white">Error retrieving settings</p>
     </div>
     <div v-else class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
-      <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4 animate-spin" />
-      <p class="text-sm text-center text-gray-900 dark:text-white">Loading...</p>
+      <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-neutral-400 dark:text-neutral-500 mb-4 animate-spin" />
+      <p class="text-sm text-center text-neutral-900 dark:text-white">Loading...</p>
     </div>
   </UCard> -->
   <UCard class="my-8">
@@ -81,12 +81,12 @@
     </template>
     <MapSettings v-if="integrationsStatus === 'success'" :integration="mapInt" />
     <div v-else-if="integrationsStatus === 'error'" class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
-      <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-      <p class="text-sm text-center text-gray-900 dark:text-white">Error retrieving settings</p>
+      <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 mx-auto text-neutral-400 dark:text-neutral-500 mb-4" />
+      <p class="text-sm text-center text-neutral-900 dark:text-white">Error retrieving settings</p>
     </div>
     <div v-else class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
-      <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4 animate-spin" />
-      <p class="text-sm text-center text-gray-900 dark:text-white">Loading...</p>
+      <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-neutral-400 dark:text-neutral-500 mb-4 animate-spin" />
+      <p class="text-sm text-center text-neutral-900 dark:text-white">Loading...</p>
     </div>
   </UCard>
 </template>
@@ -121,7 +121,7 @@ const { data: users, status:usersStatus, refresh } = await useLazyFetch("/api/us
   watch: [page],
   onResponseError({ response }) {
     toast.add({
-      color: 'red',
+      color: 'error',
       title: response.statusText
     });
   }
@@ -134,7 +134,7 @@ const { data: integrations, status:integrationsStatus } = await useLazyFetch('/a
   server: false,
   onResponseError({ response }) {
     toast.add({
-      color: 'red',
+      color: 'error',
       title: response.statusText
     });
   }
