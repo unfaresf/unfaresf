@@ -29,12 +29,7 @@ async function getTrips(routeId:string) {
   .from(trips)
   .innerJoin(routes, eq(routes.routeId, trips.routeId))
   .innerJoin(calendar, eq(calendar.serviceId, trips.serviceId))
-  .where(
-    and(
-      eq(trips.routeId, routeId),
-      eq(calendarDayCols[new Date().getDay()], 1)
-    )
-  ).as('routeTrips');
+  .where(eq(trips.routeId, routeId)).as('routeTrips');
 
   const tripResults = await gtfsDB.select({
     routeId: routeTrips.routeId,
