@@ -1,25 +1,22 @@
 <template>
-  <UFormGroup label="Route" name="route" description="Route name, e.g. 38 Geary or Bart Green line" required>
+  <UFormGroup label="Route" name="route" description="Route name, e.g. 38 Geary or Bart Green line">
     <USelectMenu
       v-model="route"
-      v-model:query="routeQuery"
       :loading="loading"
-      :searchable="search"
-      :searchableLazy="true"
-      :options="defaultOptions"
-      searchable-placeholder="Search for a transit route"
+      searchable
+      :search-attributes="['routeShortName', 'routeLongName']"
+      :options="options"
       placeholder="Find a route"
-      option-attribute="routeShortName"
       trailing
       :popper="{
         placement: isMobile ? 'top' : 'bottom'
       }"
     >
       <template #label>
-        <p v-if="route">{{ route.routeShortName }} <span class="lowercase">{{ route.routeLongName }}</span> - {{ route.direction }}</p>
+        <p v-if="route">{{ route.routeShortName }} {{ route.routeLongName }} - {{ route.direction }}</p>
       </template>
       <template #option="{ option: route }">
-        <p><span class="font-bold">{{ route.routeShortName }} <span class="lowercase">{{ route.routeLongName }}</span></span> - {{ route.direction }} <span class="italic lowercase">{{ route.agencyName }}</span></p>
+        <p>{{ route.routeShortName }} {{ route.routeLongName }} - {{ route.direction }}</p>
       </template>
       <template #empty>
         No routes
@@ -30,55 +27,52 @@
 
 <script lang="ts">
 import { z } from "zod";
+import type { Agency } from "./agency.vue";
+import { computedAsync } from '@vueuse/core'
 
 export const routeSchema = z.object({
   routeId: z.string(),
   routeShortName: z.string(),
   routeLongName: z.string(),
-  agencyId: z.string(),
-  agencyName: z.string(),
   direction: z.string(),
 });
 
-export type RouteResponse = z.infer<typeof routeSchema>;
+export type Route = z.infer<typeof routeSchema>;
 </script>
 
 <script setup lang="ts">
 const loading = ref(false);
 const { isMobile } = useDevice();
+<<<<<<< HEAD
 const route = ref<RouteResponse>();
 const routeQuery = ref("");
 const defaultOptions = ref<RouteResponse[]>([]);
+=======
+const route = ref<Route | undefined>(undefined);
+>>>>>>> 9937810 (make routes respond to agency selection)
 const props = defineProps<{
-  geo?: GeolocationPosition,
+  agency: Agency,
 }>();
 const emit = defineEmits<{
-  (e: 'onChange', route: RouteResponse): void
+  (e: 'onChange', route: Route | undefined): void
 }>()
 
-async function search(q:string) {
-  try {
-    loading.value = true
-    return await $fetch<RouteResponse[]>('/api/gtfs/routes/search', {
-      params: {
-        q,
-        latitude: props.geo?.coords.latitude,
-        longitude: props.geo?.coords.longitude,
-      }
-    });
-  } catch(err:any) {
-    return []
-  } finally {
-    loading.value = false;
-  }
-}
+const agencyId = computed(() => props.agency.agencyId)
 
-watch(() => props.geo, async (newGeo, oldGeo) => {
-  defaultOptions.value = await search(routeQuery.value);
-}, { once: true });
-watch(route, (newRoute) => {
-  if (newRoute) {
-    emit('onChange', newRoute);
+watch(agencyId, (newAgencyId, oldAgencyId) => {
+  if (newAgencyId !== oldAgencyId) {
+    route.value = undefined
   }
+})
+
+const options = computedAsync(async () => await $fetch<Route[]>(
+  '/api/gtfs/routes', {
+    params: {
+      agencyId: agencyId.value
+    }
+}), [])
+
+watch(route, (newRoute) => {
+  emit('onChange', newRoute);
 });
 </script>

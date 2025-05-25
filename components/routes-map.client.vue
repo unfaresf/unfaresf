@@ -75,7 +75,7 @@
 <script setup lang="ts">
 import { MglMap, useMap, MglNavigationControl, MglVectorSource, MglLineLayer, MglCircleLayer, MglGeolocateControl, MglSymbolLayer, MglAttributionControl } from '@indoorequal/vue-maplibre-gl';
 import type { CircleLayerSpecification, LineLayerSpecification, LngLatLike } from 'maplibre-gl';
-import type { RouteResponse } from "./select/route.vue";
+import type { Route } from "./select/route.vue";
 import type { MapOptions } from '../db/schema';
 
 const center:LngLatLike = [-122.4404,37.7549];
@@ -117,7 +117,7 @@ const hotStopsLayerCirclesPaint = {
   'circle-blur': 0.7
 } as CircleLayerSpecification['paint'];
 const props = defineProps<{
-  route: RouteResponse|null,
+  route: Route|null,
   stopId: string|null,
   showBroadcasts?: boolean,
   config: MapOptions,
@@ -202,6 +202,8 @@ watch(() => props.route, async (newRoute) => {
     } finally {
       pendingRouteDetailsReq = null;
     }
+  } else {
+    transitMap.map?.flyTo({center, zoom})
   }
 });
 

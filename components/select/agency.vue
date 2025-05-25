@@ -2,7 +2,7 @@
     <UFormGroup label="Agency" name="agency" description="Agency name, such as Muni or BART" required>
       <USelectMenu
         v-if="agencyOptions"
-        v-model="selectedAgency"
+        v-model="agency"
         :loading="loading"
         :options="agencyOptions"
         searchable
@@ -21,18 +21,30 @@
   </template>
 
 <script lang="ts">
-import type { InferSelectModel } from "drizzle-orm";
-import type { agency } from "~/db/gtfs-migrations/schema";
-export type Agency = Pick<InferSelectModel<typeof agency>, 'agencyId' | 'agencyName'>;
+import { z } from "zod";
+
+export const agencySchema = z.object({
+  agencyId: z.string(),
+  agencyName: z.string(),
+});
+export type Agency = z.infer<typeof agencySchema>
 </script>
 
 <script setup lang="ts">
+
+
 const loading = ref(false);
-const selectedAgency = ref<Agency | undefined>();
+const agency = ref<Agency | undefined>();
 const { isMobile } = useDevice();
 const emit = defineEmits<{
-  (e: 'onChange', selectedAgency: Agency | undefined): void
+  (e: 'onChange', newAgency: Agency): void
 }>()
+
+watch(agency, (newAgency, oldAgency) => {
+  if (newAgency && newAgency !== oldAgency) {
+    emit("onChange", newAgency)
+  }
+})
 
 const { data: agencyOptions } = await useFetch('/api/gtfs/agencies')
 
