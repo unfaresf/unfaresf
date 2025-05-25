@@ -8,7 +8,7 @@
     <USelectMenu
       v-model="stop"
       v-model:query="query"
-      searchable
+      :searchable="onSearch"
       :options="options"
       :loading="loading"
       searchable-placeholder="Search for a transit stops"
@@ -36,6 +36,7 @@ import { computedAsync } from "@vueuse/core";
 import { z } from "zod";
 import type { Route } from "./route.vue";
 import type { Agency } from "./agency.vue";
+import { refDebounced } from "@vueuse/core";
 
 export const stopSchema = z.object({
   stopId: z.string(),
@@ -51,6 +52,7 @@ const loading = ref(false);
 const { isMobile } = useDevice();
 const stop = ref<Stop | undefined>(undefined);
 const query = ref<string>("");
+const queryDebounced = refDebounced(query, 200);
 const props = defineProps<{
   agency: Agency;
   route?: Route;
@@ -65,27 +67,48 @@ const routeId = computed(() => props.route?.routeId);
 const directionId = computed(() => props.route?.directionId);
 
 const options = computedAsync(async () => {
-  if (routeId.value) {
-    return $fetch<Stop[]>("/api/gtfs/stops", {
-      params: {
-        routeId: routeId.value,
-        directionId: directionId.value,
-      },
-    });
-  } else {
-    const {
-      data: { value: stops },
-    } = await useFetch<Stop[]>("/api/gtfs/stops/search", {
-      params: {
-        q: query.value.trim() || undefined,
-        agencyId,
-        latitude: props.geo?.coords.latitude,
-        longitude: props.geo?.coords.longitude,
-      },
-    });
-    return stops ?? [];
+  try {
+    loading.value = true;
+    if (routeId.value) {
+      return $fetch<Stop[]>("/api/gtfs/stops", {
+        params: {
+          routeId: routeId.value,
+          directionId: directionId.value,
+        },
+      });
+    } else {
+      const {
+        data: { value: stops },
+      } = await useFetch<Stop[]>("/api/gtfs/stops/search", {
+        params: {
+          agencyId,
+          latitude: props.geo?.coords.latitude,
+          longitude: props.geo?.coords.longitude,
+        },
+      });
+      return stops ?? [];
+    }
+  } catch (e) {
+    console.error(e);
+  } finally {
+    loading.value = false;
   }
 }, []);
+
+const onSearch = async () => {
+  console.log(queryDebounced.value);
+  const {
+    data: { value: stops },
+  } = await useFetch<Stop[]>("/api/gtfs/stops/search", {
+    params: {
+      q: queryDebounced.value.trim() || undefined,
+      agencyId,
+      latitude: props.geo?.coords.latitude,
+      longitude: props.geo?.coords.longitude,
+    },
+  });
+  return stops ?? [];
+};
 
 watch(routeId, async (newRouteId, oldRouteId) => {
   if (newRouteId !== oldRouteId) {
