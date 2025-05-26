@@ -6,14 +6,16 @@
     required
   >
     <USelectMenu
+      :key="routeId"
       v-model="stop"
       v-model:query="query"
-      searchable
+      :debounce="500"
+      :searchable="routeId ? true : onSearch"
+      searchable-placeholder="Search for a transit stops"
+      :search-attributes="['stopName', 'direction']"
       :options="options"
       :loading="loading"
-      searchable-placeholder="Search for a transit stops"
       placeholder="Select a stop"
-      option-attribute="stopName"
       trailing
       :popper="{
         placement: isMobile ? 'top' : 'bottom',
@@ -35,7 +37,6 @@
 import { z } from "zod";
 import type { Route } from "./route.vue";
 import type { Agency } from "./agency.vue";
-import { refDebounced } from "@vueuse/core";
 
 export const stopSchema = z.object({
   stopId: z.string(),
@@ -51,7 +52,6 @@ const loading = ref(false);
 const { isMobile } = useDevice();
 const stop = ref<Stop | undefined>(undefined);
 const query = ref<string>("");
-const queryDebounced = refDebounced(query, 400);
 const props = defineProps<{
   agency: Agency;
   route?: Route;
@@ -101,6 +101,25 @@ const getAgencyStops = async ({
   });
 };
 
+const onSearch = async (queryString: string) => {
+  if (queryString.length || !options.value.length) {
+    loading.value = true;
+    const stops = await getAgencyStops({
+      query: query.value,
+      agencyId: agencyId.value,
+      geolocation: props.geo,
+    });
+    loading.value = false;
+    options.value = stops;
+    if (queryString === " ") {
+      query.value = "";
+    }
+    return stops;
+  } else {
+    return options.value;
+  }
+};
+
 onMounted(async () => {
   loading.value = true;
   options.value = routeId.value
@@ -108,36 +127,20 @@ onMounted(async () => {
         routeId: routeId.value,
         directionId: directionId.value,
       })
-    : await getAgencyStops({
-        agencyId: agencyId.value,
-        geolocation: props.geo,
-      });
+    : [];
   loading.value = false;
-});
-
-watch(queryDebounced, async (newQuery, oldQuery) => {
-  if (!routeId.value && !(newQuery === "" && oldQuery === " ")) {
-    loading.value = true;
-    options.value = await getAgencyStops({
-      query: newQuery,
-      agencyId: agencyId.value,
-      geolocation: props.geo,
-    });
-    loading.value = false;
-    if (newQuery === " ") {
-      query.value = "";
-    }
-  }
 });
 
 watch(routeId, async (newRouteId, oldRouteId) => {
   if (newRouteId !== oldRouteId) {
     stop.value = undefined;
     if (newRouteId) {
+      loading.value = true;
       options.value = await getRouteStops({
         routeId: newRouteId,
         directionId: directionId.value,
       });
+      loading.value = false;
     } else {
       // this triggers the search but the white space is trimmed later
       query.value = " ";
