@@ -77,6 +77,7 @@ async function getStops(
         ...queryTokens.map((token) => like(stops.stopName, `%${token}%`))
       )
     )
+    .orderBy(stops.stopName, directions.directionId)
     .limit(STOPS_RESULTS_LIMIT);
 }
 

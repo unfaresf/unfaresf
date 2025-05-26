@@ -22,7 +22,8 @@ const getRoutes = (agencyId: string) => {
     .from(routes)
     .innerJoin(agency, eq(routes.agencyId, agency.agencyId))
     .innerJoin(directions, eq(directions.routeId, routes.routeId))
-    .where(agencyId ? eq(agency.agencyId, agencyId) : undefined);
+    .where(agencyId ? eq(agency.agencyId, agencyId) : undefined)
+    .orderBy(routes.routeShortName, directions.directionId);
 };
 
 const gtfsGetRouteByAgencySchema = z.object({

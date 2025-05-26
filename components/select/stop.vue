@@ -115,16 +115,16 @@ onMounted(async () => {
   loading.value = false;
 });
 
-watch(queryDebounced, async () => {
-  if (!routeId.value) {
+watch(queryDebounced, async (newQuery, oldQuery) => {
+  if (!routeId.value && !(newQuery === "" && oldQuery === " ")) {
     loading.value = true;
     options.value = await getAgencyStops({
-      query: queryDebounced.value,
+      query: newQuery,
       agencyId: agencyId.value,
       geolocation: props.geo,
     });
     loading.value = false;
-    if (queryDebounced.value === " ") {
+    if (newQuery === " ") {
       query.value = "";
     }
   }

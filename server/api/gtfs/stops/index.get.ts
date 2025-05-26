@@ -32,7 +32,8 @@ const getStops = (routeId: string, directionId: number) => {
     )
     .where(
       and(eq(routes.routeId, routeId), eq(directions.directionId, directionId))
-    );
+    )
+    .orderBy(stops.stopName, directions.directionId);
 };
 
 const gtfsGetStopsByRoute = z.object({
