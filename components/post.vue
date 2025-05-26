@@ -31,7 +31,7 @@
 
     <template v-if="!props.report?.reviewedAt" #footer>
       <div class="flex flex-col md:flex-row grow md:grow-0 gap-y-3">
-        <UButton color="primary" class="justify-center md:order-4 md:ml-3 cursor-pointer" type="submit" form="external-source-broadcast-form">Post</UButton>
+        <UButton color="primary" class="justify-center md:order-4 md:ml-3 cursor-pointer" type="submit">Post</UButton>
         <div class="flex grow items-center md:order-1">
           <UButton id="post-post-button" color="warning" class="justify-center grow md:grow-0 mr-2 cursor-pointer" @click="postInternalSourceSummary" :disabled="!sourceInternal">Post Summary</UButton>
           <UPopover mode="hover" :open-delay="300" :close-delay="200" :content="{ side: 'top' }">
@@ -57,13 +57,14 @@ import { type StopPostResponse, stopPostResponseSchema } from "../components/sel
 import { getPlainTextSummary } from './report-summary.vue';
 
 const emit = defineEmits<{
-  posted: [SelectReport],
+  broadcast: [SelectReport],
   dismissed: [SelectReport]
 }>();
 
 const props = defineProps<{
   report: SelectReport,
 }>();
+const toast = useToast();
 
 const internalSourceBroadcast:Partial<InternalSourceBroadcastSchema> = reactive({
   message: undefined,
@@ -89,7 +90,6 @@ const externalSourceBroadcast = computed(():Partial<ExternalSourceBroadcastSchem
   }
 });
 
-const toast = useToast();
 const pending = ref(false);
 const reportSummRef = useTemplateRef('report-summary-ref');
 const externalSourceBroadcastSchema = z.object({
@@ -108,7 +108,7 @@ type InternalSourceBroadcastSchema = z.output<typeof internalSourceBroadcastSche
 async function postInternalSourceSummary() {
   if (reportSummRef.value?.summary?.innerText) {
     await postBroadcast(reportSummRef.value?.summary?.innerText);
-    emit('posted', props.report);
+    emit('broadcast', props.report);
   }
 }
 
@@ -125,19 +125,20 @@ async function postBroadcast(msg:string) {
     });
     internalSourceBroadcast.message = undefined;
   } catch (err:any) {
-    if (err.message === "UNIQUE constraint failed: broadcasts.report_id") {
+    if (err.status === 409) {
+      internalSourceBroadcast.message = undefined;
       toast.add({
         color: 'warning',
-        title: 'Someone beat you to the punch',
-        description: 'Someone else created a broadcast for this report.',
+        title: 'Report already handled',
+        description: 'Someone already created a broadcast for this report',
       });
-    } else {
-      toast.add({
-        color: 'error',
-        title: 'Error creating new broadcast',
-        description: err.data?.message || err.message,
-      });
+      return;
     }
+    toast.add({
+      color: 'error',
+      title: 'Error creating new broadcast',
+      description: err.data?.message || err.message,
+    });
   } finally {
     pending.value = false;
   }
@@ -146,6 +147,8 @@ async function postBroadcast(msg:string) {
 async function postExternalSourceBroadcast(broadcast:ExternalSourceBroadcastSchema) {
   pending.value = true;
   try {
+    // splitting this across two API calls is not ideal. It should be done on the
+    // backend in a transaction to avoid partial failure.
     await $fetch(`/api/reports/${props.report.id}`, {
       method: 'PUT',
       body: {
@@ -183,11 +186,11 @@ async function dismiss(report:SelectReport) {
 
 async function onSubmitInternalSource(event: FormSubmitEvent<InternalSourceBroadcastSchema>) {
   await postBroadcast(event.data.message);
-  emit('posted', props.report);
+  emit('broadcast', props.report);
 }
 
 async function onSubmitExternalSource(event: FormSubmitEvent<ExternalSourceBroadcastSchema>) {
   await postExternalSourceBroadcast(event.data);
-  emit('posted', props.report);
+  emit('broadcast', props.report);
 }
 </script>

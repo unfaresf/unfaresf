@@ -1,7 +1,7 @@
 <template>
-  <UModal>
+  <UModal title="Create broadcast from report" description="Modal containing form for creating a new broadcast from a report.">
     <template #content>
-      <post :report="props.report" @posted="onApprove" @dismissed="onDismiss" />
+      <post :report="props.report" @broadcast="onBroadcast" @dismissed="onDismiss" />
     </template>
   </UModal>
 </template>
@@ -14,16 +14,15 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  onApprove: [SelectReport],
-  onDismiss: [SelectReport]
+  close: [SelectReport|undefined],
 }>();
 
-function onApprove(report: SelectReport) {
-  emit('onApprove', report);
+function onBroadcast(report: SelectReport) {
+  emit('close', report);
 }
 
 function onDismiss(report: SelectReport) {
-  emit('onDismiss', report);
+  emit('close', report);
 }
 
 </script>

@@ -13,7 +13,7 @@
         </div>
       </template>
       <div v-if="unreviewedReports.result.length">
-        <ReportCard v-for="report in unreviewedReports.result" :report="report" @onApprove="() => refreshReports()" @onDismiss="onDimiss" />
+        <ReportCard v-for="report in unreviewedReports.result" :report="report" @change="onChangeToReport" />
       </div>
       <div v-else-if="unreviewedReportsStatus === 'pending'">
         <div class="space-y-2">
@@ -84,13 +84,6 @@ type ReportsGetResp = {
   result: SelectReport[]
 }
 
-async function onDimiss(report: SelectReport) {
-  await Promise.all([
-    refreshReports(),
-    refreshBroadcasts()
-  ]);
-}
-
 const { data: unreviewedReports, refresh: refreshReports, status: unreviewedReportsStatus } = await useLazyFetch<ReportsGetResp>("/api/reports", {
   server: false,
   query: { page: page, limit: limit, reviewed: reviewed },
@@ -110,6 +103,15 @@ const { data: broadcasts, refresh: refreshBroadcasts } = await useLazyFetch(`/ap
     from: sub(new Date(), {hours: 12}).toISOString(),
   },
 });
+
+async function onChangeToReport(report: SelectReport|undefined) {
+  if (report) {
+    await Promise.all([
+      refreshReports(),
+      refreshBroadcasts()
+    ]);
+  }
+}
 
 if (import.meta.client) {
   try {

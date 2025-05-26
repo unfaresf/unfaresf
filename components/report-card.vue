@@ -13,8 +13,8 @@
       <ReportSummary :report="props.report" class="mt-2"></ReportSummary>
     </div>
     <div v-if="report && !props.report.reviewedAt" class="flex flex-col ml-auto">
-      <UButton class="mb-auto cursor-pointer" :id="'report-card-dismiss-'+props.report.id" color="error" variant="ghost" size="md" icon="i-heroicons-x-circle" aria-label="Dismiss report" @click="onDismiss(props.report)" />
-      <UButton class="mt-auto cursor-pointer" :id="'report-card-approve-'+props.report.id" color="primary" variant="soft" size="md" icon="i-heroicons-check-circle" aria-label="Approve report" @click="onApprove(props.report)" />
+      <UButton class="mb-auto cursor-pointer" :id="'report-card-dismiss-'+props.report.id" color="error" variant="ghost" size="md" icon="i-heroicons-x-circle" aria-label="Dismiss report" :disabled="requestPending" @click="dismiss(props.report)" />
+      <UButton class="mt-auto cursor-pointer" :id="'report-card-approve-'+props.report.id" color="primary" variant="soft" size="md" icon="i-heroicons-check-circle" aria-label="Approve report" :disabled="requestPending" @click="onApprove(props.report)" />
     </div>
   </div>
   <div v-else>
@@ -36,28 +36,50 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  onApprove: [SelectReport],
-  onDismiss: [SelectReport],
+  change: [SelectReport|undefined],
 }>();
 
-const overlay = useOverlay()
+const requestPending = ref(false);
+const overlay = useOverlay();
+const toast = useToast();
 
 function getRouteFromReportId(reportId: number):string{
   return `/reports/${reportId}`;
 }
 
-function onApprove(report: SelectReport) {
-  if (!props.report) return;
-  let modal = overlay.create(PostModal, {
+async function onApprove(report: SelectReport) {
+  const modal = overlay.create(PostModal, {
     props: {
-      report: props.report,
-    }
+      report: report,
+    },
   });
-  
-  modal.open();
+
+  const instance = modal.open();
+
+  const result = await instance.result;
+  emit('change', result);
 }
 
-function onDismiss(report: SelectReport) {
-  emit('onDismiss', report);
+
+async function dismiss(report:SelectReport) {
+  requestPending.value = true;
+  try {
+    await $fetch(`/api/reports/${report.id}`, {
+      method: 'PUT',
+      body: {
+        approved: false
+      }
+    });
+    emit('change', report);
+  } catch (err:any) {
+    toast.add({
+      color: 'error',
+      title: 'Error dismissing reprt',
+      description: err.data?.message || err.message,
+    });
+  } finally {
+    requestPending.value = false;
+  }
 }
+
 </script>
