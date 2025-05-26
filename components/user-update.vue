@@ -7,7 +7,7 @@
 
       <UFormField label="Roles" name="roles">
         <USelectMenu v-model="state.roles" :items="roles" multiple>
-          <template #label>
+          <template #item-label>
             <span v-if="state.roles.length" class="truncate">{{ state.roles.join(', ') }}</span>
             <span v-else>Select roles</span>
           </template>
@@ -32,7 +32,7 @@ import type { FormSubmitEvent } from '#ui/types';
 import { z } from 'zod';
 
 const props = defineProps<{
-  user: GetUser,
+  user: GetUser & { hasActiveSubscription: boolean },
 }>();
 const emit = defineEmits<{
   (e: 'onDeleteUser', userId:number): void
