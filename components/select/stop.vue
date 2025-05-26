@@ -8,7 +8,7 @@
     <USelectMenu
       v-model="stop"
       v-model:query="query"
-      :searchable="onSearch"
+      searchable
       :options="options"
       :loading="loading"
       searchable-placeholder="Search for a transit stops"
@@ -32,7 +32,6 @@
 </template>
 
 <script lang="ts">
-import { computedAsync } from "@vueuse/core";
 import { z } from "zod";
 import type { Route } from "./route.vue";
 import type { Agency } from "./agency.vue";
@@ -52,83 +51,109 @@ const loading = ref(false);
 const { isMobile } = useDevice();
 const stop = ref<Stop | undefined>(undefined);
 const query = ref<string>("");
-const queryDebounced = refDebounced(query, 200);
+const queryDebounced = refDebounced(query, 400);
 const props = defineProps<{
   agency: Agency;
   route?: Route;
   geo?: GeolocationPosition;
 }>();
 const emit = defineEmits<{
-  (e: "onChange", stop: Stop): void;
+  (e: "onChange", stop: Stop | undefined): void;
 }>();
 
 const agencyId = computed(() => props.agency.agencyId);
 const routeId = computed(() => props.route?.routeId);
 const directionId = computed(() => props.route?.directionId);
 
-const options = computedAsync(async () => {
-  try {
-    loading.value = true;
-    if (routeId.value) {
-      return $fetch<Stop[]>("/api/gtfs/stops", {
-        params: {
-          routeId: routeId.value,
-          directionId: directionId.value,
-        },
-      });
-    } else {
-      const {
-        data: { value: stops },
-      } = await useFetch<Stop[]>("/api/gtfs/stops/search", {
-        params: {
-          agencyId,
-          latitude: props.geo?.coords.latitude,
-          longitude: props.geo?.coords.longitude,
-        },
-      });
-      return stops ?? [];
-    }
-  } catch (e) {
-    console.error(e);
-  } finally {
-    loading.value = false;
-  }
-}, []);
+const options = ref<Stop[]>([]);
 
-const onSearch = async () => {
-  console.log(queryDebounced.value);
-  const {
-    data: { value: stops },
-  } = await useFetch<Stop[]>("/api/gtfs/stops/search", {
+const getRouteStops = async ({
+  routeId,
+  directionId,
+}: {
+  routeId: string;
+  directionId?: number;
+}) => {
+  return $fetch<Stop[]>("/api/gtfs/stops", {
     params: {
-      q: queryDebounced.value.trim() || undefined,
-      agencyId,
-      latitude: props.geo?.coords.latitude,
-      longitude: props.geo?.coords.longitude,
+      routeId,
+      directionId,
     },
   });
-  return stops ?? [];
 };
+
+const getAgencyStops = async ({
+  agencyId,
+  query,
+  geolocation,
+}: {
+  agencyId: string;
+  query?: string;
+  geolocation?: GeolocationPosition;
+}) => {
+  return $fetch<Stop[]>("/api/gtfs/stops/search", {
+    params: {
+      q: query?.trim() || undefined,
+      agencyId,
+      latitude: geolocation?.coords.latitude,
+      longitude: geolocation?.coords.longitude,
+    },
+  });
+};
+
+onMounted(async () => {
+  loading.value = true;
+  options.value = routeId.value
+    ? await getRouteStops({
+        routeId: routeId.value,
+        directionId: directionId.value,
+      })
+    : await getAgencyStops({
+        agencyId: agencyId.value,
+        geolocation: props.geo,
+      });
+  loading.value = false;
+});
+
+watch(queryDebounced, async () => {
+  if (!routeId.value) {
+    loading.value = true;
+    options.value = await getAgencyStops({
+      query: queryDebounced.value,
+      agencyId: agencyId.value,
+      geolocation: props.geo,
+    });
+    loading.value = false;
+    if (queryDebounced.value === " ") {
+      query.value = "";
+    }
+  }
+});
 
 watch(routeId, async (newRouteId, oldRouteId) => {
   if (newRouteId !== oldRouteId) {
     stop.value = undefined;
-    // this is a hack because you cant manually set options on a searchable USelectMenu
-    // this triggers the search but the white space is trimmed later
-    query.value = "";
+    if (newRouteId) {
+      options.value = await getRouteStops({
+        routeId: newRouteId,
+        directionId: directionId.value,
+      });
+    } else {
+      // this triggers the search but the white space is trimmed later
+      query.value = " ";
+    }
   }
 });
 
 watch(agencyId, async (newAgencyId, oldAgencyId) => {
   if (newAgencyId !== oldAgencyId) {
     stop.value = undefined;
-    // this is a hack because you cant manually set options on a searchable USelectMenu
     // this triggers the search but the white space is trimmed later
-    query.value = "";
+    query.value = " ";
   }
 });
-watch(stop, (newStop) => {
-  if (newStop) {
+watch(stop, (newStop, oldStop) => {
+  if (newStop !== oldStop) {
     emit("onChange", newStop);
   }
 });

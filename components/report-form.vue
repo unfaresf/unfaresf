@@ -36,7 +36,7 @@
       :agency="formState.agency"
       :route="formState.route"
       :geo="geoLocation"
-      @on-change="(newStop:Stop) => formState.stop = newStop"
+      @on-change="(newStop:Stop | undefined) => formState.stop = newStop"
     />
 
     <div class="flex">

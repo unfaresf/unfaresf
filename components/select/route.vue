@@ -3,6 +3,7 @@
     label="Route"
     name="route"
     description="Route name, e.g. 38 Geary or Bart Green line"
+    required
   >
     <USelectMenu
       v-model="route"
@@ -36,7 +37,6 @@
 <script lang="ts">
 import { z } from "zod";
 import type { Agency } from "./agency.vue";
-import { computedAsync } from "@vueuse/core";
 
 export const routeSchema = z.object({
   routeId: z.string(),
@@ -62,27 +62,35 @@ const route = ref<Route | undefined>(undefined);
 const props = defineProps<{
   agency: Agency;
 }>();
+const options = ref<Route[]>([]);
 const emit = defineEmits<{
   (e: "onChange", route: Route | undefined): void;
 }>();
 
 const agencyId = computed(() => props.agency.agencyId);
 
-watch(agencyId, (newAgencyId, oldAgencyId) => {
-  if (newAgencyId !== oldAgencyId) {
-    route.value = undefined;
-  }
+const getAgencyRoutes = async ({ agencyId }: { agencyId: string }) => {
+  return $fetch<Route[]>("/api/gtfs/routes", {
+    params: {
+      agencyId,
+    },
+  });
+};
+
+onMounted(async () => {
+  loading.value = true;
+  options.value = await getAgencyRoutes({ agencyId: agencyId.value });
+  loading.value = false;
 });
 
-const options = computedAsync(
-  async () =>
-    await $fetch<Route[]>("/api/gtfs/routes", {
-      params: {
-        agencyId: agencyId.value,
-      },
-    }),
-  []
-);
+watch(agencyId, async (newAgencyId, oldAgencyId) => {
+  if (newAgencyId !== oldAgencyId) {
+    route.value = undefined;
+    loading.value = true;
+    options.value = await getAgencyRoutes({ agencyId: agencyId.value });
+    loading.value = false;
+  }
+});
 
 watch(route, (newRoute) => {
   emit("onChange", newRoute);
