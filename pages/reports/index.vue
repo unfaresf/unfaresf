@@ -12,26 +12,29 @@
           </div>
         </div>
       </template>
-      <div v-if="unreviewedReports.result.length">
-        <ReportCard v-for="report in unreviewedReports.result" :report="report" @change="onChangeToReport" />
-      </div>
-      <div v-else-if="unreviewedReportsStatus === 'pending'">
-        <div class="space-y-2">
-          <USkeleton class="h-4 w-full" />
-          <USkeleton class="h-4 w-10/12" />
+      <!-- this client-only is me being lazy about fixing a hydration warning -->
+      <client-only>
+        <div v-if="unreviewedReports.result.length">
+          <ReportCard v-for="report in unreviewedReports.result" :report="report" @change="onChangeToReport" />
         </div>
-      </div>
-      <div v-else>
-        <p>No recent reports</p>
-      </div>
-      <template v-if="unreviewedReports.count > limit" #footer>
-        <UPagination
-          v-model="page"
-          :page-count="limit"
-          :total="unreviewedReports.count"
-          class="justify-center"
-        />
-      </template>
+        <div v-else-if="unreviewedReportsStatus === 'pending'">
+          <div class="space-y-2">
+            <USkeleton class="h-4 w-full" />
+            <USkeleton class="h-4 w-10/12" />
+          </div>
+        </div>
+        <div v-else>
+          <p>No recent reports</p>
+        </div>
+        <template v-if="unreviewedReports.count > limit" #footer>
+          <UPagination
+            v-model="page"
+            :page-count="limit"
+            :total="unreviewedReports.count"
+            class="justify-center"
+          />
+        </template>
+      </client-only>
     </UCard>
     <UCard class="col-span-6 lg:col-span-2 xs:mt-10 md:mt-0">
       <template #header>
