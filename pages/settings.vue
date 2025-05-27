@@ -1,7 +1,6 @@
 <template>
   <UCard class="mt-6" :ui="{ body: 'px-4 py-0 sm:p-6 sm:py-0' }">
     <UTable
-      v-model:expand="usersExpand"
       :loading="usersStatus === 'pending' || users === null"
       :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Loading...' }"
       :empty-state="{ icon: 'i-heroicons-circle-stack-20-solid', label: 'No users' }"
@@ -123,10 +122,6 @@ const UButton = resolveComponent('UButton')
 const toast = useToast();
 const limit = ref(10);
 const page = ref(1);
-const usersExpand = ref({
-  openedRows: [],
-  row: {}
-});
 const mastoInt = ref();
 const mapInt = ref();
 const twitterInt = ref();
