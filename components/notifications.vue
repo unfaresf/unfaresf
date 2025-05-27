@@ -76,7 +76,7 @@ function urlBase64ToUint8Array(s:string) {
 }
 
 async function subscribeUserToPush() {
-  if (!$pwa.isRegistered || !$pwa.registration.value) {
+  if (!$pwa.isRegistered.value || !$pwa.registration.value) {
     throw new Error('service worker not registered');
   }
 
