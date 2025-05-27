@@ -5,15 +5,31 @@
       :loading="usersStatus === 'pending' || users === null"
       :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Loading...' }"
       :empty-state="{ icon: 'i-heroicons-circle-stack-20-solid', label: 'No users' }"
-      :columns="[{ accessorKey: 'userName', header: 'User' },{ accessorKey: 'roles', header: 'Roles' }]"
+      :columns="[{
+        id: 'expand',
+        cell: ({ row }) =>
+          h(UButton, {
+            color: 'neutral',
+            variant: 'ghost',
+            icon: 'i-lucide-chevron-down',
+            square: true,
+            'aria-label': 'Expand',
+            ui: {
+              leadingIcon: [
+                'transition-transform',
+                row.getIsExpanded() ? 'duration-200 rotate-180' : ''
+              ]
+            },
+            onClick: () => row.toggleExpanded()
+          })
+      },
+      { accessorKey: 'userName', header: 'User' },
+      { accessorKey: 'roles', header: 'Roles' }]"
       :data="users?.result"
     >
-      <template #expanded="{ row }">
-        <user-update :user="row.original" @on-delete-user="onDeleteUser" />
+      <template #expanded="{ row:user }">
+        <user-update :user="user.original" @on-delete-user="onDeleteUser" @on-change-roles="onChangeRoles" />
       </template>
-      <!-- <template #expand-action="{ isExpanded, toggle }">
-        <UButton @click="toggle" :icon="isExpanded ? 'i-heroicons-bars-arrow-up-16-solid' : 'i-heroicons-bars-arrow-down-16-solid'" />
-      </template> -->
       <template #roles-cell="{ row }">
         <span>{{ row.original.roles.join(', ') }}</span>
       </template>
@@ -103,9 +119,10 @@ useHead({
   title: 'UnfareSF - Settings'
 })
 
+const UButton = resolveComponent('UButton')
+const toast = useToast();
 const limit = ref(10);
 const page = ref(1);
-const toast = useToast();
 const usersExpand = ref({
   openedRows: [],
   row: {}
@@ -127,6 +144,10 @@ const { data: users, status:usersStatus, refresh } = await useLazyFetch("/api/us
   }
 });
 async function onDeleteUser() {
+  await refresh();
+}
+
+async function onChangeRoles() {
   await refresh();
 }
 

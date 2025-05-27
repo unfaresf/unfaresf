@@ -1,18 +1,15 @@
 <template>
   <UContainer :ui="{base: 'mx-auto', padding: 'py-4', constrained: 'max-w-lg'}">
     <UForm :schema="userUpdateSchema" :state="state" class="space-y-4 flex flex-col" @submit="onSubmit">
-      <UFormField label="Username" name="username">
-        <UInput disabled v-model="props.user.userName" />
-      </UFormField>
+      <div class="w-full md:w-1/3">
+        <UFormField label="Username" name="username">
+          <UInput disabled v-model="state.userName" class="w-full" />
+        </UFormField>
 
-      <UFormField label="Roles" name="roles">
-        <USelectMenu v-model="state.roles" :items="roles" multiple>
-          <template #item-label>
-            <span v-if="state.roles.length" class="truncate">{{ state.roles.join(', ') }}</span>
-            <span v-else>Select roles</span>
-          </template>
-        </USelectMenu>
-      </UFormField>
+        <UFormField label="Roles" name="roles">
+          <USelectMenu v-model="state.roles" :items="roles" multiple class="w-full" />
+        </UFormField>
+      </div>
 
       <div class="self-end">
         <UButton @click="deleteUser(props.user.id)" color="error" icon="i-heroicons-trash" :disabled="(props.user.id === user?.id) || loading" :loading="loading">
@@ -27,16 +24,18 @@
 </template>
 
 <script setup lang="ts">
-import { type GetUser, Roles } from '../db/schema';
+import { type GetUser, Roles, type Prettify } from '../db/schema';
 import type { FormSubmitEvent } from '#ui/types';
 import { z } from 'zod';
 
 const props = defineProps<{
-  user: GetUser & { hasActiveSubscription: boolean },
+  user: Prettify<Omit<GetUser, 'createdAt'> & { hasActiveSubscription: boolean; createdAt: string; }>,
 }>();
+
 const emit = defineEmits<{
-  (e: 'onDeleteUser', userId:number): void
-}>()
+  onDeleteUser: [number],
+  onChangeRoles: [void],
+}>();
 
 const userUpdateSchema = z.object({
   roles: z.string().array(),
@@ -48,7 +47,8 @@ const { user } = useUserSession();
 const toast = useToast();
 const roles = Object.values(Roles);
 const state = ref({
-  roles: props.user.roles
+  roles: props.user.roles,
+  userName: props.user.userName,
 });
 
 async function deleteUser(userId:number) {
@@ -87,6 +87,7 @@ async function onSubmit(event: FormSubmitEvent<userUpdateSchema>) {
       color: 'success',
       title: 'Update successful'
     });
+    emit('onChangeRoles');
   } catch (err:any) {
     toast.add({
       color: 'error',

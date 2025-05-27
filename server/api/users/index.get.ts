@@ -31,11 +31,13 @@ export default defineEventHandler(async (event) => {
     // JSON.parse of roles is because roles are stored as a stringified array of strings
     const users = result.map(user => {
       const roles:Roles[] = JSON.parse(user.roles).sort();
+      const createdAt = user.createdAt.toISOString();
+
       return {
         ...user,
-        ...{ roles }
+        ...{ roles, createdAt }
       };
-    })
+    });
     return {
       count,
       result: users
