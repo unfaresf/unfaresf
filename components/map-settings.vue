@@ -1,18 +1,18 @@
 <template>
   <UContainer :ui="{base: 'mx-auto', padding: 'py-4', constrained: 'max-w-lg'}">
     <UForm :schema="mapIntegrationFormSchema" :state="state" class="space-y-4 flex flex-col" @submit.prevent="onSubmit">
-      <UFormGroup label="Base Map Styles URL" name="options.mapStylesUrl" description="URL (including API key) of base map styles." help="Example: https://api.maptiler.com/maps/basic/style.json?key=abc123">
+      <UFormField label="Base Map Styles URL" name="options.mapStylesUrl" description="URL (including API key) of base map styles." help="Example: https://api.maptiler.com/maps/basic/style.json?key=abc123">
         <UInput v-model="state.options.mapStylesUrl" :disabled="pendingReq" />
-      </UFormGroup>
+      </UFormField>
 
-      <UFormGroup label="Tileserver Server Domain" name="options.tileServerDomain" description="Domain where custom tiles can be loaded for routes and stops." help="Example: https://tiles.unfaresf.org">
+      <UFormField label="Tileserver Server Domain" name="options.tileServerDomain" description="Domain where custom tiles can be loaded for routes and stops." help="Example: https://tiles.unfaresf.org">
         <UInput v-model="state.options.tileServerDomain" :disabled="pendingReq" />
-      </UFormGroup>
+      </UFormField>
 
       <div class="flex">
-        <UFormGroup label="Enable" name="enable">
-          <UToggle v-model="state.enable" :disabled="pendingReq" />
-        </UFormGroup>
+        <UFormField label="Enable" name="enable">
+          <USwitch v-model="state.enable" :disabled="pendingReq" />
+        </UFormField>
 
         <UButton type="submit" class="ml-auto my-4" icon="i-heroicons-pencil-square" :loading="pendingReq">
           Save
@@ -81,12 +81,12 @@ async function onSubmit(event: FormSubmitEvent<MapIntegrationFormData>) {
       await createMapOptions(event.data);
     }
     toast.add({
-      color: 'green',
+      color: 'success',
       title: 'Updated map settings',
     });
   } catch (err:any) {
     toast.add({
-      color: 'red',
+      color: 'error',
       title: 'Error updating map settings',
       description: err.message
     });

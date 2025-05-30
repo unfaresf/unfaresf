@@ -15,11 +15,9 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    await db.transaction(async (tx) => {
-      await tx.delete(usersTable)
-        .where(eq(usersTable.id, userId))
-        .limit(1);
-    });
+    await db.delete(usersTable)
+      .where(eq(usersTable.id, userId))
+      .limit(1);
   } catch (e: any) {
     console.error(e);
     throw createError({

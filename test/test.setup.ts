@@ -18,6 +18,16 @@ beforeAll(() => {
       }
     )}
   );
+  mockComponent('UTooltip', () => {
+    return defineComponent(
+      {
+        default: {
+          name: 'UTooltip',
+          template: '<div data-testid="mocked-tooltip">Mocked Tooltip</div>'
+        }
+      }
+    )}
+  );
 });
 
 async function runAppMigrations(db:BetterSQLite3Database) {
