@@ -1,16 +1,16 @@
 <template>
   <UContainer :ui="{base: 'mx-auto', padding: 'py-4', constrained: 'max-w-lg'}">
     <UForm :schema="bskyIntegrationFormSchema" :state="state" class="space-y-4 flex flex-col" @submit.prevent="onSubmit">
-      <UFormGroup label="Account Name" name="handle" description="The account handle to post too." help="Example: unfaresf.bsky.social">
+      <UFormField label="Account Name" name="handle" description="The account handle to post too." help="Example: unfaresf.bsky.social">
         <UInput v-model="state.options.handle" :disabled="pendingReq" />
-      </UFormGroup>
-      <UFormGroup label="App Password" name="appPassword" description="UnfareSF specific password generated in your Bluesky settings." help="Generate at: https://bsky.app/settings/app-passwords">
+      </UFormField>
+      <UFormField label="App Password" name="appPassword" description="UnfareSF specific password generated in your Bluesky settings." help="Generate at: https://bsky.app/settings/app-passwords">
         <UInput type="password" v-model="state.options.appPassword" :disabled="pendingReq" />
-      </UFormGroup>
+      </UFormField>
       <div class="flex">
-        <UFormGroup label="Enable" name="enable">
-          <UToggle v-model="state.enable" :disabled="pendingReq" />
-        </UFormGroup>
+        <UFormField label="Enable" name="enable">
+          <USwitch v-model="state.enable" :disabled="pendingReq" />
+        </UFormField>
 
         <UButton type="submit" class="ml-auto my-4" icon="i-heroicons-pencil-square" :loading="pendingReq">
           Save
@@ -75,12 +75,12 @@ async function onSubmit(event: FormSubmitEvent<BskyIntegrationFormData>) {
       await createBskyOptions(event.data);
     }
     toast.add({
-      color: 'green',
+      color: 'success',
       title: 'Updated Blue Sky settings',
     });
   } catch (err:any) {
     toast.add({
-      color: 'red',
+      color: 'error',
       title: 'Error updating Blue Sky settings',
       description: err.message
     });

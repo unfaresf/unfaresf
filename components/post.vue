@@ -2,17 +2,17 @@
   <UCard>
     <template #header>
       <h3 class="text-lg">Post</h3>
-      <p class="text-xs text-gray-500">What operator, from where, which line, headed which direction.</p>
+      <p class="text-xs text-neutral-500">What operator, from where, which line, headed which direction.</p>
     </template>
 
-    <div class="p-2 rounded bg-gray-100 text-gray-600 text-sm mb-4">
+    <div class="p-2 rounded bg-neutral-100 text-neutral-600 text-sm mb-4">
       <ReportSummary ref="report-summary-ref" :report="props.report" />
     </div>
 
     <UForm v-if="sourceInternal" class="space-y-4" id="internal-source-broadcast-form" :schema="internalSourceBroadcastSchema" :state="internalSourceBroadcast" @submit="onSubmitInternalSource">
-      <UFormGroup label="Message" name="message" help="Tweet, toot, txt, etc...">
-        <UTextarea v-model="internalSourceBroadcast.message" autofocus />
-      </UFormGroup>
+      <UFormField label="Message" name="message" help="Tweet, toot, txt, etc...">
+        <UTextarea v-model="internalSourceBroadcast.message" class="w-full" autofocus />
+      </UFormField>
     </UForm>
 
     <UForm v-else class="space-y-4" id="external-source-broadcast-form" :schema="externalSourceBroadcastSchema" :state="externalSourceBroadcast" @submit="onSubmitExternalSource">
@@ -20,28 +20,28 @@
 
       <SelectStop :route-id="externalSourceBroadcast.route?.routeId" @on-change="(newStop:StopPostResponse) => externalSourceBroadcast.stop = newStop" />
 
-      <UFormGroup label="Inspectors onboard" name="passenger" help="Enable if inspectors are currently onboard.">
-        <UToggle v-model="externalSourceBroadcast.passenger" />
-      </UFormGroup>
+      <UFormField label="Inspectors onboard" name="passenger" help="Enable if inspectors are currently onboard.">
+        <USwitch v-model="externalSourceBroadcast.passenger" />
+      </UFormField>
 
-      <UFormGroup label="Message" name="message" help="Tweet, toot, txt, etc...">
+      <UFormField label="Message" name="message" help="Tweet, toot, txt, etc...">
         <UTextarea v-model="externalSourceBroadcast.message" />
-      </UFormGroup>
+      </UFormField>
     </UForm>
 
     <template v-if="!props.report?.reviewedAt" #footer>
-      <div class="flex flex-col md:flex-row flex-grow md:flex-grow-0 gap-y-3">
-        <UButton color="green" class="justify-center md:order-4 md:ml-3" type="submit" form="external-source-broadcast-form">Post</UButton>
-        <div class="flex flex-grow items-center md:order-1">
-          <UButton id="post-post-button" color="orange" class="justify-center grow md:flex-grow-0 mr-2" @click="postInternalSourceSummary" :disabled="!sourceInternal">Post Summary</UButton>
-          <UTooltip text="Tooltip example" :popper="{ placement: 'top' }">
+      <div class="flex flex-col md:flex-row grow md:grow-0 gap-y-3">
+        <UButton color="primary" class="justify-center md:order-4 md:ml-3 cursor-pointer" type="submit">Post</UButton>
+        <div class="flex grow items-center md:order-1">
+          <UButton id="post-post-button" color="warning" class="justify-center grow md:grow-0 mr-2 cursor-pointer" @click="postInternalSourceSummary" :disabled="!sourceInternal">Post Summary</UButton>
+          <UPopover mode="hover" :open-delay="300" :close-delay="200" :content="{ side: 'top' }">
             <UIcon name="i-heroicons:question-mark-circle" class="w-5 h-5" />
-            <template #text>
-              <span class="italic">Post using the text at the top of this popup.</span>
+            <template #content>
+              <span class="italic p-2">Post using the text at the top of this popup.</span>
             </template>
-          </UTooltip>
+          </UPopover>
         </div>
-        <UButton id="post-dismiss-button" color="red" class="justify-center md:order-2" :disabled="pending" v-if="report" @click="dismiss(report?.id)">Dismiss</UButton>
+        <UButton v-if="report" id="post-dismiss-button" color="error" class="justify-center md:order-2 cursor-pointer" :disabled="pending" @click="dismiss(report)">Dismiss</UButton>
       </div>
     </template>
   </UCard>
@@ -57,12 +57,14 @@ import { type StopPostResponse, stopPostResponseSchema } from "../components/sel
 import { getPlainTextSummary } from './report-summary.vue';
 
 const emit = defineEmits<{
-  success: []
-  close: []
-}>()
+  broadcast: [SelectReport],
+  dismissed: [SelectReport]
+}>();
+
 const props = defineProps<{
   report: SelectReport,
 }>();
+const toast = useToast();
 
 const internalSourceBroadcast:Partial<InternalSourceBroadcastSchema> = reactive({
   message: undefined,
@@ -88,7 +90,6 @@ const externalSourceBroadcast = computed(():Partial<ExternalSourceBroadcastSchem
   }
 });
 
-const toast = useToast();
 const pending = ref(false);
 const reportSummRef = useTemplateRef('report-summary-ref');
 const externalSourceBroadcastSchema = z.object({
@@ -107,7 +108,7 @@ type InternalSourceBroadcastSchema = z.output<typeof internalSourceBroadcastSche
 async function postInternalSourceSummary() {
   if (reportSummRef.value?.summary?.innerText) {
     await postBroadcast(reportSummRef.value?.summary?.innerText);
-    emit('success');
+    emit('broadcast', props.report);
   }
 }
 
@@ -124,19 +125,20 @@ async function postBroadcast(msg:string) {
     });
     internalSourceBroadcast.message = undefined;
   } catch (err:any) {
-    if (err.message === "UNIQUE constraint failed: broadcasts.report_id") {
+    if (err.status === 409) {
+      internalSourceBroadcast.message = undefined;
       toast.add({
-        color: 'orange',
-        title: 'Someone beat you to the punch',
-        description: 'Someone else created a broadcast for this report.',
+        color: 'warning',
+        title: 'Report already handled',
+        description: 'Someone already created a broadcast for this report',
       });
-    } else {
-      toast.add({
-        color: 'red',
-        title: 'Error creating new broadcast',
-        description: err.data?.message || err.message,
-      });
+      return;
     }
+    toast.add({
+      color: 'error',
+      title: 'Error creating new broadcast',
+      description: err.data?.message || err.message,
+    });
   } finally {
     pending.value = false;
   }
@@ -145,6 +147,8 @@ async function postBroadcast(msg:string) {
 async function postExternalSourceBroadcast(broadcast:ExternalSourceBroadcastSchema) {
   pending.value = true;
   try {
+    // splitting this across two API calls is not ideal. It should be done on the
+    // backend in a transaction to avoid partial failure.
     await $fetch(`/api/reports/${props.report.id}`, {
       method: 'PUT',
       body: {
@@ -159,19 +163,19 @@ async function postExternalSourceBroadcast(broadcast:ExternalSourceBroadcastSche
   }
 }
 
-async function dismiss(reportId:number) {
+async function dismiss(report:SelectReport) {
+  pending.value = true;
   try {
-    pending.value = true;
-    await $fetch(`/api/reports/${reportId}`, {
+    await $fetch(`/api/reports/${report.id}`, {
       method: 'PUT',
       body: {
         approved: false
       }
     });
-    emit('success');
+    emit('dismissed', report);
   } catch (err:any) {
     toast.add({
-      color: 'red',
+      color: 'error',
       title: 'Error dismissing reprt',
       description: err.data?.message || err.message,
     });
@@ -182,11 +186,11 @@ async function dismiss(reportId:number) {
 
 async function onSubmitInternalSource(event: FormSubmitEvent<InternalSourceBroadcastSchema>) {
   await postBroadcast(event.data.message);
-  emit('success');
+  emit('broadcast', props.report);
 }
 
 async function onSubmitExternalSource(event: FormSubmitEvent<ExternalSourceBroadcastSchema>) {
   await postExternalSourceBroadcast(event.data);
-  emit('success');
+  emit('broadcast', props.report);
 }
 </script>

@@ -1,6 +1,8 @@
 <template>
-  <UModal :ui="{strategy:'merge', container:'items-start'}">
-    <post :report="props.report" @close="emit('close')" @success="emit('success')"></post>
+  <UModal title="Create broadcast from report" description="Modal containing form for creating a new broadcast from a report.">
+    <template #content>
+      <post :report="props.report" @broadcast="onBroadcast" @dismissed="onDismiss" />
+    </template>
   </UModal>
 </template>
 
@@ -10,5 +12,17 @@ import type { SelectReport } from '../db/schema';
 const props = defineProps<{
   report: SelectReport,
 }>();
-const emit = defineEmits(['success', 'close']);
+
+const emit = defineEmits<{
+  close: [SelectReport|undefined],
+}>();
+
+function onBroadcast(report: SelectReport) {
+  emit('close', report);
+}
+
+function onDismiss(report: SelectReport) {
+  emit('close', report);
+}
+
 </script>
