@@ -1,22 +1,22 @@
 <template>
   <UContainer :ui="{base: 'mx-auto', padding: 'py-4', constrained: 'max-w-lg'}">
     <UForm :schema="mastodonIntegrationFormSchema" :state="state" class="space-y-4 flex flex-col" @submit.prevent="onSubmit">
-      <UFormField label="Account Name" name="accountName" description="The account name for which you want mentions." help="Example: unfaresf">
+      <UFormGroup label="Account Name" name="accountName" description="The account name for which you want mentions." help="Example: unfaresf">
         <UInput v-model="state.options.accountName" :disabled="pendingReq" />
-      </UFormField>
+      </UFormGroup>
 
-      <UFormField label="URL" name="url" description="The domain of your server." help="Example: https://mastodon.social/ or https://sfba.social">
+      <UFormGroup label="URL" name="url" description="The domain of your server." help="Example: https://mastodon.social/ or https://sfba.social">
         <UInput v-model="state.options.url" :disabled="pendingReq" />
-      </UFormField>
+      </UFormGroup>
 
-      <UFormField label="Token" name="token" Description="The access token for the applcation in your account." help="Tokens are at `/settings/applications` at your server's URL.">
+      <UFormGroup label="Token" name="token" Description="The access token for the applcation in your account." help="Tokens are at `/settings/applications` at your server's URL.">
         <UInput v-model="state.options.token" type="password" :disabled="pendingReq" />
-      </UFormField>
+      </UFormGroup>
 
       <div class="flex">
-        <UFormField label="Enable" name="enable">
-          <USwitch v-model="state.enable" :disabled="pendingReq" />
-        </UFormField>
+        <UFormGroup label="Enable" name="enable">
+          <UToggle v-model="state.enable" :disabled="pendingReq" />
+        </UFormGroup>
 
         <UButton type="submit" class="ml-auto my-4" icon="i-heroicons-pencil-square" :loading="pendingReq">
           Save
@@ -85,12 +85,12 @@ async function onSubmit(event: FormSubmitEvent<MastodonIntegrationFormData>) {
       await createMastodonOptions(event.data);
     }
     toast.add({
-      color: 'success',
+      color: 'green',
       title: 'Updated mastodon settings',
     });
   } catch (err:any) {
     toast.add({
-      color: 'error',
+      color: 'red',
       title: 'Error updating mastodon settings',
       description: err.message
     });

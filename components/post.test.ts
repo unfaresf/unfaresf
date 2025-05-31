@@ -50,6 +50,26 @@ it('should show internal report broadcast form if report is from internal source
   expect(component.find('#internal-source-broadcast-form').exists()).toBe(true);
 });
 
+it('should show external report broadcast form if report is from mastodon source', async () => {
+  const component = await mountSuspended(Post, {
+    props: {
+      report: {
+        id: 123,
+        createdAt: new Date("May 15, 2025 04:00:00"),
+        source: 'mastodon',
+        uri: null,
+        reviewedAt: null,
+        route: null,
+        stop: null,
+        direction: null,
+        passenger: null,
+        message: faker.word.words(5)
+      }
+    }
+  });
+  expect(component.find('#external-source-broadcast-form').exists()).toBe(true);
+});
+
 it('should mark the report as not approved with the API', async () => {
   const mockFetch = vi.spyOn(global, '$fetch');
   registerEndpoint(`/api/reports`, {

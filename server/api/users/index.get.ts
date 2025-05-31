@@ -1,6 +1,6 @@
 import { desc, eq, sql, isNull, getTableColumns } from 'drizzle-orm';
 import { DB as db } from "../../sqlite-service";
-import { users as usersTable, subscriptions as subscriptionsTable, type Roles } from "../../../db/schema";
+import { users as usersTable, subscriptions as subscriptionsTable } from "../../../db/schema";
 import { getUsers } from "../../../shared/utils/abilities";
 import { z } from "zod";
 
@@ -30,14 +30,11 @@ export default defineEventHandler(async (event) => {
     ]);
     // JSON.parse of roles is because roles are stored as a stringified array of strings
     const users = result.map(user => {
-      const roles:Roles[] = JSON.parse(user.roles).sort();
-      const createdAt = user.createdAt.toISOString();
-
       return {
         ...user,
-        ...{ roles, createdAt }
+        ...{ roles: JSON.parse(user.roles).sort() }
       };
-    });
+    })
     return {
       count,
       result: users
