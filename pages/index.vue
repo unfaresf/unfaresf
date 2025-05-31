@@ -4,11 +4,11 @@
       <UForm class="flex flex-col gap-2 max-w-prose" ref="form" @submit="onSubmit" :state="formState" :schema="reportSchema">
         <SelectRoute :geo="geoLocation" @on-change="(newRoute:RouteResponse) => formState.route = newRoute" />
         <SelectStop :route-id="formState.route?.routeId" :geo="geoLocation" @on-change="(newStop:StopPostResponse) => formState.stop = newStop" />
-        <UFormField label="Inspectors onboard" name="passenger" help="Enable if inspectors are currently onboard.">
-          <USwitch v-model="formState.passenger" />
-        </UFormField>
+        <UFormGroup label="Inspectors onboard" name="passenger" help="Enable if inspectors are currently onboard.">
+          <UToggle v-model="formState.passenger" />
+        </UFormGroup>
 
-        <div class="flex mt-4">
+        <div class="flex">
           <ClientOnly>
             <geolocate @on-geolocate="(newGeolocation) => geoLocation = newGeolocation">
               <template #help>
@@ -16,7 +16,7 @@
               </template>
             </geolocate>
           </ClientOnly>
-          <UButton type="submit" label="Submit" class="ml-auto" @click="submitReport()"  :disabled="submitting"/>
+          <UButton type="submit" label="Submit" class="ml-auto" @click="submitReport"  :disabled="submitting"/>
         </div>
       </UForm>
       <div class="mt-8">
@@ -44,11 +44,12 @@
         <div class="basis-[calc(35dvh)] grow-0 shrink-0 snap-start"></div>
         <div class="basis-[calc(50dvh)] grow-0 shrink-0 snap-start"></div>
         <div
-          class="relative w-full bg-neutral-100 dark:bg-neutral-900 z-20 p-4 pb-48 shadow-[0px_0px_25px_-10px_rgba(0,0,0,0.75)] rounded-t-xl before:w-8 before:h-1 before:bg-neutral-200 before:dark:bg-neutral-100 before:rounded before:mx-auto before:block before:-mt-2"
+          class="relative w-full bg-gray-100 dark:bg-gray-900 z-20 p-4 pb-48 shadow-[0px_0px_25px_-10px_rgba(0,0,0,0.75)] rounded-t-xl before:w-8 before:h-1 before:bg-gray-200 before:dark:bg-gray-100 before:rounded before:mx-auto before:block before:-mt-2"
           >
           <UButton
-            class="shadow-lg absolute -top-16 right-8 lg:hidden rounded-full"
+            class="shadow-lg absolute -top-16 right-8 lg:hidden"
             size="xl"
+            :ui="{ rounded: 'rounded-full' }"
             icon="i-heroicons-pencil-square"
             to="/report"
           />
@@ -113,13 +114,13 @@ async function onSubmit(event: FormSubmitEvent<ReportPostSchema>) {
       body: event.data
     });
     toast.add({
-      color: 'success',
+      color: 'green',
       title: 'Report successful'
     });
     await navigateTo('/thank-you');
   } catch(err:any) {
     toast.add({
-      color: 'error',
+      color: 'red',
       title: 'Error submitting report',
       description: err.message
     });

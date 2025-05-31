@@ -5,7 +5,7 @@
         class="flex flex-col gap-2"
         @submit.prevent="signUp"
       >
-        <UFormField
+        <UFormGroup
           label="User Name"
           required
           :error="formError"
@@ -14,10 +14,10 @@
             v-model="signUpUserName"
             name="username"
           />
-        </UFormField>
+        </UFormGroup>
         <UButton
           type="submit"
-          color="neutral"
+          color="black"
           label="Sign up"
         />
       </form>
@@ -52,7 +52,7 @@ async function signUp() {
     await navigateTo('/');
   } catch (err: any) {
     toast.add({
-      color: 'error',
+      color: 'red',
       title: err.data?.message || err.message,
     });
     formError.value = err.data?.message || err.message;

@@ -72,7 +72,6 @@ export default defineNuxtConfig({
       ]
     }
   },
-  css: ['./main.css'],
   runtimeConfig: {
     signUpKey: process.env.SIGN_UP_KEY,
     mastodonDryRun: process.env.MASTODON_DRY_RUN == 'true',

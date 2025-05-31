@@ -1,6 +1,6 @@
 // server/api/webauthn/register.post.ts
-import { and, eq, sql, between, inArray } from 'drizzle-orm';
-import { users, credentials, invites, Roles, type Credential } from '../../../db/schema';
+import { and, eq, sql, between } from 'drizzle-orm';
+import { users, credentials, invites, Roles } from '../../../db/schema';
 import { DB as db } from '../../sqlite-service';
 import { validate as uuidValidate } from 'uuid';
 
@@ -56,52 +56,32 @@ export default defineWebAuthnRegisterEventHandler({
     // Get the user from the database
     let dbUser = await db.select().from(users).where(eq(users.userName, user.userName));
 
-    /*
-     * Begin Transaction: This should be done in a transaction but isn't because of a long
-     * running bug in Drizzle ORM that throws an error when using an async function as
-     * the transation callback.
-     * See ticket: https://github.com/drizzle-team/drizzle-orm/issues/2275
-    */
-    if (!dbUser.length) {
-      // Store new user in database
-      // If using the env var sign up key, give admin permissions.
-      dbUser = await db.insert(users).values({
-        userName: user.userName,
-        roles: JSON.stringify(usingSignUpKey ? [Roles.Admin, Roles.Editor] : [Roles.Editor]),
-      }).returning();
-    }
+    await db.transaction(async (tx) => {
+      if (!dbUser.length) {
+        // Store new user in database
+        // If using the env var sign up key, give admin permissions.
+        dbUser = await tx.insert(users).values({
+          userName: user.userName,
+          roles: JSON.stringify(usingSignUpKey ? [Roles.Admin, Roles.Editor] : [Roles.Editor]),
+        }).returning();
+      }
 
-    let newCred: Credential[];
-    try {
       // we now need to store the credential in our database and link it to the user
-      newCred = await db.insert(credentials).values({
+      await tx.insert(credentials).values({
         userId: dbUser[0].id,
         id: credential.id,
         publicKey: credential.publicKey,
         counter: credential.counter,
         backedUp: credential.backedUp ? 1 : 0,
         transports: JSON.stringify(credential.transports ?? [])
-      }).returning();
-    } catch (error) {
-      // this is an ugly hack because transactions are broken.
-      await db.delete(users).where(inArray(users.id, dbUser.map(u => u.id)));
-      throw error;
-    }
+      });
 
-    if (typeof user.inviteId === 'string' && !usingSignUpKey) {
-      try {
-        await db.update(invites)
+      if (typeof user.inviteId === 'string' && !usingSignUpKey) {
+        await tx.update(invites)
           .set({ used: true })
           .where(eq(invites.id, user.inviteId));
-      } catch (error) {
-        // this is an ugly hack because transactions are broken.
-        await db.delete(users).where(inArray(users.id, dbUser.map(u => u.id)));
-        await db.delete(credentials).where(inArray(credentials.id, newCred.map(c => c.id)));
-        throw error;
       }
-
-    }
-
+    });
     // Set the user session
     await setUserSession(event, {
       user: {

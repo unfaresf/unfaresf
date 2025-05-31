@@ -16,16 +16,15 @@ export default defineEventHandler(async (event) => {
   const { message, reportId } = await readValidatedBody(event, broadcastPostBodySchema.parse);
 
   try {
-    await db.insert(broadcastsTable).values({ message, reportId });
-    await db.update(reportsTable).set({reviewedAt: new Date()}).where(eq(reportsTable.id, reportId));
+    await db.transaction(async (tx) => {
+      return Promise.all([
+        tx.insert(broadcastsTable).values({ message, reportId, platforms: '' }).returning(),
+        tx.update(reportsTable).set({reviewedAt: new Date()}).where(eq(reportsTable.id, reportId)),
+      ]);
+    });
+
     setResponseStatus(event, 201);
   } catch (err:any) {
-    if (err.message === 'UNIQUE constraint failed: broadcasts.report_id') {
-      throw createError({
-        statusCode: 409,
-        statusMessage: 'Broadcast already created for report',
-      });
-    }
     throw createError({
       statusCode: 500,
       statusMessage: err.message,
