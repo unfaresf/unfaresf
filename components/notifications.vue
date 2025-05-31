@@ -1,11 +1,11 @@
 <template>
   <div v-if="supported">
     <UTooltip v-if="permissionGranted" :text="tooltipText">
-      <UButton v-if="currentSubscription" :loading="loading" color="white" class="m-2" icon="i-heroicons-bell" @click="toggleNotifications" />
-      <UButton v-else :loading="loading" color="white" class="m-2" icon="i-heroicons-bell-snooze" @click="toggleNotifications" />
+      <UButton v-if="currentSubscription" :loading="loading" color="neutral" variant="ghost" class="m-2 cursor-pointer" icon="i-heroicons-bell" @click="toggleNotifications" />
+      <UButton v-else :loading="loading" color="neutral" class="m-2 cursor-pointer" variant="ghost" icon="i-heroicons-bell-snooze" @click="toggleNotifications" />
     </UTooltip>
     <UTooltip v-else text="Enable new report notifications">
-      <UButton :loading="loading" color="lime" class="m-2" icon="i-heroicons-bell-slash" @click="setupNotifications" />
+      <UButton :loading="loading" color="neutral" variant="ghost" class="m-2" icon="i-heroicons-bell-slash" @click="setupNotifications" />
     </UTooltip>
   </div>
 </template>
@@ -76,7 +76,7 @@ function urlBase64ToUint8Array(s:string) {
 }
 
 async function subscribeUserToPush() {
-  if (!$pwa.isRegistered || !$pwa.registration.value) {
+  if (!$pwa.isRegistered.value || !$pwa.registration.value) {
     throw new Error('service worker not registered');
   }
 
@@ -122,13 +122,13 @@ async function setupNotifications() {
     await saveSubscription(pushSubscription);
     currentSubscription.value = pushSubscription;
     toast.add({
-      color: 'green',
+      color: 'success',
       title: 'Notification enabled',
       description: 'Notifications are enabled for this device/browser.'
     });
   } catch (err:any) {
     toast.add({
-      color: 'red',
+      color: 'error',
       title: 'Error disabling notifications',
       description: err.message
     });
@@ -145,7 +145,7 @@ async function tearDownNotifications() {
     ]);
     currentSubscription.value = null;
     toast.add({
-      color: 'green',
+      color: 'success',
       title: 'Notification disabled',
       description: 'Notifications are disabled for this device/browser.'
     });
