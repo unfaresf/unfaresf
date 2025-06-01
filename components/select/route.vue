@@ -9,7 +9,7 @@
       v-model="route"
       :loading="loading"
       searchable
-      :search-attributes="['routeShortName', 'routeLongName']"
+      :search-attributes="['searchString']"
       :options="options"
       placeholder="Find a route"
       trailing
@@ -47,16 +47,20 @@ export const routeSchema = z.object({
 });
 
 export type Route = z.infer<typeof routeSchema>;
+
+type RouteWithSearchString = Route & {
+  searchString: string;
+};
 </script>
 
 <script setup lang="ts">
 const loading = ref(false);
 const { isMobile } = useDevice();
-const route = ref<Route | undefined>(undefined);
+const route = ref<RouteWithSearchString | undefined>(undefined);
 const props = defineProps<{
   agency: Agency;
 }>();
-const options = ref<Route[]>([]);
+const options = ref<RouteWithSearchString[]>([]);
 const emit = defineEmits<{
   (e: "onChange", route: Route | undefined): void;
 }>();
@@ -64,11 +68,15 @@ const emit = defineEmits<{
 const agencyId = computed(() => props.agency.agencyId);
 
 const getAgencyRoutes = async ({ agencyId }: { agencyId: string }) => {
-  return $fetch<Route[]>("/api/gtfs/routes", {
+  const routes = await $fetch<Route[]>("/api/gtfs/routes", {
     params: {
       agencyId,
     },
   });
+  return routes.map((route) => ({
+    ...route,
+    searchString: `${route.routeShortName} ${route.routeLongName} ${route.direction}`,
+  }));
 };
 
 onMounted(async () => {
@@ -87,6 +95,11 @@ watch(agencyId, async (newAgencyId, oldAgencyId) => {
 });
 
 watch(route, (newRoute) => {
-  emit("onChange", newRoute);
+  if (newRoute) {
+    const { searchString, ...cleanedRoute } = newRoute;
+    emit("onChange", cleanedRoute);
+  } else {
+    emit("onChange", newRoute);
+  }
 });
 </script>

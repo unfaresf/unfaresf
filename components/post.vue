@@ -7,57 +7,31 @@
       </p>
     </template>
 
-    <div class="p-2 rounded bg-gray-100 text-gray-600 text-sm mb-4">
-      <ReportSummary ref="report-summary-ref" :report="props.report" />
-    </div>
-
     <UForm
-      v-if="sourceInternal"
+      v-if="!sourceInternal"
+      :state="externalFormState"
       class="space-y-4"
-      id="internal-source-broadcast-form"
-      :schema="internalSourceBroadcastSchema"
-      :state="internalSourceBroadcast"
-      @submit="onSubmitInternalSource"
+      id="external-source-broadcast-form"
     >
-      <UFormGroup
-        label="Message"
-        name="message"
-        help="Tweet, toot, txt, etc..."
-      >
-        <UTextarea v-model="internalSourceBroadcast.message" autofocus />
-      </UFormGroup>
+      <div class="p-2 rounded bg-gray-100 text-gray-600 text-sm mb-4">
+        <span>{{ props.report.message }}</span>
+      </div>
+      <ReportForm :showButtons="false" />
     </UForm>
 
-    <ReportForm
-      @on-change="(newFormState:Partial<ReportPostSchema>) => updateBroadcastState(newFormState)"
-    />
+    <div class="p-2 rounded bg-gray-100 text-gray-600 text-sm mt-4">
+      <ReportSummary ref="report-summary-ref" :report="externalFormState" />
+    </div>
 
     <template v-if="!props.report?.reviewedAt" #footer>
       <div class="flex flex-col md:flex-row flex-grow md:flex-grow-0 gap-y-3">
         <UButton
           color="green"
-          class="justify-center md:order-4 md:ml-3"
-          type="submit"
+          class="justify-center md:order-4 md:ml-3 self-end"
+          @click="postInternalSourceSummary"
           form="internal-source-broadcast-form"
           >Post</UButton
         >
-        <div class="flex flex-grow items-center md:order-1">
-          <UButton
-            color="orange"
-            class="justify-center grow md:flex-grow-0 mr-2"
-            @click="postInternalSourceSummary"
-            :disabled="!sourceInternal"
-            >Post Summary</UButton
-          >
-          <UTooltip text="Tooltip example" :popper="{ placement: 'top' }">
-            <UIcon name="i-heroicons:question-mark-circle" class="w-5 h-5" />
-            <template #text>
-              <span class="italic"
-                >Post using the text at the top of this popup.</span
-              >
-            </template>
-          </UTooltip>
-        </div>
         <UButton
           id="post-dismiss-button"
           color="red"
@@ -96,29 +70,7 @@ const internalSourceBroadcast = reactive<
   message: undefined,
 });
 
-const externalSourceBroadcast = computed(
-  (): Partial<ExternalSourceBroadcastSchema> => {
-    const msg =
-      props.report.message ||
-      getPlainTextSummary({
-        createdAt: props.report.createdAt,
-        route: {
-          ...props.report.route,
-          routeShortName: externalSourceBroadcast.value.route?.routeShortName,
-          direction: externalSourceBroadcast.value.route?.direction,
-        },
-        stop: {
-          stopName: externalSourceBroadcast.value.stop?.stopName,
-        },
-        passenger: externalSourceBroadcast.value.passenger ?? null,
-        message: props.report.message ?? null,
-      });
-    return {
-      ...externalSourceBroadcast,
-      message: msg,
-    };
-  }
-);
+const externalFormState = ref({ ...props.report });
 
 const toast = useToast();
 const pending = ref(false);
@@ -197,12 +149,5 @@ async function dismiss(reportId: number) {
   } finally {
     pending.value = false;
   }
-}
-
-async function onSubmitInternalSource(
-  event: FormSubmitEvent<InternalSourceBroadcastSchema>
-) {
-  await postBroadcast(event.data.message);
-  emit("success");
 }
 </script>

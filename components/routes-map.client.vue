@@ -258,7 +258,7 @@ watch(
           signal: pendingStopDetailsReq.signal,
         });
         transitMap.map?.easeTo({
-          zoom: 17,
+          zoom: 13,
           duration: 1500,
           // @ts-ignore: Property 'stopLon|stopLat' does not exist on type SerializeObject
           center: [stopDetails.stopLon, stopDetails.stopLat],

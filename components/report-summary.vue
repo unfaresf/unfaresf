@@ -1,7 +1,6 @@
 <template>
   <div v-if="props.report" ref="summary-ref">
-    <span v-if="props.report.message">{{ props.report.message }}</span>
-    <span v-else>{{ getPlainTextSummary(props.report) }}</span>
+    <span>{{ plainTextSummary }}</span>
   </div>
   <div v-else class="space-y-2">
     <USkeleton class="h-4" />
@@ -38,6 +37,11 @@ import { useTemplateRef } from "vue";
 const props = defineProps<{
   report: SelectReport | null;
 }>();
+
+const plainTextSummary = computed(() => {
+  console.log(props.report);
+  return props.report ? getPlainTextSummary(props.report) : "";
+});
 
 const summary = useTemplateRef("summary-ref");
 

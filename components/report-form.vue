@@ -1,5 +1,4 @@
 <template>
-  <h2 class="text-lg">New Report</h2>
   <UForm
     class="flex flex-col gap-2 max-w-prose"
     ref="form"
@@ -39,7 +38,7 @@
       @on-change="(newStop:Stop | undefined) => formState.stop = newStop"
     />
 
-    <div class="flex">
+    <div v-if="props.showButtons" class="flex">
       <ClientOnly>
         <geolocate
           @on-geolocate="(newGeolocation) => (geoLocation = newGeolocation)"
@@ -70,6 +69,13 @@ import type { FormSubmitEvent, Form } from "#ui/types";
 import { type Route, routeSchema } from "../components/select/route.vue";
 import { type Stop, stopSchema } from "../components/select/stop.vue";
 import { agencySchema, type Agency } from "./select/agency.vue";
+
+const props = defineProps({
+  showButtons: {
+    type: Boolean,
+    default: true,
+  },
+});
 
 const toast = useToast();
 const submitting = ref(false);
