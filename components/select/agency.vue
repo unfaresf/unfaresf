@@ -1,24 +1,24 @@
 <template>
-    <UFormGroup label="Agency" name="agency" description="Agency name, such as Muni or BART" required>
-      <USelectMenu
-        v-if="agencyOptions"
-        v-model="agency"
-        :loading="loading"
-        :options="agencyOptions"
-        searchable
-        placeholder="Pick transit agency"
-        option-attribute="agencyName"
-        trailing
-        :popper="{
-          placement: isMobile ? 'top' : 'bottom'
-        }"
-      >
-        <template #empty>
-          Loading agencies
-        </template>
-      </USelectMenu>
-    </UFormGroup>
-  </template>
+  <UFormGroup label="Agency" name="agency" description="Agency name, such as Muni or BART" required>
+    <USelectMenu
+      v-if="agencyOptions"
+      v-model="agency"
+      :loading="loading"
+      :options="agencyOptions"
+      searchable
+      placeholder="Pick transit agency"
+      option-attribute="agencyName"
+      trailing
+      :popper="{
+        placement: isMobile ? 'top' : 'bottom'
+      }"
+    >
+      <template #empty>
+        Loading agencies...
+      </template>
+    </USelectMenu>
+  </UFormGroup>
+</template>
 
 <script lang="ts">
 import { z } from "zod";

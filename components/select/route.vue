@@ -52,13 +52,7 @@ export type Route = z.infer<typeof routeSchema>;
 <script setup lang="ts">
 const loading = ref(false);
 const { isMobile } = useDevice();
-<<<<<<< HEAD
-const route = ref<RouteResponse>();
-const routeQuery = ref("");
-const defaultOptions = ref<RouteResponse[]>([]);
-=======
 const route = ref<Route | undefined>(undefined);
->>>>>>> 9937810 (make routes respond to agency selection)
 const props = defineProps<{
   agency: Agency;
 }>();

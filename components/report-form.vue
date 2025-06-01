@@ -106,8 +106,6 @@ const reportSchema = z.object({
 });
 export type ReportPostSchema = z.infer<typeof reportSchema>;
 
-type a = ReportPostSchema["route"];
-
 async function onSubmit(event: FormSubmitEvent<ReportPostSchema>) {
   submitting.value = true;
   try {

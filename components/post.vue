@@ -90,10 +90,11 @@ const props = defineProps<{
   report: SelectReport;
 }>();
 
-const internalSourceBroadcast: Partial<InternalSourceBroadcastSchema> =
-  reactive({
-    message: undefined,
-  });
+const internalSourceBroadcast = reactive<
+  Partial<InternalSourceBroadcastSchema>
+>({
+  message: undefined,
+});
 
 const externalSourceBroadcast = computed(
   (): Partial<ExternalSourceBroadcastSchema> => {
@@ -177,25 +178,6 @@ async function postBroadcast(msg: string) {
   }
 }
 
-async function postExternalSourceBroadcast(
-  broadcast: ExternalSourceBroadcastSchema
-) {
-  pending.value = true;
-  try {
-    await $fetch(`/api/reports/${props.report.id}`, {
-      method: "PUT",
-      body: {
-        route: broadcast.route,
-        stop: broadcast.stop,
-        passenger: broadcast.passenger,
-      },
-    });
-    await postBroadcast(broadcast.message);
-  } finally {
-    pending.value = false;
-  }
-}
-
 async function dismiss(reportId: number) {
   try {
     pending.value = true;
@@ -221,13 +203,6 @@ async function onSubmitInternalSource(
   event: FormSubmitEvent<InternalSourceBroadcastSchema>
 ) {
   await postBroadcast(event.data.message);
-  emit("success");
-}
-
-async function onSubmitExternalSource(
-  event: FormSubmitEvent<ExternalSourceBroadcastSchema>
-) {
-  await postExternalSourceBroadcast(event.data);
   emit("success");
 }
 </script>
