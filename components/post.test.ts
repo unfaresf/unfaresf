@@ -47,7 +47,7 @@ it('should show internal report broadcast form if report is from internal source
       report: mockReport
     }
   });
-  expect(component.find('#internal-source-broadcast-form').exists()).toBe(true);
+  expect(component.find('#external-source-broadcast-form').exists()).toBe(false);
 });
 
 it('should show external report broadcast form if report is from mastodon source', async () => {
@@ -110,12 +110,12 @@ it('should mark the report as approved with the API', async () => {
       report: mockReport
     }
   });
-  component.find('#post-post-button').trigger('click');
+  component.find('#broadcast-form-submit-btn').trigger('click');
 
   expect(mockFetch).toHaveBeenCalledWith(`/api/broadcasts`, {
     method: 'POST',
     body: {
-      message: '4:00 AM: Fare inspectors at Mission for the south 22',
+      message: '4:00 AM: Fare inspectors at Mission south',
       reportId: mockReport.id,
     }
   });

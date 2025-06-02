@@ -39,7 +39,6 @@ const props = defineProps<{
 }>();
 
 const plainTextSummary = computed(() => {
-  console.log(props.report);
   return props.report ? getPlainTextSummary(props.report) : "";
 });
 

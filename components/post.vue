@@ -30,6 +30,7 @@
           class="justify-center md:order-4 md:ml-3 self-end"
           @click="postInternalSourceSummary"
           form="internal-source-broadcast-form"
+          id="broadcast-form-submit-btn"
           >Post</UButton
         >
         <UButton
