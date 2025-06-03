@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import { defineComponent } from "vue";
 import { mockComponent } from "@nuxt/test-utils/runtime";
 import { beforeAll } from "vitest";
@@ -9,6 +10,16 @@ import {
 import Database from "better-sqlite3";
 import { useRuntimeConfig } from "#imports";
 import * as schema from "../db/schema";
+=======
+import { defineComponent } from 'vue'
+import { mockComponent } from '@nuxt/test-utils/runtime';
+import { beforeAll } from 'vitest'
+import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
+import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import Database, { SqliteError } from 'better-sqlite3';
+import { useRuntimeConfig } from '#imports';
+import * as schema from '../db/schema';
+>>>>>>> Stashed changes
 
 beforeAll(() => {
   mockComponent("RoutesMap", () => {
@@ -43,6 +54,7 @@ async function destroyTestDB(db: BetterSQLite3Database) {
   try {
     await db.delete(schema.broadcasts);
     await db.delete(schema.reports);
+    await db.delete(schema.credentials);
   } catch (e) {}
 }
 
@@ -55,7 +67,16 @@ beforeAll(async () => {
 
   await destroyTestDB(db);
 
-  await runAppMigrations(db);
+  try {
+    await runAppMigrations(db);
+  } catch (err:any) {
+    if (
+      err.code !== 'SQLITE_ERROR' ||
+      !err.message.includes('already exists')
+    ) {
+      throw err;
+    }
+  }
 
   sqlite.close();
 });
