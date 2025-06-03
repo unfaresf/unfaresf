@@ -1,16 +1,3 @@
-<<<<<<< Updated upstream
-import { defineComponent } from "vue";
-import { mockComponent } from "@nuxt/test-utils/runtime";
-import { beforeAll } from "vitest";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import {
-  drizzle,
-  type BetterSQLite3Database,
-} from "drizzle-orm/better-sqlite3";
-import Database from "better-sqlite3";
-import { useRuntimeConfig } from "#imports";
-import * as schema from "../db/schema";
-=======
 import { defineComponent } from 'vue'
 import { mockComponent } from '@nuxt/test-utils/runtime';
 import { beforeAll } from 'vitest'
@@ -19,7 +6,6 @@ import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
 import Database, { SqliteError } from 'better-sqlite3';
 import { useRuntimeConfig } from '#imports';
 import * as schema from '../db/schema';
->>>>>>> Stashed changes
 
 beforeAll(() => {
   mockComponent("RoutesMap", () => {
