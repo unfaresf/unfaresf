@@ -9,7 +9,7 @@
 
     <UForm
       v-if="!sourceInternal"
-      :state="externalFormState"
+      :state="formState"
       class="space-y-4"
       id="external-source-broadcast-form"
     >
@@ -20,7 +20,7 @@
     </UForm>
 
     <div class="p-2 rounded bg-gray-100 text-gray-600 text-sm mt-4">
-      <ReportSummary ref="report-summary-ref" :report="externalFormState" />
+      <ReportSummary ref="report-summary-ref" :report="formState" />
     </div>
 
     <template v-if="!props.report?.reviewedAt" #footer>
@@ -71,7 +71,7 @@ const internalSourceBroadcast = reactive<
   message: undefined,
 });
 
-const externalFormState = ref({ ...props.report });
+const formState = ref({ ...props.report });
 
 const toast = useToast();
 const pending = ref(false);
@@ -113,7 +113,7 @@ async function postBroadcast(msg: string) {
     });
     internalSourceBroadcast.message = undefined;
   } catch (err: any) {
-    if (err.message === "UNIQUE constraint failed: broadcasts.report_id") {
+    if (err.statusCode === 409) {
       toast.add({
         color: "orange",
         title: "Someone beat you to the punch",

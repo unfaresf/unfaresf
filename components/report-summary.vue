@@ -22,9 +22,9 @@ export function getPlainTextSummary(report: PartialReport) {
   const formattedDate = formatDate(report.createdAt, "p");
 
   if (report.passenger) {
-    return `${formattedDate}: Fare inspectors on ${report.route?.routeShortName} headed ${report.route?.direction} from ${report.stop?.stopName}`;
+    return `${formattedDate}: Fare inspectors on ${report.route?.routeShortName || 'ROUTE'} headed ${report.route?.direction || 'DIRECTION'} from ${report.stop?.stopName || 'STOP'}`;
   } else {
-    return `${formattedDate}: Fare inspectors at ${report.stop?.stopName} ${report.stop?.direction}`;
+    return `${formattedDate}: Fare inspectors at ${report.stop?.stopName || 'STOP'} ${report.stop?.direction || 'DIRECTION'}`;
   }
 }
 </script>
