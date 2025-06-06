@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { DB as db } from "../../sqlite-service";
-import { users as usersTable, credentials as credentialsTable, subscriptions as subscriptionsTable } from "../../../db/schema";
+import { users as usersTable } from "../../../db/schema";
 import { deleteUsers } from "../../../shared/utils/abilities";
 
 export default defineEventHandler(async (event) => {
@@ -15,11 +15,9 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    await db.transaction(async (tx) => {
-      await tx.delete(usersTable)
-        .where(eq(usersTable.id, userId))
-        .limit(1);
-    });
+    db.delete(usersTable)
+      .where(eq(usersTable.id, userId))
+      .limit(1);
   } catch (e: any) {
     console.error(e);
     throw createError({
