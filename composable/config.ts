@@ -27,7 +27,7 @@ function unescapeJsonString(
   }
 }
 
-export function getAgencyAltNames(): Record<string, string> {
+export function useAgencyAltNames(): Record<string, string> {
   const {
     public: { agencyAltNames: agencyAltNamesString },
   } = useRuntimeConfig();

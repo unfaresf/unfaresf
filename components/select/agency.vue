@@ -25,7 +25,7 @@
 
 <script lang="ts">
 import { z } from "zod";
-import { getAgencyAltNames } from "~/shared/utils/config";
+import { useAgencyAltNames } from "~/composable/config";
 
 export const agencySchema = z.object({
   agencyId: z.string(),
@@ -47,7 +47,7 @@ watch(agency, (newAgency, oldAgency) => {
     emit("onChange", newAgency);
   }
 });
-const agencyAltNames = getAgencyAltNames();
+const agencyAltNames = useAgencyAltNames();
 
 const { data: agencyOptions } = await useFetch("/api/gtfs/agencies", {
   transform: (data) =>
