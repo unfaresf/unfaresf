@@ -7,20 +7,15 @@
       </p>
     </template>
 
-    <UForm
-      v-if="!sourceInternal"
-      :state="formState"
-      class="space-y-4"
-      id="external-source-broadcast-form"
-    >
+    <div v-if="!sourceInternal" class="space-y-4">
       <div class="p-2 rounded bg-gray-100 text-gray-600 text-sm mb-4">
         <span>{{ props.report.message }}</span>
       </div>
-      <ReportForm :showButtons="false" />
-    </UForm>
+      <ReportForm :showButtons="false" class="mb-4" />
+    </div>
 
-    <div class="p-2 rounded bg-gray-100 text-gray-600 text-sm mt-4">
-      <ReportSummary ref="report-summary-ref" :report="formState" />
+    <div class="p-2 rounded bg-gray-100 text-gray-600 text-sm">
+      <ReportSummary ref="report-summary-ref" :report="reportState" />
     </div>
 
     <template v-if="!props.report?.reviewedAt" #footer>
@@ -49,13 +44,10 @@
 
 <script lang="ts" setup>
 import { z } from "zod";
-import type { FormSubmitEvent } from "#ui/types";
 import type { SelectReport } from "../db/schema";
 import { useTemplateRef } from "vue";
-import type { ReportPostSchema } from "~/components/report-form.vue";
-import { routeSchema } from "../components/select/route.vue";
-import { stopSchema } from "../components/select/stop.vue";
-import { getPlainTextSummary } from "./report-summary.vue";
+// import { routeSchema } from "../components/select/route.vue";
+// import { stopSchema } from "../components/select/stop.vue";
 
 const emit = defineEmits<{
   success: [];
@@ -70,22 +62,21 @@ const internalSourceBroadcast = reactive<
 >({
   message: undefined,
 });
-
-const formState = ref({ ...props.report });
+const reportState = toRef(() => props.report);
 
 const toast = useToast();
 const pending = ref(false);
 const reportSummRef = useTemplateRef("report-summary-ref");
-const externalSourceBroadcastSchema = z.object({
-  message: z.string().min(8).max(400).trim(),
-  route: routeSchema.required(),
-  stop: stopSchema.required(),
-  passenger: z.boolean({ coerce: true }),
-});
+// const externalSourceBroadcastSchema = z.object({
+//   message: z.string().min(8).max(400).trim(),
+//   route: routeSchema.required(),
+//   stop: stopSchema.required(),
+//   passenger: z.boolean({ coerce: true }),
+// });
 const sourceInternal = props.report.source === "internal";
-type ExternalSourceBroadcastSchema = z.output<
-  typeof externalSourceBroadcastSchema
->;
+// type ExternalSourceBroadcastSchema = z.output<
+//   typeof externalSourceBroadcastSchema
+// >;
 const internalSourceBroadcastSchema = z.object({
   message: z.string().min(8).max(400).trim(),
 });

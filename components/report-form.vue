@@ -2,7 +2,6 @@
   <UForm
     class="flex flex-col gap-2 max-w-prose"
     ref="form"
-    @submit="onSubmit"
     :state="formState"
     :schema="reportSchema"
   >
@@ -37,51 +36,31 @@
       :geo="geoLocation"
       @on-change="(newStop:Stop | undefined) => formState.stop = newStop"
     />
-
-    <div v-if="props.showButtons" class="flex">
-      <ClientOnly>
-        <geolocate
-          @on-geolocate="(newGeolocation) => (geoLocation = newGeolocation)"
-        >
-          <template #help>
-            <span
-              >Use your location to narrow the route and stop search to those
-              near you. May be helpful for those who report often. You can
-              always disable this. We do not store your location.</span
-            >
-          </template>
-        </geolocate>
-      </ClientOnly>
-      <UButton
-        type="submit"
-        label="Submit"
-        class="ml-auto"
-        @click="submitReport"
-        :disabled="submitting"
-      />
-    </div>
   </UForm>
 </template>
 
+<script lang="ts">
+export const reportSchema = z.object({
+  agency: agencySchema,
+  route: routeSchema.optional(),
+  stop: stopSchema,
+  passenger: z.boolean(),
+});
+export type ReportPostSchema = z.infer<typeof reportSchema>;
+</script>
+
 <script lang="ts" setup>
 import { z } from "zod";
-import type { FormSubmitEvent, Form } from "#ui/types";
+import type { Form } from "#ui/types";
 import { type Route, routeSchema } from "../components/select/route.vue";
 import { type Stop, stopSchema } from "../components/select/stop.vue";
 import { agencySchema, type Agency } from "./select/agency.vue";
 
 const props = defineProps({
-  showButtons: {
-    type: Boolean,
-    default: true,
-  },
+  geoLocation: GeolocationPosition,
 });
 
-const toast = useToast();
-const submitting = ref(false);
 const form = ref<Form<ReportPostSchema>>();
-const geoLocation = ref<GeolocationPosition>();
-
 const formState = reactive<Partial<ReportPostSchema>>({ passenger: undefined });
 
 const emit = defineEmits<{
@@ -103,39 +82,4 @@ watch(
     }
   }
 );
-
-const reportSchema = z.object({
-  agency: agencySchema,
-  route: routeSchema.optional(),
-  stop: stopSchema,
-  passenger: z.boolean(),
-});
-export type ReportPostSchema = z.infer<typeof reportSchema>;
-
-async function onSubmit(event: FormSubmitEvent<ReportPostSchema>) {
-  submitting.value = true;
-  try {
-    await $fetch("/api/reports", {
-      method: "POST",
-      body: event.data,
-    });
-    toast.add({
-      color: "green",
-      title: "Report successful",
-    });
-    await navigateTo("/thank-you");
-  } catch (err: any) {
-    toast.add({
-      color: "red",
-      title: "Error submitting report",
-      description: err.message,
-    });
-  } finally {
-    submitting.value = false;
-  }
-}
-
-async function submitReport() {
-  await form.value?.submit();
-}
 </script>

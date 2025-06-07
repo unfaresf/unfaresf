@@ -22,9 +22,15 @@ export function getPlainTextSummary(report: PartialReport) {
   const formattedDate = formatDate(report.createdAt, "p");
 
   if (report.passenger) {
-    return `${formattedDate}: Fare inspectors on ${report.route?.routeShortName || 'ROUTE'} headed ${report.route?.direction || 'DIRECTION'} from ${report.stop?.stopName || 'STOP'}`;
+    return `${formattedDate}: Fare inspectors on ${
+      report.route?.routeShortName || "ROUTE"
+    } headed ${report.route?.direction || "DIRECTION"} from ${
+      report.stop?.stopName || "STOP"
+    }`;
   } else {
-    return `${formattedDate}: Fare inspectors at ${report.stop?.stopName || 'STOP'} ${report.stop?.direction || 'DIRECTION'}`;
+    return `${formattedDate}: Fare inspectors at ${
+      report.stop?.stopName || "STOP"
+    } ${report.stop?.direction || "DIRECTION"}`;
   }
 }
 </script>
@@ -35,7 +41,7 @@ import type { SelectReport } from "../db/schema";
 import { useTemplateRef } from "vue";
 
 const props = defineProps<{
-  report: SelectReport | null;
+  report: PartialReport | null;
 }>();
 
 const plainTextSummary = computed(() => {
