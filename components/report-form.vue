@@ -33,7 +33,7 @@
       "
       :agency="formState.agency"
       :route="formState.route"
-      :geo="geoLocation"
+      :geo="geolocation"
       @on-change="(newStop:Stop | undefined) => formState.stop = newStop"
     />
   </UForm>
@@ -56,9 +56,7 @@ import { type Route, routeSchema } from "../components/select/route.vue";
 import { type Stop, stopSchema } from "../components/select/stop.vue";
 import { agencySchema, type Agency } from "./select/agency.vue";
 
-const props = defineProps({
-  geoLocation: GeolocationPosition,
-});
+defineProps<{ geolocation?: GeolocationPosition }>();
 
 const form = ref<Form<ReportPostSchema>>();
 const formState = reactive<Partial<ReportPostSchema>>({ passenger: undefined });

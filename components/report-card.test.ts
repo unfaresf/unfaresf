@@ -1,74 +1,74 @@
-import { it, expect } from 'vitest';
-import { mountSuspended } from '@nuxt/test-utils/runtime'
-import { ReportCard, ReportSummary } from '#components';
-import type { SelectReport }  from '../db/schema';
+import { it, expect } from "vitest";
+import { mountSuspended } from "@nuxt/test-utils/runtime";
+import { ReportCard, ReportSummary } from "#components";
+import type { SelectReport } from "../db/schema";
 
 const mockReport: SelectReport = {
   id: 123,
   createdAt: new Date("May 15, 2025 04:00:00"),
-  source: 'test',
+  source: "internal",
   uri: null,
   reviewedAt: null,
   route: {
-    routeId: '123',
-    routeShortName: '22',
-    routeLongName: '22',
-    agencyId: '123',
-    agencyName: 'Muni',
-    direction: 'south',
+    routeId: "123",
+    routeShortName: "22",
+    routeLongName: "22",
+    agencyId: "123",
+    agencyName: "Muni",
+    direction: "south",
   },
   stop: {
-    stopId: '123',
-    stopName: 'Mission',
-    direction: 'south',
+    stopId: "123",
+    stopName: "Mission",
+    direction: "south",
   },
   direction: {
-    routeId: '123',
+    routeId: "123",
     directionId: null,
-    direction: 'south'
+    direction: "south",
   },
   passenger: null,
-  message: null
+  message: null,
 };
 
-it('includes the relative time in the past of the post', async () => {
+it("includes the relative time in the past of the post", async () => {
   const component = await mountSuspended(ReportCard, {
     props: {
-      report: mockReport
-    }
+      report: mockReport,
+    },
   });
 
-  expect(component.find('a').text()).include('ago')
+  expect(component.find("a").text()).include("ago");
   expect(component.findComponent(ReportSummary).isVisible()).toBe(true);
 });
 
-it('should emit an approved event with approved report when approve button clicked', async () => {
+it("should emit an approved event with approved report when approve button clicked", async () => {
   const component = await mountSuspended(ReportCard, {
     props: {
-      report: mockReport
-    }
+      report: mockReport,
+    },
   });
-  component.find('#report-card-approve').trigger('click');
+  component.find("#report-card-approve").trigger("click");
 
-  expect(component.emitted()).toHaveProperty('onApprove');
+  expect(component.emitted()).toHaveProperty("onApprove");
 });
 
-it('should emit an dismiss event with dismissed report when dismiss button clicked', async () => {
+it("should emit an dismiss event with dismissed report when dismiss button clicked", async () => {
   const component = await mountSuspended(ReportCard, {
     props: {
-      report: mockReport
-    }
+      report: mockReport,
+    },
   });
-  component.find('#report-card-dismiss').trigger('click');
+  component.find("#report-card-dismiss").trigger("click");
 
-  expect(component.emitted()).toHaveProperty('onDismiss');
+  expect(component.emitted()).toHaveProperty("onDismiss");
 });
 
-it('should return a skeleton the report is omitted', async () => {
+it("should return a skeleton the report is omitted", async () => {
   const component = await mountSuspended(ReportCard, {
     props: {
-      report: null
-    }
+      report: null,
+    },
   });
   expect(component.text()).toMatchInlineSnapshot(`""`);
   expect(component.html()).toMatchInlineSnapshot(`
