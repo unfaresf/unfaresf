@@ -1,84 +1,105 @@
 <template>
-  <UFormGroup label="Route" name="route" description="Route name, e.g. 38 Geary or Bart Green line" required>
+  <UFormGroup
+    label="Route"
+    name="route"
+    description="Route name, e.g. 38 Geary or Bart Green line"
+    required
+  >
     <USelectMenu
       v-model="route"
-      v-model:query="routeQuery"
       :loading="loading"
-      :searchable="search"
-      :searchableLazy="true"
-      :options="defaultOptions"
-      searchable-placeholder="Search for a transit route"
+      searchable
+      :search-attributes="['searchString']"
+      :options="options"
       placeholder="Find a route"
-      option-attribute="routeShortName"
       trailing
       :popper="{
-        placement: isMobile ? 'top' : 'bottom'
+        placement: isMobile ? 'top' : 'bottom',
       }"
     >
       <template #label>
-        <p v-if="route">{{ route.routeShortName }} <span class="lowercase">{{ route.routeLongName }}</span> - {{ route.direction }}</p>
+        <p v-if="route">
+          {{ route.routeShortName }}: {{ route.routeLongName }} -
+          {{ route.direction }}
+        </p>
       </template>
       <template #option="{ option: route }">
-        <p><span class="font-bold">{{ route.routeShortName }} <span class="lowercase">{{ route.routeLongName }}</span></span> - {{ route.direction }} <span class="italic lowercase">{{ route.agencyName }}</span></p>
+        <p>
+          {{ route.routeShortName }}: {{ route.routeLongName }} -
+          {{ route.direction }}
+        </p>
       </template>
-      <template #empty>
-        No routes
-      </template>
+      <template #empty> No routes </template>
     </USelectMenu>
   </UFormGroup>
 </template>
 
 <script lang="ts">
 import { z } from "zod";
+import type { Agency } from "./agency.vue";
 
 export const routeSchema = z.object({
   routeId: z.string(),
   routeShortName: z.string(),
   routeLongName: z.string(),
-  agencyId: z.string(),
-  agencyName: z.string(),
   direction: z.string(),
+  directionId: z.number(),
 });
 
-export type RouteResponse = z.infer<typeof routeSchema>;
+export type Route = z.infer<typeof routeSchema>;
+
+type RouteWithSearchString = Route & {
+  searchString: string;
+};
 </script>
 
 <script setup lang="ts">
 const loading = ref(false);
 const { isMobile } = useDevice();
-const route = ref<RouteResponse>();
-const routeQuery = ref("");
-const defaultOptions = ref<RouteResponse[]>([]);
+const route = ref<RouteWithSearchString | undefined>(undefined);
 const props = defineProps<{
-  geo?: GeolocationPosition,
+  agency: Agency;
 }>();
+const options = ref<RouteWithSearchString[]>([]);
 const emit = defineEmits<{
-  (e: 'onChange', route: RouteResponse): void
-}>()
+  (e: "onChange", route: Route | undefined): void;
+}>();
 
-async function search(q:string) {
-  try {
-    loading.value = true
-    return await $fetch<RouteResponse[]>('/api/gtfs/routes/search', {
-      params: {
-        q,
-        latitude: props.geo?.coords.latitude,
-        longitude: props.geo?.coords.longitude,
-      }
-    });
-  } catch(err:any) {
-    return []
-  } finally {
+const agencyId = computed(() => props.agency.agencyId);
+
+const getAgencyRoutes = async ({ agencyId }: { agencyId: string }) => {
+  const routes = await $fetch<Route[]>("/api/gtfs/routes", {
+    params: {
+      agencyId,
+    },
+  });
+  return routes.map((route) => ({
+    ...route,
+    searchString: `${route.routeShortName} ${route.routeLongName} ${route.direction}`,
+  }));
+};
+
+onMounted(async () => {
+  loading.value = true;
+  options.value = await getAgencyRoutes({ agencyId: agencyId.value });
+  loading.value = false;
+});
+
+watch(agencyId, async (newAgencyId, oldAgencyId) => {
+  if (newAgencyId !== oldAgencyId) {
+    route.value = undefined;
+    loading.value = true;
+    options.value = await getAgencyRoutes({ agencyId: agencyId.value });
     loading.value = false;
   }
-}
+});
 
-watch(() => props.geo, async (newGeo, oldGeo) => {
-  defaultOptions.value = await search(routeQuery.value);
-}, { once: true });
 watch(route, (newRoute) => {
   if (newRoute) {
-    emit('onChange', newRoute);
+    const { searchString, ...cleanedRoute } = newRoute;
+    emit("onChange", cleanedRoute);
+  } else {
+    emit("onChange", newRoute);
   }
 });
 </script>

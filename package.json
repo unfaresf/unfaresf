@@ -63,6 +63,7 @@
     "@simplewebauthn/browser": "^11.0.0",
     "@simplewebauthn/server": "^11.0.0",
     "@turf/turf": "^7.2.0",
+    "@vueuse/core": "^13.2.0",
     "better-sqlite3": "^11.7.0",
     "consola": "^3.4.0",
     "date-fns": "^4.1.0",
