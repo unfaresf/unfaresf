@@ -1,8 +1,14 @@
 // server/api/webauthn/register.post.ts
 import { and, eq, sql, between } from 'drizzle-orm';
-import { users, credentials, invites, Roles } from '../../../db/schema';
+import { users, credentials, invites, Roles, type InsertUser, type SelectUser, type InsertCredential } from '../../../db/schema';
 import { DB as db } from '../../sqlite-service';
 import { validate as uuidValidate } from 'uuid';
+import type { WebAuthnCredential } from '#auth-utils';
+
+
+const insertUser = db.$client.prepare<InsertUser, SelectUser>('INSERT INTO users (userName, roles) VALUES (@userName, @roles) RETURNING *');
+const insertCredential = db.$client.prepare<InsertCredential, void>('INSERT INTO credentials (userId, id, publicKey, counter, backedUp, transports) VALUES (@userId, @id, @publicKey, @counter, @backedUp, @transports)');
+const updateInvte = db.$client.prepare<[boolean, number], void>('UPDATE invites SET used = ? WHERE id = ?');
 
 export default defineWebAuthnRegisterEventHandler({
   // optional
@@ -56,19 +62,22 @@ export default defineWebAuthnRegisterEventHandler({
     // Get the user from the database
     let dbUser = await db.select().from(users).where(eq(users.userName, user.userName));
 
-    await db.transaction(async (tx) => {
+    (db.$client.transaction((user:{ userName: string; inviteId: unknown; roles: Roles[]; }, credential:WebAuthnCredential) => {
+      let userId = dbUser[0].id;
+
       if (!dbUser.length) {
         // Store new user in database
-        // If using the env var sign up key, give admin permissions.
-        dbUser = await tx.insert(users).values({
-          userName: user.userName,
+        // If using the env var sign up key, give admin permissions
+        const insertResult = insertUser.run({
+          ...user,
           roles: JSON.stringify(usingSignUpKey ? [Roles.Admin, Roles.Editor] : [Roles.Editor]),
-        }).returning();
+        });
+        userId = Number(insertResult.lastInsertRowid);
       }
 
       // we now need to store the credential in our database and link it to the user
-      await tx.insert(credentials).values({
-        userId: dbUser[0].id,
+      insertCredential.run({
+        userId: userId,
         id: credential.id,
         publicKey: credential.publicKey,
         counter: credential.counter,
@@ -77,11 +86,10 @@ export default defineWebAuthnRegisterEventHandler({
       });
 
       if (typeof user.inviteId === 'string' && !usingSignUpKey) {
-        await tx.update(invites)
-          .set({ used: true })
-          .where(eq(invites.id, user.inviteId));
+        updateInvte.run(true, userId);
       }
-    });
+    }))(user, credential);
+
     // Set the user session
     await setUserSession(event, {
       user: {
