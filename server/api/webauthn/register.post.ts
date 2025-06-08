@@ -5,10 +5,10 @@ import { DB as db } from '../../sqlite-service';
 import { validate as uuidValidate } from 'uuid';
 import type { WebAuthnCredential } from '#auth-utils';
 
-
-const insertUser = db.$client.prepare<InsertUser, SelectUser>('INSERT INTO users (userName, roles) VALUES (@userName, @roles) RETURNING *');
-const insertCredential = db.$client.prepare<InsertCredential, void>('INSERT INTO credentials (userId, id, publicKey, counter, backedUp, transports) VALUES (@userId, @id, @publicKey, @counter, @backedUp, @transports)');
-const updateInvte = db.$client.prepare<[boolean, number], void>('UPDATE invites SET used = ? WHERE id = ?');
+const insertUser = db.$client.prepare<InsertUser, SelectUser>('INSERT INTO users (username, roles) VALUES (@userName, @roles) RETURNING *');
+const insertCredential = db.$client.prepare<InsertCredential, void>('INSERT INTO credentials (user_id, id, public_key, counter, backed_up, transports) VALUES (@userId, @id, @publicKey, @counter, @backedUp, @transports)');
+type numberBoolean = 1 | 0;
+const updateInvte = db.$client.prepare<[numberBoolean, number], void>('UPDATE invites SET used = ? WHERE id = ?');
 
 export default defineWebAuthnRegisterEventHandler({
   // optional
@@ -60,12 +60,12 @@ export default defineWebAuthnRegisterEventHandler({
     const usingSignUpKey = user.inviteId === signUpKey;
 
     // Get the user from the database
-    let dbUser = await db.select().from(users).where(eq(users.userName, user.userName));
+    let dbUser = await db.query.users.findFirst({where: eq(users.userName, user.userName)});
 
     (db.$client.transaction((user:{ userName: string; inviteId: unknown; roles: Roles[]; }, credential:WebAuthnCredential) => {
-      let userId = dbUser[0].id;
+      let userId = dbUser?.id;
 
-      if (!dbUser.length) {
+      if (!userId) {
         // Store new user in database
         // If using the env var sign up key, give admin permissions
         const insertResult = insertUser.run({
@@ -86,18 +86,26 @@ export default defineWebAuthnRegisterEventHandler({
       });
 
       if (typeof user.inviteId === 'string' && !usingSignUpKey) {
-        updateInvte.run(true, userId);
+        updateInvte.run(1, userId);
       }
     }))(user, credential);
 
-    // Set the user session
-    await setUserSession(event, {
-      user: {
-        id: dbUser[0].id,
-        userName: dbUser[0].userName,
-        roles: JSON.parse(dbUser[0].roles),
-      },
-      loggedInAt: Date.now(),
-    })
+    // retreiving the new user
+    dbUser = await db.query.users.findFirst({where: eq(users.userName, user.userName)});
+
+    if (dbUser) {
+      // Set the user session
+      await setUserSession(event, {
+        user: {
+          id: dbUser.id,
+          userName: dbUser.userName,
+          roles: JSON.parse(dbUser.roles),
+        },
+        loggedInAt: Date.now(),
+      })
+    } else {
+      throw new Error('unable to register new user');
+    }
+
   },
 })
