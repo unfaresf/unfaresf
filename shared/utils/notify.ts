@@ -11,6 +11,7 @@ import {
 import { eq, lt, and, inArray, sql, isNull } from "drizzle-orm";
 import webpush from 'web-push';
 import { sub } from "date-fns";
+import { type PartialReport, getPlainTextSummary } from '../../shared/utils/report-plain-text-summary';
 
 async function cleanOldNotifications() {
   const oneWeekAgo = sub(new Date(), {
@@ -54,23 +55,15 @@ async function getSubscriptionsForUsers(userIds:number[]) {
   );
 }
 
-function formatReportBody(reports:SelectReport[]):string {
-  if (reports.length === 1) {
-    const report = reports[0];
-    return report.message ? report.message : `${report.route?.agencyName} ${report.route?.routeShortName} ${report.route?.direction} near ${report.stop?.stopName}`;
-  }
-  return 'Multiple new reports.';
-}
-
-function formatReportAsNotification(reports:SelectReport[]):NotificationDetail {
-  const body = formatReportBody(reports)
+function formatReportAsNotification(reports:SelectReport, totalOutstanding:number):NotificationDetail {
+  const body = getPlainTextSummary(reports);
 
   return {
     title: '🚌 🐷 Report',
     body,
     tag: 'new-report',
-    reportUrl: reports.length === 1 ? `/reports/${reports[0].id}` : `/reports`,
-    unhandledReportsCount: reports.length,
+    reportUrl: `/reports/${reports.id}`,
+    unhandledReportsCount: totalOutstanding,
   }
 }
 
@@ -79,7 +72,7 @@ async function triggerPushMsg(
   subscription:Prettify<Pick<SelectSubscription, "id" | "details">>
 ) {
   try {
-    const response = await webpush.sendNotification(subscription.details, JSON.stringify(dataToSend), {
+    await webpush.sendNotification(subscription.details, JSON.stringify(dataToSend), {
       TTL: 60 * 3, // 3 minutes
       urgency: 'normal'
     });
@@ -101,7 +94,7 @@ async function triggerPushMsg(
 };
 
 export default async function Notify(reports:SelectReport[]) {
-  const notificationBody = formatReportAsNotification(reports);
+  const notificationsBodies = reports.map(report => formatReportAsNotification(report, reports.length));
   // collect users to notify
   const users = await getUsersToNotify();
 
@@ -114,5 +107,7 @@ export default async function Notify(reports:SelectReport[]) {
   );
 
   const subscriptions = await getSubscriptionsForUsers(users.map(u => u.id));
-  return Promise.allSettled(subscriptions.map(sub => triggerPushMsg(notificationBody, sub)));
+  return Promise.allSettled(subscriptions.flatMap(sub => {
+    return notificationsBodies.map(body => triggerPushMsg(body, sub));
+  }));
 }
