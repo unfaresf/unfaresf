@@ -11,7 +11,7 @@ import {
 import { eq, lt, and, inArray, sql, isNull } from "drizzle-orm";
 import webpush from 'web-push';
 import { sub } from "date-fns";
-import { type PartialReport, getPlainTextSummary } from '../../shared/utils/report-plain-text-summary';
+import getPlainTextSummary, { type PartialReport } from '#shared/utils/get-plain-text-summary';
 
 async function cleanOldNotifications() {
   const oneWeekAgo = sub(new Date(), {

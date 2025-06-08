@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { type PartialReport, getPlainTextSummary } from '../shared/utils/report-plain-text-summary';
+import getPlainTextSummary, { type PartialReport } from '#shared/utils/get-plain-text-summary';
 import { useTemplateRef } from "vue";
 
 const props = defineProps<{

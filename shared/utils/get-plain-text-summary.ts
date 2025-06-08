@@ -9,7 +9,7 @@ export type PartialReport = Omit<
   stop: Partial<SelectReport["stop"]>;
 };
 
-export function getPlainTextSummary(report: PartialReport) {
+export default function (report: PartialReport) {
   if (!report) return "";
 
   const formattedDate = formatDate(report.createdAt, "p");
