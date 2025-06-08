@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    db.delete(usersTable)
+    await db.delete(usersTable)
       .where(eq(usersTable.id, userId))
       .limit(1);
   } catch (e: any) {
