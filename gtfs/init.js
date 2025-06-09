@@ -31,6 +31,7 @@ const createIdxStatementStrings = [
   'CREATE INDEX IF NOT EXISTS idx_routes_agency_id ON routes(agency_id)',
   'CREATE INDEX IF NOT EXISTS idx_routes_route_id ON routes(route_id)',
   'CREATE INDEX IF NOT EXISTS idx_trips_trip_id ON trips(trip_id)',
+  'CREATE INDEX IF NOT EXISTS idx_stops_stop_name ON stops(stop_name)',
 ];
 // prepare create index statements. This checks to make sure they can be used
 const createIdxStatements = createIdxStatementStrings.map(statementStr => {
