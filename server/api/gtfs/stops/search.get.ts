@@ -9,7 +9,7 @@ import {
   directions,
   agency,
 } from "../../../../db/gtfs-migrations/schema";
-import { like, eq, lt, and, sql, type Subquery } from "drizzle-orm";
+import { like, eq, lt, and, sql, asc, type Subquery } from "drizzle-orm";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 
 const STOPS_RESULTS_LIMIT = 50;
@@ -63,7 +63,7 @@ async function getStops(
     .innerJoin(stopTimes, eq(stopTimes.stopId, stops.stopId))
     .innerJoin(trips, eq(trips.tripId, stopTimes.tripId))
     .innerJoin(routes, eq(routes.routeId, trips.routeId))
-    .innerJoin(agency, eq(routes.agencyId, agency.agencyId))
+    .innerJoin(agency, eq(agency.agencyId, routes.agencyId))
     .innerJoin(
       directions,
       and(
@@ -77,7 +77,7 @@ async function getStops(
         ...queryTokens.map((token) => like(stops.stopName, `%${token}%`))
       )
     )
-    .orderBy(stops.stopName, directions.directionId)
+    .orderBy(...(queryTokens.length > 1 ? [asc(stops.stopName), asc(directions.directionId)] : []))
     .limit(STOPS_RESULTS_LIMIT);
 }
 
