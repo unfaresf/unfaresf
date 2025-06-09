@@ -19,10 +19,10 @@
     </div>
 
     <template v-if="!props.report?.reviewedAt" #footer>
-      <div class="flex flex-col md:flex-row flex-grow md:flex-grow-0 gap-y-3">
+      <div class="flex flex-col flex-grow md:flex-row md:flex-grow-0 gap-y-3">
         <UButton
           color="green"
-          class="justify-center md:order-4 md:ml-3 self-end"
+          class="justify-center md:order-4 md:ml-3"
           @click="postInternalSourceSummary"
           form="internal-source-broadcast-form"
           id="broadcast-form-submit-btn"
@@ -31,7 +31,7 @@
         <UButton
           id="post-dismiss-button"
           color="red"
-          class="justify-center md:order-2"
+          class="justify-center md:order-2 md:ml-auto"
           :disabled="pending"
           v-if="report"
           @click="dismiss(report?.id)"
