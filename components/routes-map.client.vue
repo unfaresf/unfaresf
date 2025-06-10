@@ -182,17 +182,10 @@ if (props.showBroadcasts) {
   const { data } = await useLazyFetch("/api/broadcasts/geo", {
     server: false,
   });
-  if (data.value?.routes.length) {
-    visibleRouteIds.value = data.value.routes.map((route) => route.routeId);
-    visibleStopIds.value = data.value.stops.map((stop) => stop.stopId);
-    transitMap.map?.fitBounds(data.value?.bbox, {
-      padding: mapPadding,
-    });
-  }
   watch(
     data,
     () => {
-      if (data.value?.routes.length) {
+      if (data.value?.routes || data.value?.stops) {
         visibleRouteIds.value = data.value.routes.map((route) => route.routeId);
         visibleStopIds.value = data.value.stops.map((stop) => stop.stopId);
         transitMap.map?.fitBounds(data.value?.bbox, {
