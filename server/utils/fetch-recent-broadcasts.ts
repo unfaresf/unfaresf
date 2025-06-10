@@ -1,4 +1,4 @@
-import { and, desc, gte, eq, isNotNull } from 'drizzle-orm';
+import { and, desc, gte, eq, isNotNull, or } from 'drizzle-orm';
 import { DB as db, gtfsDB } from "../sqlite-service";
 import { broadcasts as broadcastsTable, reports as reportsTable, type SelectReport } from "../../db/schema";
 import { subHours } from 'date-fns';
@@ -21,8 +21,7 @@ export default async function fetchRecentlyBroadcastReports(windowLength: number
   .where(
     and(
       gte(broadcastsTable.createdAt, subHours(new Date(), windowLength)),
-      isNotNull(reportsTable.route),
-      isNotNull(reportsTable.stop),
+      or(isNotNull(reportsTable.route),isNotNull(reportsTable.stop)),
     ),
   )
   .orderBy(desc(broadcastsTable.createdAt))

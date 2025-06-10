@@ -55,9 +55,8 @@ export default defineEventHandler(async (event) => {
     const stopIds = reports.filter(r => !!r.stop).map(r => r.stop.stopId);
     const gettingsRoutesBBoxes = Promise.all(
       reports
-      .map(report => {
-        return getRouteTrips(report.route.routeId);
-      })
+      .filter(r => r.route)
+      .map(report => getRouteTrips(report.route.routeId))
     );
     const gettingStops = fetchStopsById(stopIds);
 
