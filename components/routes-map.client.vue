@@ -33,7 +33,6 @@
           :paint="stopsLayerCirclesPaint"
           :filter="stopFilter"
           :minzoom="10"
-          ,
         />
       </MglVectorSource>
 
@@ -43,6 +42,12 @@
         :tiles="tripsSourceTiles"
         :minzoom="6"
       >
+        <MglLineLayer
+          layer-id="warm-trips"
+          source-layer="trips"
+          :paint="warmPaint"
+          :filter="warmStops"
+        />
         <MglLineLayer
           layer-id="hot-trips"
           source-layer="trips"
@@ -55,6 +60,7 @@
           :paint="paint"
           :filter="tripFilter"
         />
+
         <MglSymbolLayer
           layer-id="transit-trips-labels"
           source-layer="trips"
@@ -100,6 +106,11 @@ const paint = {
 const hotPaint = {
   "line-width": 2,
   "line-color": "#ff6467",
+};
+const warmPaint = {
+  "line-width": 3,
+  "line-opacity": 0.1,
+  "line-color": "#fff085",
 };
 const defaultBoundingBox = [180,90,-180,-90];
 const mapPadding = { top: 15, bottom: 40, left: 15, right: 15 };
@@ -151,6 +162,7 @@ const { isMobile } = useDevice();
 const transitMap = useMap();
 const visibleRouteIds = ref<string[]>([]);
 const visibleStopIds = ref<string[]>([]);
+const warmRouteIds = ref<string[]>([]);
 
 const tripFilter = computed(() => {
   return props.route ? ["==", "route_id", props.route.routeId] : ["all", false];
@@ -167,6 +179,11 @@ const hotTrips = computed((): LineLayerSpecification["filter"] => {
 const hotStops = computed((): CircleLayerSpecification["filter"] => {
   return props.showBroadcasts
     ? ["in", "stop_id", ...visibleStopIds.value]
+    : ["all", false];
+});
+const warmStops = computed((): LineLayerSpecification["filter"] => {
+  return props.showBroadcasts
+    ? ["in", "route_id", ...warmRouteIds.value]
     : ["all", false];
 });
 
@@ -188,8 +205,10 @@ if (props.showBroadcasts) {
     data,
     () => {
       if (data.value?.routes || data.value?.stops) {
-        visibleRouteIds.value = data.value.routes.map((route) => route.routeId);
+        visibleRouteIds.value = data.value.routes.filter((r): r is typeof r & {routeId:string} => !!r.routeId).map((route) => route.routeId);
         visibleStopIds.value = data.value.stops.map((stop) => stop.stopId);
+        warmRouteIds.value = data.value.stops.flatMap((stop) => stop.routeIds.split(','));
+
         if (JSON.stringify(defaultBoundingBox) !== JSON.stringify(data.value?.bbox)) {
           transitMap.map?.fitBounds(data.value?.bbox, {
             padding: mapPadding,

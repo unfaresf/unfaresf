@@ -1,6 +1,6 @@
-import { and, isNotNull, inArray, eq } from 'drizzle-orm';
+import { and, isNotNull, inArray, eq, sql } from 'drizzle-orm';
 import { gtfsDB, DB as appDB } from "../../sqlite-service";
-import { stops as stopsTable } from "../../../db/gtfs-migrations/schema";
+import { stops as stopsTable, stopTimes as stopTimesTable, routes as routesTable, trips as tripsTable } from "../../../db/gtfs-migrations/schema";
 import { integrations as integrationsTable } from "../../../db/schema";
 import { listBroadcastsGeo } from "../../../shared/utils/abilities";
 import { type BBox } from "geojson";
@@ -29,22 +29,35 @@ type StopById = {
   stopLon: number;
   stopLat: number;
 }
-async function fetchStopsById(stopIds:string[]):Promise<StopById[]> {
+async function fetchStopsById(stopIds:string[]) {
+  const routesSubquery = gtfsDB
+    .selectDistinct({
+      stopId: stopTimesTable.stopId,
+      routeId: tripsTable.routeId
+    })
+    .from(stopTimesTable)
+    .innerJoin(tripsTable, eq(tripsTable.tripId, stopTimesTable.tripId))
+    .where(inArray(stopTimesTable.stopId, stopIds))
+    .as("routes");
+
   // @ts-ignore
   return gtfsDB
-  .select({
-    stopId: stopsTable.stopId,
-    stopLon: stopsTable.stopLon,
-    stopLat: stopsTable.stopLat,
-  })
-  .from(stopsTable)
-  .where(
-    and(
-      inArray(stopsTable.stopId, stopIds),
-      isNotNull(stopsTable.stopLon),
-      isNotNull(stopsTable.stopLat),
-    )
-  );
+    .select({
+      stopId: stopsTable.stopId,
+      stopLon: stopsTable.stopLon,
+      stopLat: stopsTable.stopLat,
+      routeIds: sql<string>`string_agg(${routesSubquery.routeId}, ',')`
+    })
+    .from(stopsTable)
+    .innerJoin(routesSubquery, eq(routesSubquery.stopId, stopsTable.stopId))
+    .groupBy(stopsTable.stopId)
+    .where(
+      and(
+        inArray(stopsTable.stopId, stopIds),
+        isNotNull(stopsTable.stopLon),
+        isNotNull(stopsTable.stopLat),
+      )
+    );
 }
 
 export default defineEventHandler(async (event) => {
