@@ -162,6 +162,11 @@ export const mapIntegrationOptionSchema = z.object({
   type: z.literal("map"),
   mapStylesUrl: z.string().url().optional(),
   tileServerDomain: z.string().url().optional(),
+  center: z.object({
+    lat: z.number().min(-90).max(90),
+    lng: z.number().min(-180).max(180)
+  }).optional(),
+  zoom: z.number().min(0).max(24).optional()
 });
 
 export const twitterIntegrationOptionSchema = z.object({

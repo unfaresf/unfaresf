@@ -1,10 +1,12 @@
-import { and, isNotNull, inArray } from 'drizzle-orm';
-import { gtfsDB } from "../../sqlite-service";
+import { and, isNotNull, inArray, eq } from 'drizzle-orm';
+import { gtfsDB, DB as appDB } from "../../sqlite-service";
 import { stops as stopsTable } from "../../../db/gtfs-migrations/schema";
+import { integrations as integrationsTable } from "../../../db/schema";
 import { listBroadcastsGeo } from "../../../shared/utils/abilities";
-import { BBox } from "geojson";
+import { type BBox } from "geojson";
 import { getRouteTrips } from "../../utils/routes-cache";
 import fetchRecentlyBroadcastReports from '../../utils/fetch-recent-broadcasts';
+import { bbox, point, featureCollection } from '@turf/turf';
 
 const mergeBoundingBoxes = (boundingBoxes: BBox[]): [number, number, number, number] => {
   let minLeft = 180;
@@ -51,6 +53,7 @@ export default defineEventHandler(async (event) => {
   const { public: {shiftLength} } = useRuntimeConfig();
 
   try {
+    const integrations = await appDB.query.integrations.findFirst({where: eq(integrationsTable.name, 'map')});
     const reports = await fetchRecentlyBroadcastReports(shiftLength);
     const stopIds = reports.filter(r => !!r.stop).map(r => r.stop.stopId);
     const gettingsRoutesBBoxes = Promise.all(
@@ -61,9 +64,16 @@ export default defineEventHandler(async (event) => {
     const gettingStops = fetchStopsById(stopIds);
 
     const [stopPositions, bBoxedRoutes] = await Promise.all([gettingStops, gettingsRoutesBBoxes]);
-    const superBBox = mergeBoundingBoxes(bBoxedRoutes.map(r => r?.bbox));
+    const stopsBbox = bbox(featureCollection(stopPositions.map(stop => point([stop.stopLon, stop.stopLat]))));
+    const routeBboxes = bBoxedRoutes.map(r => r?.bbox).concat([stopsBbox]);
+    const superBBox = mergeBoundingBoxes(routeBboxes);
 
     return {
+      defaultPosition: {
+        // another discriminated type issue
+        center: integrations?.options?.center,
+        zoom: integrations?.options?.zoom,
+      },
       bbox: superBBox,
       routes: bBoxedRoutes,
       stops: stopPositions,
