@@ -110,6 +110,7 @@ import {
 import type { MapOptions, SelectIntegration, Prettify } from "../db/schema";
 import { formatDistanceToNow } from "date-fns";
 import { useReportSubmit } from "~/composable/reportSubmit";
+import getDateMinusNHours from "~/shared/utils/get-date-minus-n-hours";
 
 definePageMeta({
   layout: "full-screen",
@@ -122,12 +123,6 @@ useHead({
 const {
   public: { shiftLength },
 } = useRuntimeConfig();
-
-function getDateMinusNHours(n: number) {
-  const now = new Date();
-  now.setHours(now.getHours() - n);
-  return now;
-}
 
 const { submitting, onSubmit } = useReportSubmit();
 const reportFormState = ref<Partial<ReportPostSchema>>({ passenger: false });

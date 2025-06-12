@@ -28,8 +28,11 @@ type StopById = {
   stopId: string;
   stopLon: number;
   stopLat: number;
+  routeIds: string;
 }
-async function fetchStopsById(stopIds:string[]) {
+// explicity setting the return type because drizzle doesnt handle converting
+// optional props to required props when using isNotNull.
+async function fetchStopsById(stopIds:string[]):Promise<StopById[]> {
   const routesSubquery = gtfsDB
     .selectDistinct({
       stopId: stopTimesTable.stopId,
@@ -83,8 +86,9 @@ export default defineEventHandler(async (event) => {
 
     return {
       defaultPosition: {
-        // another discriminated type issue
+        // @ts-ignore another discriminated type issue
         center: integrations?.options?.center,
+        // @ts-ignore another discriminated type issue
         zoom: integrations?.options?.zoom,
       },
       bbox: superBBox,
