@@ -93,8 +93,6 @@ import type {
 import type { Route } from "./select/route.vue";
 import type { MapOptions } from "../db/schema";
 
-const center: LngLatLike = [-122.4404, 37.7549];
-const zoom = 10.5;
 const paint = {
   "line-width": 2,
   "line-color": "#000000",
@@ -103,6 +101,7 @@ const hotPaint = {
   "line-width": 2,
   "line-color": "#ff6467",
 };
+const defaultBoundingBox = [180,90,-180,-90];
 const mapPadding = { top: 15, bottom: 40, left: 15, right: 15 };
 const routeSymbolLayout = {
   "text-field": ["get", "route_short_name"],
@@ -137,6 +136,9 @@ const props = defineProps<{
   showBroadcasts?: boolean;
   config: MapOptions;
 }>();
+
+const zoom = props.config.zoom;
+const center = props.config.center;
 
 const tripsSourceTiles = [
   `${props.config.tileServerDomain}/data/trips/{z}/{x}/{y}.pbf`,
@@ -188,9 +190,12 @@ if (props.showBroadcasts) {
       if (data.value?.routes || data.value?.stops) {
         visibleRouteIds.value = data.value.routes.map((route) => route.routeId);
         visibleStopIds.value = data.value.stops.map((stop) => stop.stopId);
-        transitMap.map?.fitBounds(data.value?.bbox, {
-          padding: mapPadding,
-        });
+        if (JSON.stringify(defaultBoundingBox) !== JSON.stringify(data.value?.bbox)) {
+          transitMap.map?.fitBounds(data.value?.bbox, {
+            padding: mapPadding,
+            maxZoom: 12
+          });
+        }
       }
     },
     { once: true }
