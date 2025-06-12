@@ -188,7 +188,7 @@ if (props.showBroadcasts) {
     data,
     () => {
       if (data.value?.routes || data.value?.stops) {
-        visibleRouteIds.value = data.value.routes.map((route) => route.routeId);
+        visibleRouteIds.value = data.value.routes.filter((route): route is typeof route & {routeId: string } => !!route.routeId).map((route) => route.routeId);
         visibleStopIds.value = data.value.stops.map((stop) => stop.stopId);
         if (JSON.stringify(defaultBoundingBox) !== JSON.stringify(data.value?.bbox)) {
           transitMap.map?.fitBounds(data.value?.bbox, {
