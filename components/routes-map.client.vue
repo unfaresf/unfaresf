@@ -188,7 +188,7 @@ const warmStops = computed((): LineLayerSpecification["filter"] => {
 });
 
 const routeLabels = computed((): LineLayerSpecification["filter"] => {
-  const routeIds = [...visibleRouteIds.value, props.route?.routeId].filter(
+  const routeIds = [...visibleRouteIds.value, ...warmRouteIds.value, props.route?.routeId].filter(
     (r): r is string => !!r
   );
 
