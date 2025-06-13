@@ -37,7 +37,7 @@
           >
             {{ broadcast.message }}
             <dl v-if="broadcast.stop.routes" class="flex text-xs italic">
-              <dt>Affected routes: </dt>
+              <dt class="mr-1">Affected routes: </dt>
               <dd>{{ broadcast.stop.routes?.join(', ') }}</dd>
             </dl>
           </li>
