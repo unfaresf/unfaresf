@@ -36,9 +36,10 @@
             class="border-gray-200 dark:border-gray-800 w-full border-b border-solid pb-3 mb-3 last:border-b-0 last:pb-0 last:mb-0"
           >
             {{ broadcast.message }}
-            <span class="text-xs italic"
-              >{{ formatDistanceToNow(broadcast.createdAt) }} ago</span
-            >
+            <dl v-if="broadcast.stop.routes" class="flex text-xs italic">
+              <dt>Effected routes: </dt>
+              <dd>{{ broadcast.stop.routes?.join(', ') }}</dd>
+            </dl>
           </li>
         </ol>
         <ol v-else>

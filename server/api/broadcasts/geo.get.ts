@@ -30,6 +30,7 @@ type StopById = {
   stopLat: number;
   routeIds: string;
 }
+// return stops with routes that pass through the stop
 // explicity setting the return type because drizzle doesnt handle converting
 // optional props to required props when using isNotNull.
 async function fetchStopsById(stopIds:string[]):Promise<StopById[]> {
@@ -43,7 +44,7 @@ async function fetchStopsById(stopIds:string[]):Promise<StopById[]> {
     .where(inArray(stopTimesTable.stopId, stopIds))
     .as("routes");
 
-  // @ts-ignore
+  // @ts-expect-error: stopLon stopLat null isNotNull not working as expected
   return gtfsDB
     .select({
       stopId: stopsTable.stopId,
