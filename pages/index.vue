@@ -36,9 +36,10 @@
             class="border-gray-200 dark:border-gray-800 w-full border-b border-solid pb-3 mb-3 last:border-b-0 last:pb-0 last:mb-0"
           >
             {{ broadcast.message }}
-            <span class="text-xs italic"
-              >{{ formatDistanceToNow(broadcast.createdAt) }} ago</span
-            >
+            <dl v-if="broadcast.stop.routes" class="flex text-xs italic">
+              <dt class="mr-1">Affected routes: </dt>
+              <dd>{{ broadcast.stop.routes?.join(', ') }}</dd>
+            </dl>
           </li>
         </ol>
         <ol v-else>
@@ -110,6 +111,7 @@ import {
 import type { MapOptions, SelectIntegration, Prettify } from "../db/schema";
 import { formatDistanceToNow } from "date-fns";
 import { useReportSubmit } from "~/composable/reportSubmit";
+import getDateMinusNHours from "~/shared/utils/get-date-minus-n-hours";
 
 definePageMeta({
   layout: "full-screen",
@@ -122,12 +124,6 @@ useHead({
 const {
   public: { shiftLength },
 } = useRuntimeConfig();
-
-function getDateMinusNHours(n: number) {
-  const now = new Date();
-  now.setHours(now.getHours() - n);
-  return now;
-}
 
 const { submitting, onSubmit } = useReportSubmit();
 const reportFormState = ref<Partial<ReportPostSchema>>({ passenger: false });

@@ -1,6 +1,7 @@
-import { desc, gte, lte, and, eq, getTableColumns } from 'drizzle-orm';
-import { DB as db } from "../../sqlite-service";
+import { desc, gte, lte, and, eq, getTableColumns, inArray, sql } from 'drizzle-orm';
+import { gtfsDB, DB as db } from "../../sqlite-service";
 import { reports as reportsTable, broadcasts as broadcastsTable } from "../../../db/schema";
+import { stopTimes as stopTimesTable, trips as tripsTable, routes as routesTable} from "../../../db/gtfs-migrations/schema";
 import { listBroadcasts } from "../../../shared/utils/abilities";
 import { z } from "zod";
 
@@ -17,7 +18,8 @@ export default defineEventHandler(async (event) => {
 
   try {
     const { page, limit, from, to } = await getValidatedQuery(event, broadcastsGetQuerySchema.parse);
-    const [count, result] = await Promise.all([
+
+    const [count, broadcasts] = await Promise.all([
       db.$count(broadcastsTable, and(
         from ? gte(broadcastsTable.createdAt, from) : undefined,
         to ? lte(broadcastsTable.createdAt, to) : undefined,
@@ -40,9 +42,41 @@ export default defineEventHandler(async (event) => {
         .offset((page*limit)-limit)
         .orderBy(desc(broadcastsTable.createdAt))
     ]);
+
+    // GTFS data is in a different DB so this join must be done in the app layer
+    const stopRoutesIntersection = await gtfsDB
+      .selectDistinct({
+        stopId: stopTimesTable.stopId,
+        routeShortName: routesTable.routeShortName,
+      })
+      .from(stopTimesTable)
+      .innerJoin(tripsTable, eq(tripsTable.tripId, stopTimesTable.tripId))
+      .innerJoin(routesTable, eq(routesTable.routeId, tripsTable.routeId))
+      .where(inArray(stopTimesTable.stopId, broadcasts.map(r => r.stop.stopId)));
+
+    const stopRoutesObj = stopRoutesIntersection.reduce<Record<string, string[]>>((accum, stop) => {
+      if (stop.routeShortName !== null) {
+        const stopId = stop.stopId;
+        if (accum[stopId]) {
+          accum[stopId].push(stop.routeShortName);
+        } else {
+          accum[stop.stopId] = [stop.routeShortName];
+        }
+      }
+      return accum;
+    }, {});
+
+    const result = broadcasts.map(broadcast => {
+      const stopId = broadcast.stop.stopId;
+      if (stopId && stopRoutesObj[stopId]) {
+        broadcast.stop.routes = stopRoutesObj[stopId];
+      }
+      return broadcast;
+    });
+
     return {
       count,
-      result: result
+      result
     }
   } catch (e: any) {
     throw createError({

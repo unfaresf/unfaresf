@@ -1,6 +1,6 @@
-import { and, isNotNull, inArray, eq } from 'drizzle-orm';
+import { and, isNotNull, inArray, eq, sql } from 'drizzle-orm';
 import { gtfsDB, DB as appDB } from "../../sqlite-service";
-import { stops as stopsTable } from "../../../db/gtfs-migrations/schema";
+import { stops as stopsTable, stopTimes as stopTimesTable, routes as routesTable, trips as tripsTable } from "../../../db/gtfs-migrations/schema";
 import { integrations as integrationsTable } from "../../../db/schema";
 import { listBroadcastsGeo } from "../../../shared/utils/abilities";
 import { type BBox } from "geojson";
@@ -28,23 +28,40 @@ type StopById = {
   stopId: string;
   stopLon: number;
   stopLat: number;
+  routeIds: string;
 }
+// return stops with routes that pass through the stop
+// explicity setting the return type because drizzle doesnt handle converting
+// optional props to required props when using isNotNull.
 async function fetchStopsById(stopIds:string[]):Promise<StopById[]> {
-  // @ts-ignore
+  const routesSubquery = gtfsDB
+    .selectDistinct({
+      stopId: stopTimesTable.stopId,
+      routeId: tripsTable.routeId
+    })
+    .from(stopTimesTable)
+    .innerJoin(tripsTable, eq(tripsTable.tripId, stopTimesTable.tripId))
+    .where(inArray(stopTimesTable.stopId, stopIds))
+    .as("routes");
+
+  // @ts-expect-error: stopLon stopLat null isNotNull not working as expected
   return gtfsDB
-  .select({
-    stopId: stopsTable.stopId,
-    stopLon: stopsTable.stopLon,
-    stopLat: stopsTable.stopLat,
-  })
-  .from(stopsTable)
-  .where(
-    and(
-      inArray(stopsTable.stopId, stopIds),
-      isNotNull(stopsTable.stopLon),
-      isNotNull(stopsTable.stopLat),
-    )
-  );
+    .select({
+      stopId: stopsTable.stopId,
+      stopLon: stopsTable.stopLon,
+      stopLat: stopsTable.stopLat,
+      routeIds: sql<string>`string_agg(${routesSubquery.routeId}, ',')`
+    })
+    .from(stopsTable)
+    .innerJoin(routesSubquery, eq(routesSubquery.stopId, stopsTable.stopId))
+    .groupBy(stopsTable.stopId)
+    .where(
+      and(
+        inArray(stopsTable.stopId, stopIds),
+        isNotNull(stopsTable.stopLon),
+        isNotNull(stopsTable.stopLat),
+      )
+    );
 }
 
 export default defineEventHandler(async (event) => {
@@ -70,8 +87,9 @@ export default defineEventHandler(async (event) => {
 
     return {
       defaultPosition: {
-        // another discriminated type issue
+        // @ts-ignore another discriminated type issue
         center: integrations?.options?.center,
+        // @ts-ignore another discriminated type issue
         zoom: integrations?.options?.zoom,
       },
       bbox: superBBox,

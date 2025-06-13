@@ -72,6 +72,8 @@ import { PostModal } from "#components";
 import ReportCard from "~/components/report-card.vue";
 import { sub, formatDistanceToNow } from "date-fns";
 import { asWriteable } from "~/shared/types/utils";
+import getDateMinusNHours from "~/shared/utils/get-date-minus-n-hours";
+
 const { $pwa } = useNuxtApp();
 
 definePageMeta({
@@ -99,6 +101,9 @@ const page = ref(1);
 const disabledRows = ref(new Set());
 const modal = useModal();
 const toast = useToast();
+const {
+  public: { shiftLength },
+} = useRuntimeConfig();
 
 async function dismiss(row: SelectReport) {
   try {
@@ -159,7 +164,7 @@ const { data: broadcasts, refresh: refreshBroadcasts } = await useLazyFetch(
   {
     server: false,
     query: {
-      from: sub(new Date(), { hours: 12 }).toISOString(),
+      from: getDateMinusNHours(shiftLength).toISOString(),
     },
   }
 );
