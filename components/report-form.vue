@@ -1,6 +1,6 @@
 <template>
   <UForm
-    class="flex flex-col gap-2 max-w-prose"
+    class="flex flex-col gap-4 max-w-prose"
     ref="form"
     :state="formState"
     :schema="reportSchema"
@@ -15,7 +15,12 @@
       name="passenger"
     >
       <URadioGroup
+        class="mt-2"
         v-model="formState.passenger"
+        :ui="{ fieldset: 'flex flex-row justify-between gap-4' }"
+        :ui-radio="{
+          wrapper: 'border border-solid border-gray-700 rounded-md p-2',
+        }"
         :options="[
           { label: 'Yes', value: true },
           { label: 'No', value: false },
