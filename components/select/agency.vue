@@ -1,13 +1,16 @@
 <template>
   <UFormGroup
+    id="agency-select"
     label="Agency"
     name="agency"
     description="Agency name, such as Muni or BART"
     required
   >
     <USelectMenu
+      class="mt-2"
       v-if="agencyOptions"
       v-model="agency"
+      v-on:open="onOpen"
       :loading="loading"
       :options="agencyOptions"
       searchable
@@ -26,6 +29,7 @@
 <script lang="ts">
 import { z } from "zod";
 import { useAgencyAltNames } from "~/composable/config";
+import { useScrollOnOpen } from "~/composable/scroll";
 
 export const agencySchema = z.object({
   agencyId: z.string(),
@@ -41,6 +45,8 @@ const { isMobile } = useDevice();
 const emit = defineEmits<{
   (e: "onChange", newAgency: Agency): void;
 }>();
+
+const onOpen = useScrollOnOpen("agency-select");
 
 watch(agency, (newAgency, oldAgency) => {
   if (newAgency && newAgency !== oldAgency) {
