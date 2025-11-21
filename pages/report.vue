@@ -10,7 +10,7 @@
       </template>
       <ReportForm
         :geolocation="geolocation"
-        @on-change="(newFormState:Partial<ReportPostSchema>) => reportFormState = newFormState"
+        v-model="reportFormState"
       />
       <div class="flex mt-4">
         <ClientOnly>

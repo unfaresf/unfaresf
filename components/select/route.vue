@@ -11,6 +11,7 @@
       searchable
       :search-attributes="['searchString']"
       :options="options"
+      by="uniqueKey"
       placeholder="Find a route"
       trailing
       :popper="{
@@ -50,20 +51,34 @@ export type Route = z.infer<typeof routeSchema>;
 
 type RouteWithSearchString = Route & {
   searchString: string;
+  uniqueKey: string;
 };
 </script>
 
 <script setup lang="ts">
 const loading = ref(false);
 const { isMobile } = useDevice();
-const route = ref<RouteWithSearchString | undefined>(undefined);
+
 const props = defineProps<{
   agency: Agency;
 }>();
+
+const model = defineModel<Route>();
+
 const options = ref<RouteWithSearchString[]>([]);
-const emit = defineEmits<{
-  (e: "onChange", route: Route | undefined): void;
-}>();
+
+const route = computed({
+  get: () => model.value,
+  set: (value: Route | RouteWithSearchString | undefined) => {
+    if (value) {
+      // Remove searchString and uniqueKey before updating model
+      const { searchString, uniqueKey, ...cleanedRoute } = value as RouteWithSearchString;
+      model.value = cleanedRoute as Route;
+    } else {
+      model.value = undefined;
+    }
+  },
+});
 
 const agencyId = computed(() => props.agency.agencyId);
 
@@ -76,6 +91,7 @@ const getAgencyRoutes = async ({ agencyId }: { agencyId: string }) => {
   return routes.map((route) => ({
     ...route,
     searchString: `${route.routeShortName} ${route.routeLongName} ${route.direction}`,
+    uniqueKey: `${route.routeId}-${route.directionId}`,
   }));
 };
 
@@ -87,19 +103,10 @@ onMounted(async () => {
 
 watch(agencyId, async (newAgencyId, oldAgencyId) => {
   if (newAgencyId !== oldAgencyId) {
-    route.value = undefined;
+    model.value = undefined;
     loading.value = true;
     options.value = await getAgencyRoutes({ agencyId: agencyId.value });
     loading.value = false;
-  }
-});
-
-watch(route, (newRoute) => {
-  if (newRoute) {
-    const { searchString, ...cleanedRoute } = newRoute;
-    emit("onChange", cleanedRoute);
-  } else {
-    emit("onChange", newRoute);
   }
 });
 </script>

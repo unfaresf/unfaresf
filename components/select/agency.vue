@@ -36,16 +36,23 @@ export type Agency = z.infer<typeof agencySchema>;
 
 <script setup lang="ts">
 const loading = ref(false);
-const agency = ref<Agency | undefined>();
 const { isMobile } = useDevice();
-const emit = defineEmits<{
-  (e: "onChange", newAgency: Agency): void;
+
+const props = defineProps<{
+  modelValue?: Agency;
 }>();
 
-watch(agency, (newAgency, oldAgency) => {
-  if (newAgency && newAgency !== oldAgency) {
-    emit("onChange", newAgency);
-  }
+const emit = defineEmits<{
+  (e: "update:modelValue", value: Agency): void;
+}>();
+
+const agency = computed({
+  get: () => props.modelValue,
+  set: (value) => {
+    if (value) {
+      emit("update:modelValue", value);
+    }
+  },
 });
 const agencyAltNames = useAgencyAltNames();
 
