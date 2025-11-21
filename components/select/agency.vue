@@ -11,6 +11,7 @@
       :loading="loading"
       :options="agencyOptions"
       searchable
+      by="agencyId"
       placeholder="Pick transit agency"
       option-attribute="agencyLabel"
       trailing
@@ -36,17 +37,10 @@ export type Agency = z.infer<typeof agencySchema>;
 
 <script setup lang="ts">
 const loading = ref(false);
-const agency = ref<Agency | undefined>();
 const { isMobile } = useDevice();
-const emit = defineEmits<{
-  (e: "onChange", newAgency: Agency): void;
-}>();
 
-watch(agency, (newAgency, oldAgency) => {
-  if (newAgency && newAgency !== oldAgency) {
-    emit("onChange", newAgency);
-  }
-});
+const agency = defineModel<Agency>();
+
 const agencyAltNames = useAgencyAltNames();
 
 const { data: agencyOptions } = await useFetch("/api/gtfs/agencies", {
