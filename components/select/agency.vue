@@ -1,13 +1,16 @@
 <template>
   <UFormGroup
+    ref="agency-select"
     label="Agency"
     name="agency"
     description="Agency name, such as Muni or BART"
     required
   >
     <USelectMenu
+      class="mt-2"
       v-if="agencyOptions"
       v-model="agency"
+      v-on:open="onOpen"
       :loading="loading"
       :options="agencyOptions"
       searchable
@@ -27,6 +30,7 @@
 <script lang="ts">
 import { z } from "zod";
 import { useAgencyAltNames } from "~/composable/config";
+import { useScrollOnOpen } from "~/composable/scroll";
 
 export const agencySchema = z.object({
   agencyId: z.string(),
@@ -38,9 +42,16 @@ export type Agency = z.infer<typeof agencySchema>;
 <script setup lang="ts">
 const loading = ref(false);
 const { isMobile } = useDevice();
+const agencySelect = useTemplateRef('agency-select');
+
+let onOpen = () => {};
+onMounted(() => {
+  if (agencySelect.value) {
+    onOpen = useScrollOnOpen(agencySelect.value.$el);
+  }
+});
 
 const agency = defineModel<Agency>();
-
 const agencyAltNames = useAgencyAltNames();
 
 const { data: agencyOptions } = await useFetch("/api/gtfs/agencies", {
@@ -60,5 +71,11 @@ const { data: agencyOptions } = await useFetch("/api/gtfs/agencies", {
           ? -1
           : 0
       ),
+});
+ 
+watch(agency, (newAgency, oldAgency) => {
+  if (newAgency && newAgency !== oldAgency) {
+    emit("onChange", newAgency);
+  }
 });
 </script>

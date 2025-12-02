@@ -1,12 +1,15 @@
 <template>
   <UFormGroup
+    ref="route-select"
     label="Route"
     name="route"
     description="Route name, e.g. 38 Geary or Bart Green line"
     required
   >
     <USelectMenu
+      class="mt-2"
       v-model="route"
+      v-on:open="onOpen"
       :loading="loading"
       searchable
       :search-attributes="['searchString']"
@@ -38,6 +41,7 @@
 <script lang="ts">
 import { z } from "zod";
 import type { Agency } from "./agency.vue";
+import { useScrollOnOpen } from "~/composable/scroll";
 
 export const routeSchema = z.object({
   routeId: z.string(),
@@ -78,6 +82,15 @@ const route = computed({
       model.value = undefined;
     }
   },
+});
+
+const routeSelect = useTemplateRef('route-select');
+
+let onOpen = () => {};
+onMounted(() => {
+  if (routeSelect.value) {
+    onOpen = useScrollOnOpen(routeSelect.value.$el);
+  }
 });
 
 const agencyId = computed(() => props.agency.agencyId);

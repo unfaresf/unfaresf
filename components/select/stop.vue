@@ -1,14 +1,17 @@
 <template>
   <UFormGroup
+    ref="stop-select"
     label="Stop"
     name="stop"
     description="Current stop, e.g. Geary Blvd & 36th Ave or 16th & Mission"
     required
   >
     <USelectMenu
+      class="mt-2"
       :key="routeId"
       v-model="stop"
       v-model:query="query"
+      v-on:open="onOpen"
       :debounce="500"
       :searchable="routeId ? true : onSearch"
       searchable-placeholder="Search for a transit stops"
@@ -38,6 +41,7 @@
 import { z } from "zod";
 import type { Route } from "./route.vue";
 import type { Agency } from "./agency.vue";
+import { useScrollOnOpen } from "~/composable/scroll";
 
 export const stopSchema = z.object({
   stopId: z.string(),
@@ -58,6 +62,15 @@ const props = defineProps<{
   route?: Route;
   geo?: GeolocationPosition;
 }>();
+
+const stopSelect = useTemplateRef('stop-select');
+
+let onOpen = () => {};
+onMounted(() => {
+  if (stopSelect.value) {
+    onOpen = useScrollOnOpen(stopSelect.value.$el);
+  }
+});
 
 const agencyId = computed(() => props.agency.agencyId);
 const routeId = computed(() => props.route?.routeId);
