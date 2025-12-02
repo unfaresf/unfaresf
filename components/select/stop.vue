@@ -1,6 +1,6 @@
 <template>
   <UFormGroup
-    id="stop-select"
+    ref="stop-select"
     label="Stop"
     name="stop"
     description="Current stop, e.g. Geary Blvd & 36th Ave or 16th & Mission"
@@ -65,7 +65,14 @@ const emit = defineEmits<{
   (e: "onChange", stop: Stop | undefined): void;
 }>();
 
-const onOpen = useScrollOnOpen("stop-select");
+const stopSelect = useTemplateRef('stop-select');
+
+let onOpen = () => {};
+onMounted(() => {
+  if (stopSelect.value) {
+    onOpen = useScrollOnOpen(stopSelect.value.$el);
+  }
+});
 
 const agencyId = computed(() => props.agency.agencyId);
 const routeId = computed(() => props.route?.routeId);

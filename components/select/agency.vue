@@ -1,6 +1,6 @@
 <template>
   <UFormGroup
-    id="agency-select"
+    ref="agency-select"
     label="Agency"
     name="agency"
     description="Agency name, such as Muni or BART"
@@ -46,7 +46,14 @@ const emit = defineEmits<{
   (e: "onChange", newAgency: Agency): void;
 }>();
 
-const onOpen = useScrollOnOpen("agency-select");
+const agencySelect = useTemplateRef('agency-select');
+
+let onOpen = () => {};
+onMounted(() => {
+  if (agencySelect.value) {
+    onOpen = useScrollOnOpen(agencySelect.value.$el);
+  }
+});
 
 watch(agency, (newAgency, oldAgency) => {
   if (newAgency && newAgency !== oldAgency) {

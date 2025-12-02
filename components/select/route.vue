@@ -1,6 +1,6 @@
 <template>
   <UFormGroup
-    id="route-select"
+    ref="route-select"
     label="Route"
     name="route"
     description="Route name, e.g. 38 Geary or Bart Green line"
@@ -69,7 +69,14 @@ const emit = defineEmits<{
   (e: "onChange", route: Route | undefined): void;
 }>();
 
-const onOpen = useScrollOnOpen("route-select");
+const routeSelect = useTemplateRef('route-select');
+
+let onOpen = () => {};
+onMounted(() => {
+  if (routeSelect.value) {
+    onOpen = useScrollOnOpen(routeSelect.value.$el);
+  }
+});
 
 const agencyId = computed(() => props.agency.agencyId);
 

@@ -1,8 +1,7 @@
-export const useScrollOnOpen = (id: string) => {
+export const useScrollOnOpen = (element: HTMLElement) => {
   const onOpen = async () => {
-    const element = document.getElementById(id);
     setTimeout(() => {
-      element?.scrollIntoView({ behavior: "smooth", block: "end" });
+      element.scrollIntoView({ behavior: "smooth", block: "end" });
     }, 300);
   };
 
