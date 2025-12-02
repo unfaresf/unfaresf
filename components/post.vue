@@ -11,7 +11,7 @@
       <div class="p-2 rounded bg-gray-100 text-gray-600 text-sm mb-4">
         <span>{{ props.report.message }}</span>
       </div>
-      <ReportForm :showButtons="false" class="mb-4" />
+      <ReportForm v-model="dummyFormState" class="mb-4" />
     </div>
 
     <div class="p-2 rounded bg-gray-100 text-gray-600 text-sm">
@@ -46,6 +46,9 @@
 import { z } from "zod";
 import type { SelectReport } from "../db/schema";
 import { useTemplateRef } from "vue";
+import type { ReportPostSchema } from "./report-form.vue";
+
+const dummyFormState = ref<Partial<ReportPostSchema>>({});
 // import { routeSchema } from "../components/select/route.vue";
 // import { stopSchema } from "../components/select/stop.vue";
 

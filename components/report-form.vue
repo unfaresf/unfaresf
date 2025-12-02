@@ -5,9 +5,7 @@
     :state="formState"
     :schema="reportSchema"
   >
-    <SelectAgency
-      @on-change="(newAgency:Agency) => formState.agency = newAgency"
-    />
+    <SelectAgency v-model="formState.agency" />
     <UFormGroup
       v-if="formState.agency"
       label="Inspectors onboard"
@@ -30,7 +28,7 @@
     <SelectRoute
       v-if="formState.agency && formState.passenger"
       :agency="formState.agency"
-      @on-change="(newRoute:Route | undefined) => formState.route = newRoute"
+      v-model="formState.route"
     />
     <SelectStop
       v-if="
@@ -39,7 +37,7 @@
       :agency="formState.agency"
       :route="formState.route"
       :geo="geolocation"
-      @on-change="(newStop:Stop | undefined) => formState.stop = newStop"
+      v-model="formState.stop"
     />
   </UForm>
 </template>
@@ -64,24 +62,14 @@ import { agencySchema, type Agency } from "./select/agency.vue";
 defineProps<{ geolocation?: GeolocationPosition }>();
 
 const form = ref<Form<ReportPostSchema>>();
-const formState = reactive<Partial<ReportPostSchema>>({ passenger: undefined });
-
-const emit = defineEmits<{
-  (e: "onChange", route: Partial<ReportPostSchema>): void;
-}>();
-
-watch(formState, (newFormState) => {
-  if (newFormState) {
-    emit("onChange", newFormState);
-  }
-});
+const formState = defineModel<Partial<ReportPostSchema>>({ required: true });
 
 watch(
-  () => formState.passenger,
+  () => formState.value.passenger,
   (newPassenger, oldPassenger) => {
     if (newPassenger !== oldPassenger) {
-      formState.route = undefined;
-      formState.stop = undefined;
+      formState.value.route = undefined;
+      formState.value.stop = undefined;
     }
   }
 );

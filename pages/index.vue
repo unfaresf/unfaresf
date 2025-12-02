@@ -3,7 +3,7 @@
     <div class="col-span-1 hidden lg:block p-4">
       <ReportForm
         :geolocation="geolocation"
-        @on-change="(newFormState:Partial<ReportPostSchema>) => reportFormState = newFormState"
+        v-model="reportFormState"
       />
       <div class="flex mt-4">
         <ClientOnly>

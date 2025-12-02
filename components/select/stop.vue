@@ -17,6 +17,7 @@
       searchable-placeholder="Search for a transit stops"
       :search-attributes="['stopName', 'direction']"
       :options="options"
+      by="stopId"
       :loading="loading"
       placeholder="Select a stop"
       trailing
@@ -54,15 +55,12 @@ export type Stop = z.infer<typeof stopSchema>;
 <script setup lang="ts">
 const loading = ref(false);
 const { isMobile } = useDevice();
-const stop = ref<Stop | undefined>(undefined);
+const stop = defineModel<Stop>();
 const query = ref<string>("");
 const props = defineProps<{
   agency: Agency;
   route?: Route;
   geo?: GeolocationPosition;
-}>();
-const emit = defineEmits<{
-  (e: "onChange", stop: Stop | undefined): void;
 }>();
 
 const stopSelect = useTemplateRef('stop-select');
@@ -166,11 +164,6 @@ watch(agencyId, async (newAgencyId, oldAgencyId) => {
     stop.value = undefined;
     // this triggers the search but the white space is trimmed later
     query.value = " ";
-  }
-});
-watch(stop, (newStop, oldStop) => {
-  if (newStop !== oldStop) {
-    emit("onChange", newStop);
   }
 });
 </script>
