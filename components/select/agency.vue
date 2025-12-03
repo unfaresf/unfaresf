@@ -72,10 +72,4 @@ const { data: agencyOptions } = await useFetch("/api/gtfs/agencies", {
           : 0
       ),
 });
- 
-watch(agency, (newAgency, oldAgency) => {
-  if (newAgency && newAgency !== oldAgency) {
-    emit("onChange", newAgency);
-  }
-});
 </script>
