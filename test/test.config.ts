@@ -4,5 +4,6 @@ export default defineVitestConfig({
   test: {
     environment: 'nuxt',
     setupFiles: ['./test/test.setup.ts'],
+    fileParallelism: false,
   }
 });
