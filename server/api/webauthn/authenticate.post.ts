@@ -28,11 +28,12 @@ export default defineWebAuthnAuthenticateEventHandler({
       .select()
       .from(credentials)
       .where(eq(credentials.id, credentialId))
+
+    const [credential] = rows;
     // The credential trying to authenticate is not registered, so there is no account to log in to
-    if (!rows.length)
+    if (!credential)
       throw createError({ statusCode: 400, message: 'Credential not found' })
 
-    const [credential] = rows
     return {
       ...credential,
       backedUp: Boolean(credential.backedUp),
@@ -46,18 +47,22 @@ export default defineWebAuthnAuthenticateEventHandler({
       .innerJoin(users, eq(users.id, credentials.userId))
       .where(eq(credentials.id, credential.id));
 
+      const [user] = rows;
+    if (!user)
+      throw createError({ statusCode: 400, message: 'Credential not found' })
+
     // Update the counter
     await db
       .update(credentials)
-      .set({counter: authenticationInfo.newCounter})
+      .set({ counter: authenticationInfo.newCounter })
       .where(eq(credentials.id, credential.id));
 
-    const [{ userName, id, roles }] = rows;
+    // const [{ userName, id, roles }] = rows;
     await setUserSession(event, {
       user: {
-        id,
-        userName,
-        roles: JSON.parse(roles),
+        id: user.id,
+        userName: user.userName,
+        roles: JSON.parse(user.roles),
       },
       loggedInAt: Date.now(),
     });
