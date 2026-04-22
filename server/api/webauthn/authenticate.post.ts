@@ -57,7 +57,6 @@ export default defineWebAuthnAuthenticateEventHandler({
       .set({ counter: authenticationInfo.newCounter })
       .where(eq(credentials.id, credential.id));
 
-    // const [{ userName, id, roles }] = rows;
     await setUserSession(event, {
       user: {
         id: user.id,
