@@ -10,6 +10,7 @@ import {
   fetchRouteMeta,
   fetchRouteShapePoints,
   fetchStopRow,
+  getRouteFeature,
 } from './gtfs-map-features';
 
 describe('fetchRouteShapePoints', () => {
@@ -68,5 +69,24 @@ describe('fetchStopRow', () => {
       lat: 37.5,
     });
     expect(await fetchStopRow('NOPE', db)).toBeNull();
+  });
+});
+
+describe('getRouteFeature', () => {
+  it('builds a MultiLineString feature for a route', async () => {
+    const { db, sqlite } = createGtfsFixture();
+    seedRoute(sqlite, { routeId: 'R1', routeShortName: '38', routeColor: 'ff0000' });
+    seedShape(sqlite, 'S1', [[-122.1, 37.1], [-122.2, 37.2]]);
+    seedTrip(sqlite, 'T1', 'R1', 'S1');
+
+    const feature = await getRouteFeature('R1', db);
+    expect(feature!.geometry.type).toBe('MultiLineString');
+    expect(feature!.geometry.coordinates).toEqual([[[-122.1, 37.1], [-122.2, 37.2]]]);
+    expect(feature!.properties!.route_id).toBe('R1');
+  });
+
+  it('returns null for an unknown route', async () => {
+    const { db } = createGtfsFixture();
+    expect(await getRouteFeature('NOPE', db)).toBeNull();
   });
 });
