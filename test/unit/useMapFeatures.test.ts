@@ -59,4 +59,31 @@ describe('useMapFeatures', () => {
 
     expect(routesData.value.features.map((f) => f.id)).toEqual(['R1']);
   });
+
+  it('ignores a stale sync that resolves after a newer one', async () => {
+    const resolvers: Record<string, () => void> = {};
+    const fetcher = vi.fn(
+      (url: string) =>
+        new Promise<Feature>((resolve) => {
+          const id = url.split('/').pop()!;
+          resolvers[id] = () => resolve(routeFeature(id));
+        }),
+    );
+    const routeIds = ref<string[]>(['R1']);
+    const stopIds = ref<string[]>([]);
+
+    const { routesData } = useMapFeatures({ routeIds, stopIds, fetcher });
+    await nextTick(); // syncRoutes(['R1']) started, R1 still pending
+
+    routeIds.value = ['R2'];
+    await nextTick(); // syncRoutes(['R2']) started, R2 still pending
+
+    // Resolve the NEWER request first, then the older/stale one.
+    resolvers['R2']!();
+    await flush();
+    resolvers['R1']!();
+    await flush();
+
+    expect(routesData.value.features.map((f) => f.id)).toEqual(['R2']);
+  });
 });

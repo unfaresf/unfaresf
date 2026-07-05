@@ -1,4 +1,5 @@
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { BBox } from 'geojson';
 import { gtfsDB } from '../sqlite-service';
 import { routes } from '../../db/gtfs-migrations/schema';
 import { eq } from 'drizzle-orm';
@@ -6,7 +7,7 @@ import { bbox } from '@turf/turf';
 import { fetchRouteShapePoints } from './gtfs-map-features';
 import { buildRouteFeature } from './route-geometry';
 
-const DEFAULT_BBOX: [number, number, number, number] = [180, 90, -180, -90];
+const DEFAULT_BBOX: BBox = [180, 90, -180, -90];
 
 async function getRoute(id: string, db: BetterSQLite3Database = gtfsDB) {
   const [route] = await db.select().from(routes).where(eq(routes.routeId, id)).limit(1);
@@ -33,9 +34,7 @@ export async function getRouteTrips(id: string, db: BetterSQLite3Database = gtfs
       )
     : null;
 
-  const box = feature
-    ? (bbox(feature) as [number, number, number, number])
-    : DEFAULT_BBOX;
+  const box: BBox = feature ? bbox(feature) : DEFAULT_BBOX;
 
   return { ...route, bbox: box };
 }

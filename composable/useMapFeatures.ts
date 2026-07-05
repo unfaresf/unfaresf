@@ -40,13 +40,20 @@ export function useMapFeatures(params: {
     };
   }
 
+  let routeSyncToken = 0;
+  let stopSyncToken = 0;
+
   async function syncRoutes(ids: string[]) {
+    const token = ++routeSyncToken;
     await ensure(ids, routeCache, (id) => `/api/gtfs/map/routes/${encodeURIComponent(id)}`);
+    if (token !== routeSyncToken) return; // a newer sync superseded this run
     routesData.value = collect(ids, routeCache);
   }
 
   async function syncStops(ids: string[]) {
+    const token = ++stopSyncToken;
     await ensure(ids, stopCache, (id) => `/api/gtfs/map/stops/${encodeURIComponent(id)}`);
+    if (token !== stopSyncToken) return;
     stopsData.value = collect(ids, stopCache);
   }
 

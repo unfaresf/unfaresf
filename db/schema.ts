@@ -167,7 +167,7 @@ export const mapIntegrationOptionSchema = z.object({
     lng: z.number().min(-180).max(180)
   }).optional(),
   zoom: z.number().min(0).max(24).optional(),
-  sourceMode: z.enum(["tiles", "geojson"]).default("tiles"),
+  sourceMode: z.enum(["tiles", "geojson"]).optional(),
 });
 
 export const twitterIntegrationOptionSchema = z.object({
