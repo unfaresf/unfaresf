@@ -91,6 +91,11 @@ if (props.integration) {
   state.options.sourceMode = props.integration.options?.sourceMode ?? 'tiles';
   zoom.value = props.integration.options?.zoom || undefined;
   center.value = props.integration.options?.center || undefined;
+  // Seed the submitted options too — the zoom/center watchers below only fire
+  // on later ref changes (e.g. moving the preview map), so without this a save
+  // that doesn't touch the map would PUT undefined and clear the stored values.
+  state.options.zoom = zoom.value;
+  state.options.center = center.value;
 }
 
 async function updateMapOptions(id:number, formData:MapIntegrationFormData) {
@@ -136,6 +141,10 @@ watch(() => props.integration, (newIntegration) => {
     state.options.mapStylesUrl = newIntegration.options?.mapStylesUrl || undefined;
     state.options.tileServerDomain = newIntegration.options?.tileServerDomain || undefined;
     state.options.sourceMode = newIntegration.options?.sourceMode ?? 'tiles';
+    zoom.value = newIntegration.options?.zoom || undefined;
+    center.value = newIntegration.options?.center || undefined;
+    state.options.zoom = zoom.value;
+    state.options.center = center.value;
   }
 });
 
