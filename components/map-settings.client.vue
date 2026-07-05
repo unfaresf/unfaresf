@@ -9,6 +9,13 @@
         <UInput v-model="state.options.tileServerDomain" :disabled="pendingReq" />
       </UFormGroup>
 
+      <UFormGroup label="Route &amp; stop data source" name="options.sourceMode" description="When on, routes and stops load as on-demand GeoJSON built from the GTFS database. When off, they load from the vector tile server above.">
+        <div class="flex items-center gap-2">
+          <UToggle v-model="useGeojsonSource" :disabled="pendingReq" />
+          <span class="text-sm">{{ useGeojsonSource ? 'GeoJSON (on-demand)' : 'Vector tiles' }}</span>
+        </div>
+      </UFormGroup>
+
       <UFormGroup v-if="state.options.mapStylesUrl" label="Default Map Position" description="Adjust this map to how the home page map should be on initial load and when no recent broadcasts exist.">
         <MglMap
           :map-style="state.options.mapStylesUrl"
@@ -61,16 +68,27 @@ const state = reactive<MapIntegrationFormData>({
     tileServerDomain: undefined,
     zoom: undefined,
     center: undefined,
+    sourceMode: 'tiles',
   }
 });
 
 const zoom = ref<number>();
 const center = ref<{lat:number, lng:number}>();
 
+// sourceMode is a two-value enum; drive the toggle through a boolean
+// (on = geojson, off = tiles / the existing tile behavior).
+const useGeojsonSource = computed({
+  get: () => state.options.sourceMode === 'geojson',
+  set: (value: boolean) => {
+    state.options.sourceMode = value ? 'geojson' : 'tiles';
+  },
+});
+
 if (props.integration) {
   state.enable = props.integration.enable;
   state.options.mapStylesUrl = props.integration.options?.mapStylesUrl || undefined;
   state.options.tileServerDomain = props.integration.options?.tileServerDomain || undefined;
+  state.options.sourceMode = props.integration.options?.sourceMode ?? 'tiles';
   zoom.value = props.integration.options?.zoom || undefined;
   center.value = props.integration.options?.center || undefined;
 }
@@ -117,6 +135,7 @@ watch(() => props.integration, (newIntegration) => {
     state.enable = newIntegration.enable;
     state.options.mapStylesUrl = newIntegration.options?.mapStylesUrl || undefined;
     state.options.tileServerDomain = newIntegration.options?.tileServerDomain || undefined;
+    state.options.sourceMode = newIntegration.options?.sourceMode ?? 'tiles';
   }
 });
 
