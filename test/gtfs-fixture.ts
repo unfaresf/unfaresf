@@ -7,7 +7,9 @@ const DDL = `
   CREATE TABLE routes (
     route_id TEXT PRIMARY KEY, agency_id TEXT, route_short_name TEXT,
     route_long_name TEXT, route_desc TEXT, route_type INTEGER,
-    route_color TEXT, route_text_color TEXT
+    route_url TEXT, route_color TEXT, route_text_color TEXT,
+    route_sort_order INTEGER, continuous_pickup INTEGER, continuous_drop_off INTEGER,
+    network_id TEXT
   );
   CREATE TABLE trips (
     trip_id TEXT PRIMARY KEY, route_id TEXT, service_id TEXT,
