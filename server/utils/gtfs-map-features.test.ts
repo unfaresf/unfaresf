@@ -11,6 +11,7 @@ import {
   fetchRouteShapePoints,
   fetchStopRow,
   getRouteFeature,
+  getStopFeature,
 } from './gtfs-map-features';
 
 describe('fetchRouteShapePoints', () => {
@@ -88,5 +89,21 @@ describe('getRouteFeature', () => {
   it('returns null for an unknown route', async () => {
     const { db } = createGtfsFixture();
     expect(await getRouteFeature('NOPE', db)).toBeNull();
+  });
+});
+
+describe('getStopFeature', () => {
+  it('builds a Point feature for a stop', async () => {
+    const { db, sqlite } = createGtfsFixture();
+    seedStop(sqlite, 'ST1', 'Main & 1st', -122.5, 37.5);
+
+    const feature = await getStopFeature('ST1', db);
+    expect(feature!.geometry).toEqual({ type: 'Point', coordinates: [-122.5, 37.5] });
+    expect(feature!.properties!.stop_id).toBe('ST1');
+  });
+
+  it('returns null for an unknown stop', async () => {
+    const { db } = createGtfsFixture();
+    expect(await getStopFeature('NOPE', db)).toBeNull();
   });
 });

@@ -1,10 +1,10 @@
 import { eq, and, inArray, isNotNull, asc } from 'drizzle-orm';
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
-import type { Feature, MultiLineString } from 'geojson';
+import type { Feature, MultiLineString, Point } from 'geojson';
 import { gtfsDB } from '../sqlite-service';
 import { routes, trips, shapes, stops } from '../../db/gtfs-migrations/schema';
 import type { RouteMeta, ShapePointRow, StopRow } from './route-geometry';
-import { buildRouteFeature } from './route-geometry';
+import { buildRouteFeature, buildStopFeature } from './route-geometry';
 
 export async function fetchRouteMeta(
   routeId: string,
@@ -95,5 +95,23 @@ export async function getRouteFeature(
   const feature = meta ? buildRouteFeature(meta, points) : null;
 
   if (useCache) routeFeatureCache.set(routeId, feature);
+  return feature;
+}
+
+const stopFeatureCache = new Map<string, Feature<Point> | null>();
+
+export async function getStopFeature(
+  stopId: string,
+  db: BetterSQLite3Database = gtfsDB,
+): Promise<Feature<Point> | null> {
+  const useCache = db === gtfsDB;
+  if (useCache && stopFeatureCache.has(stopId)) {
+    return stopFeatureCache.get(stopId)!;
+  }
+
+  const row = await fetchStopRow(stopId, db);
+  const feature = row ? buildStopFeature(row) : null;
+
+  if (useCache) stopFeatureCache.set(stopId, feature);
   return feature;
 }
