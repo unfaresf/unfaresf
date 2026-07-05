@@ -11,8 +11,9 @@
 
       <UFormGroup label="Route &amp; stop data source" name="options.sourceMode" description="When on, routes and stops load as on-demand GeoJSON built from the GTFS database. When off, they load from the vector tile server above.">
         <div class="flex items-center gap-2">
+          <span class="text-sm">Vector tiles</span>
           <UToggle v-model="useGeojsonSource" :disabled="pendingReq" />
-          <span class="text-sm">{{ useGeojsonSource ? 'GeoJSON (on-demand)' : 'Vector tiles' }}</span>
+          <span class="text-sm">GeoJSON</span>
         </div>
       </UFormGroup>
 
