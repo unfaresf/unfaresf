@@ -5,14 +5,14 @@ import {
   seedTrip,
   seedShape,
   seedStop,
-} from '../../test/gtfs-fixture';
+} from '../gtfs-fixture';
 import {
   fetchRouteMeta,
   fetchRouteShapePoints,
   fetchStopRow,
   getRouteFeature,
   getStopFeature,
-} from './gtfs-map-features';
+} from '../../server/utils/gtfs-map-features';
 
 describe('fetchRouteShapePoints', () => {
   it('returns distinct shapes for a route, ordered by shape then sequence', async () => {

@@ -4,7 +4,7 @@ import {
   buildStopFeature,
   type RouteMeta,
   type ShapePointRow,
-} from './route-geometry';
+} from '../../server/utils/route-geometry';
 
 const meta: RouteMeta = {
   routeId: 'R1',

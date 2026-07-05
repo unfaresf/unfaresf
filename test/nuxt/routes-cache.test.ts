@@ -6,8 +6,8 @@ import {
   seedRoute,
   seedTrip,
   seedShape,
-} from '../../test/gtfs-fixture';
-import { getRouteTrips } from './routes-cache';
+} from '../gtfs-fixture';
+import { getRouteTrips } from '../../server/utils/routes-cache';
 
 describe('getRouteTrips', () => {
   it('returns the route row with a bbox computed from its shapes', async () => {

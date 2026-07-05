@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { mapIntegrationOptionSchema } from './schema';
+import { mapIntegrationOptionSchema } from '../../db/schema';
 
 describe('mapIntegrationOptionSchema.sourceMode', () => {
   it('defaults to tiles when omitted', () => {
