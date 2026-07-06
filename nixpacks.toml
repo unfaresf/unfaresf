@@ -19,8 +19,8 @@ paths = ['/app/node_modules/.bin']
 
 [phases.setup]
 nixPkgs = [
-    'nodejs_22',
-    'npm-10_x',
+    'nodejs_24',
+    'npm-11_x',
     'openssl',
     'minio-client',
 ]
