@@ -5,9 +5,11 @@ import * as appSchema from '../db/schema';
 const config = useRuntimeConfig();
 
 const sqlite = new Database(config.dbFileName!);
+sqlite.pragma('journal_mode = WAL');
 const DB = drizzle({ schema: appSchema, client: sqlite });
 
 const gtfsSqlite = new Database(config.gtfsDbFilePath!);
+gtfsSqlite.pragma('journal_mode = WAL');
 const gtfsDB = drizzle({ client: gtfsSqlite });
 
 export { DB, gtfsDB };
