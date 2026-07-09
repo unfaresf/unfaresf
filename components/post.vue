@@ -11,7 +11,7 @@
       <div class="p-2 rounded bg-gray-100 text-gray-600 text-sm mb-4">
         <span>{{ props.report.message }}</span>
       </div>
-      <ReportForm v-model="dummyFormState" class="mb-4" />
+      <ReportForm v-if="!props.report?.reviewedAt" v-model="dummyFormState" class="mb-4" />
     </div>
 
     <div class="p-2 rounded bg-gray-100 text-gray-600 text-sm">
