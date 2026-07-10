@@ -6,7 +6,7 @@ import {
   directions,
   trips,
 } from "../../../../db/gtfs-migrations/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { z } from "zod";
 
 const getRoutes = (agencyId: string) => {
@@ -55,6 +55,11 @@ const getRoutesWithHeadsign = (agencyId: string) => {
       .from(trips)
   );
 
+  // Ferries and shuttles (e.g. Golden Gate Ferry, SF Bay Ferry) have no
+  // trip_headsign in GTFS; fall back to the route's direction so those routes
+  // still show a meaningful label instead of a blank one.
+  const headsign = sql<string>`COALESCE(${filteredTrips.tripHeadsign}, ${baseRoutes.direction})`;
+
   return gtfsDB
     .with(baseRoutes, filteredTrips)
     .select({
@@ -65,7 +70,7 @@ const getRoutesWithHeadsign = (agencyId: string) => {
       agencyName: baseRoutes.agencyName,
       direction: baseRoutes.direction,
       directionId: baseRoutes.directionId,
-      headsign: filteredTrips.tripHeadsign,
+      headsign,
     })
     .from(baseRoutes)
     .innerJoin(
@@ -75,7 +80,7 @@ const getRoutesWithHeadsign = (agencyId: string) => {
         eq(baseRoutes.directionId, filteredTrips.directionId)
       )
     )
-    .orderBy(baseRoutes.routeShortName, filteredTrips.tripHeadsign);
+    .orderBy(baseRoutes.routeShortName, headsign);
 };
 
 const gtfsGetRouteByAgencySchema = z.object({

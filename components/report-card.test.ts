@@ -16,6 +16,7 @@ const mockReport: SelectReport = {
     agencyId: "123",
     agencyName: "Muni",
     direction: "south",
+    headsign: "Downtown",
   },
   stop: {
     stopId: "123",

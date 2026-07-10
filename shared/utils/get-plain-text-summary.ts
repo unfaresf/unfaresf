@@ -19,7 +19,7 @@ export default function (report: PartialReport) {
   }
   else if (report.passenger) {
     return `${formattedDate}: Fare inspectors on ${report.route?.routeShortName || "ROUTE"
-      } headed ${report.route?.direction || "DIRECTION"} from ${report.stop?.stopName || "STOP"
+      } (${report.route?.headsign || "HEADSIGN"}) from ${report.stop?.stopName || "STOP"
       }`;
   } else {
     return `${formattedDate}: Fare inspectors at ${report.stop?.stopName || "STOP"
