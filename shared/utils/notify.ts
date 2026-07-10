@@ -55,7 +55,7 @@ async function getSubscriptionsForUsers(userIds:number[]) {
   );
 }
 
-function formatReportAsNotification(reports:SelectReport, totalOutstanding:number):NotificationDetail {
+export function formatReportAsNotification(reports:SelectReport, totalOutstanding:number):NotificationDetail {
   const body = getPlainTextSummary(reports);
 
   return {
