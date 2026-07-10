@@ -1,86 +1,40 @@
-import { gtfsDB } from "../sqlite-service";
-import { routes, shapes, calendar, trips } from "../../db/gtfs-migrations/schema";
-import { eq, and, sql, asc, isNotNull } from "drizzle-orm";
-import { lineString, featureCollection, bbox } from '@turf/turf';
+import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { BBox } from 'geojson';
+import { gtfsDB } from '../sqlite-service';
+import { routes } from '../../db/gtfs-migrations/schema';
+import { eq } from 'drizzle-orm';
+import { bbox } from '@turf/turf';
+import { fetchRouteShapePoints } from './gtfs-map-features';
+import { buildRouteFeature } from './route-geometry';
 
-const calendarDayCols = [calendar.sunday,calendar.monday,calendar.tuesday,calendar.wednesday,calendar.thursday,calendar.friday,calendar.saturday]
+const DEFAULT_BBOX: BBox = [180, 90, -180, -90];
 
-function getBboxForTrips(trips:{
-  line: number[][];
-  tripId: string;
-  routeId: string;
-  shapeId: string;
-}[]) {
-  return bbox(featureCollection(trips.map(t => lineString(t.line))))
-}
-
-async function getTrips(routeId:string) {
-  const routeTrips = gtfsDB.select({
-    routeId: routes.routeId,
-    agencyId: routes.agencyId,
-    routeShortName: routes.routeShortName,
-    routeLongName: routes.routeLongName,
-    routeColor: routes.routeColor,
-    routeTextColor: routes.routeTextColor,
-    tripId: trips.tripId,
-    directionId: trips.directionId,
-    shapeId: trips.shapeId,
-  })
-  .from(trips)
-  .innerJoin(routes, eq(routes.routeId, trips.routeId))
-  .innerJoin(calendar, eq(calendar.serviceId, trips.serviceId))
-  .where(eq(trips.routeId, routeId)).as('routeTrips');
-
-  const tripResults = await gtfsDB.select({
-    routeId: routeTrips.routeId,
-    agencyId: routeTrips.agencyId,
-    routeShortName: routeTrips.routeShortName,
-    routeLongName: routeTrips.routeLongName,
-    routeColor: routeTrips.routeColor,
-    routeTextColor: routeTrips.routeTextColor,
-    tripId: routeTrips.tripId,
-    directionId: routeTrips.directionId,
-    shapeId: shapes.shapeId,
-    line: sql<string>`'[' || GROUP_CONCAT('[' || ${shapes.shapePtLon} || ',' || ${shapes.shapePtLat} || ']', ',') || ']'`.as('line')
-  })
-  .from(shapes)
-  .innerJoin(routeTrips, eq(routeTrips.shapeId, shapes.shapeId))
-  .where(and(
-    isNotNull(shapes.shapePtLat),
-    isNotNull(shapes.shapePtLon)
-  ))
-  .groupBy(shapes.shapeId)
-  .orderBy(asc(shapes.shapePtSequence));
-
-  return tripResults.map((trip) => {
-    return {
-      ...trip,
-      line: JSON.parse(trip.line) as number[][]
-    }
-  });
-}
-
-async function getRoute(id:string) {
-  const [route] = await gtfsDB
-    .select()
-    .from(routes)
-    .where(
-      eq(routes.routeId, id)
-    )
-    .limit(1);
+async function getRoute(id: string, db: BetterSQLite3Database = gtfsDB) {
+  const [route] = await db.select().from(routes).where(eq(routes.routeId, id)).limit(1);
   return route;
 }
 
-export async function getRouteTrips(id:string) {
-  const [r, t] = await Promise.all([
-    getRoute(id),
-    getTrips(id),
+export async function getRouteTrips(id: string, db: BetterSQLite3Database = gtfsDB) {
+  const [route, points] = await Promise.all([
+    getRoute(id, db),
+    fetchRouteShapePoints(id, db),
   ]);
 
-  const bbox = getBboxForTrips(t);
+  const feature = route
+    ? buildRouteFeature(
+        {
+          routeId: route.routeId,
+          agencyId: route.agencyId,
+          routeShortName: route.routeShortName,
+          routeLongName: route.routeLongName,
+          routeColor: route.routeColor,
+          routeTextColor: route.routeTextColor,
+        },
+        points,
+      )
+    : null;
 
-  return {
-    ...r,
-    bbox
-  }
+  const box: BBox = feature ? bbox(feature) : DEFAULT_BBOX;
+
+  return { ...route, bbox: box };
 }

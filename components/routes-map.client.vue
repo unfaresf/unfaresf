@@ -16,6 +16,7 @@
       <MglNavigationControl :showCompass="false" />
 
       <MglVectorSource
+        v-if="sourceMode === 'tiles'"
         source-id="stops"
         :url="props.config.tileServerDomain + '/data/stops.json'"
         :tiles="stopsSourceTiles"
@@ -37,6 +38,7 @@
       </MglVectorSource>
 
       <MglVectorSource
+        v-if="sourceMode === 'tiles'"
         source-id="trips"
         :url="props.config.tileServerDomain + '/data/trips.json'"
         :tiles="tripsSourceTiles"
@@ -70,6 +72,36 @@
           :filter="routeLabels"
         />
       </MglVectorSource>
+
+      <template v-if="sourceMode === 'geojson'">
+        <MglGeoJsonSource source-id="stops" :data="stopsData">
+          <MglCircleLayer
+            layer-id="hot-stops"
+            :paint="hotStopsLayerCirclesPaint"
+            :filter="hotStops"
+            :minzoom="7"
+          />
+          <MglCircleLayer
+            layer-id="transit-stops"
+            :paint="stopsLayerCirclesPaint"
+            :filter="stopFilter"
+            :minzoom="10"
+          />
+        </MglGeoJsonSource>
+
+        <MglGeoJsonSource source-id="trips" :data="routesData">
+          <MglLineLayer layer-id="warm-trips" :paint="warmPaint" :filter="warmStops" />
+          <MglLineLayer layer-id="hot-trips" :paint="hotPaint" :filter="hotTrips" />
+          <MglLineLayer layer-id="transit-trips" :paint="paint" :filter="tripFilter" />
+          <MglSymbolLayer
+            layer-id="transit-trips-labels"
+            :minzoom="6"
+            :layout="routeSymbolLayout"
+            :paint="routeSymbolPaint"
+            :filter="routeLabels"
+          />
+        </MglGeoJsonSource>
+      </template>
     </MglMap>
   </div>
 </template>
@@ -85,6 +117,7 @@ import {
   useMap,
   MglNavigationControl,
   MglVectorSource,
+  MglGeoJsonSource,
   MglLineLayer,
   MglCircleLayer,
   MglGeolocateControl,
@@ -98,6 +131,7 @@ import type {
 } from "maplibre-gl";
 import type { Route } from "./select/route.vue";
 import type { MapOptions } from "../db/schema";
+import { useMapFeatures } from "~/composable/useMapFeatures";
 
 const paint = {
   "line-width": 2,
@@ -163,6 +197,24 @@ const transitMap = useMap();
 const visibleRouteIds = ref<string[]>([]);
 const visibleStopIds = ref<string[]>([]);
 const warmRouteIds = ref<string[]>([]);
+
+const sourceMode = computed(() => props.config.sourceMode ?? "tiles");
+
+const neededRouteIds = computed(() =>
+  [
+    props.route?.routeId,
+    ...visibleRouteIds.value,
+    ...warmRouteIds.value,
+  ].filter((r): r is string => !!r)
+);
+const neededStopIds = computed(() =>
+  [props.stopId, ...visibleStopIds.value].filter((s): s is string => !!s)
+);
+
+const { routesData, stopsData } = useMapFeatures({
+  routeIds: neededRouteIds,
+  stopIds: neededStopIds,
+});
 
 const tripFilter = computed(() => {
   return props.route ? ["==", "route_id", props.route.routeId] : ["all", false];

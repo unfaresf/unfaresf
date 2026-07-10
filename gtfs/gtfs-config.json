@@ -22,5 +22,5 @@
   ],
   "ignoreDuplicates": true,
   "ignoreErrors": true,
-  "sqlitePath": "db/data/gtfs-green.db"
+  "sqlitePath": "db/data/gtfs-blue.db"
 }

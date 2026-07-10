@@ -1,6 +1,6 @@
 import { vi, it, expect } from "vitest";
 import { mountSuspended, registerEndpoint } from "@nuxt/test-utils/runtime";
-import { Post, ReportSummary } from "#components";
+import { Post, ReportSummary, ReportForm } from "#components";
 import type { SelectReport } from "../db/schema";
 import { faker } from "@faker-js/faker";
 
@@ -71,6 +71,41 @@ it("should show internal report broadcast form if report is from internal source
 //   });
 //   expect(component.find('#external-source-broadcast-form').exists()).toBe(true);
 // });
+
+const externalReport: SelectReport = {
+  id: 456,
+  createdAt: new Date("May 15, 2025 04:00:00"),
+  source: "mastodon",
+  uri: null,
+  reviewedAt: null,
+  route: null,
+  stop: {
+    stopId: "123",
+    stopName: "Mission",
+    direction: "south",
+  },
+  direction: null,
+  passenger: null,
+  message: faker.word.words(8),
+};
+
+it("should show the report form for an unreviewed external-source report", async () => {
+  const component = await mountSuspended(Post, {
+    props: {
+      report: externalReport,
+    },
+  });
+  expect(component.findComponent(ReportForm).exists()).toBe(true);
+});
+
+it("should not show the report form if a broadcast has already been sent", async () => {
+  const component = await mountSuspended(Post, {
+    props: {
+      report: { ...externalReport, reviewedAt: new Date() },
+    },
+  });
+  expect(component.findComponent(ReportForm).exists()).toBe(false);
+});
 
 it("should mark the report as not approved with the API", async () => {
   const mockFetch = vi.spyOn(global, "$fetch");
