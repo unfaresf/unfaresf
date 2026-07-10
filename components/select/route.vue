@@ -24,13 +24,13 @@
       <template #label>
         <p v-if="route">
           {{ route.routeShortName }}: {{ route.routeLongName }} -
-          {{ route.direction }}
+          {{ route.headsign }}
         </p>
       </template>
       <template #option="{ option: route }">
         <p>
           {{ route.routeShortName }}: {{ route.routeLongName }} -
-          {{ route.direction }}
+          {{ route.headsign }}
         </p>
       </template>
       <template #empty> No routes </template>
@@ -49,6 +49,7 @@ export const routeSchema = z.object({
   routeLongName: z.string(),
   direction: z.string(),
   directionId: z.number(),
+  headsign: z.string(),
 });
 
 export type Route = z.infer<typeof routeSchema>;
@@ -103,8 +104,8 @@ const getAgencyRoutes = async ({ agencyId }: { agencyId: string }) => {
   });
   return routes.map((route) => ({
     ...route,
-    searchString: `${route.routeShortName} ${route.routeLongName} ${route.direction}`,
-    uniqueKey: `${route.routeId}-${route.directionId}`,
+    searchString: `${route.routeShortName} ${route.routeLongName} ${route.headsign}`,
+    uniqueKey: `${route.routeId}-${route.directionId}-${route.headsign}`,
   }));
 };
 

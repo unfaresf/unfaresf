@@ -93,6 +93,7 @@ export const reports = sqliteTable(
       agencyId: string;
       agencyName: string;
       direction: string;
+      headsign: string;
     }>(),
     stop: text({ mode: "json" })
       .notNull()

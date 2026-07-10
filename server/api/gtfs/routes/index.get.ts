@@ -4,8 +4,9 @@ import {
   routes,
   agency,
   directions,
+  trips,
 } from "../../../../db/gtfs-migrations/schema";
-import { eq } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { z } from "zod";
 
 const getRoutes = (agencyId: string) => {
@@ -26,6 +27,62 @@ const getRoutes = (agencyId: string) => {
     .orderBy(routes.routeShortName, directions.directionId);
 };
 
+const getRoutesWithHeadsign = (agencyId: string) => {
+  const baseRoutes = gtfsDB.$with("base_routes").as(
+    gtfsDB
+      .select({
+        routeId: routes.routeId,
+        routeShortName: routes.routeShortName,
+        routeLongName: routes.routeLongName,
+        agencyId: routes.agencyId,
+        agencyName: agency.agencyName,
+        direction: directions.direction,
+        directionId: directions.directionId,
+      })
+      .from(routes)
+      .innerJoin(agency, eq(routes.agencyId, agency.agencyId))
+      .innerJoin(directions, eq(directions.routeId, routes.routeId))
+      .where(eq(agency.agencyId, agencyId))
+  );
+
+  const filteredTrips = gtfsDB.$with("filtered_trips").as(
+    gtfsDB
+      .selectDistinct({
+        routeId: trips.routeId,
+        directionId: trips.directionId,
+        tripHeadsign: trips.tripHeadsign,
+      })
+      .from(trips)
+  );
+
+  // Ferries and shuttles (e.g. Golden Gate Ferry, SF Bay Ferry) have no
+  // trip_headsign in GTFS; fall back to the route's direction so those routes
+  // still show a meaningful label instead of a blank one.
+  const headsign = sql<string>`COALESCE(${filteredTrips.tripHeadsign}, ${baseRoutes.direction})`;
+
+  return gtfsDB
+    .with(baseRoutes, filteredTrips)
+    .select({
+      routeId: baseRoutes.routeId,
+      routeShortName: baseRoutes.routeShortName,
+      routeLongName: baseRoutes.routeLongName,
+      agencyId: baseRoutes.agencyId,
+      agencyName: baseRoutes.agencyName,
+      direction: baseRoutes.direction,
+      directionId: baseRoutes.directionId,
+      headsign,
+    })
+    .from(baseRoutes)
+    .innerJoin(
+      filteredTrips,
+      and(
+        eq(baseRoutes.routeId, filteredTrips.routeId),
+        eq(baseRoutes.directionId, filteredTrips.directionId)
+      )
+    )
+    .orderBy(baseRoutes.routeShortName, headsign);
+};
+
 const gtfsGetRouteByAgencySchema = z.object({
   agencyId: z.string().trim().max(32),
 });
@@ -40,7 +97,7 @@ export default defineEventHandler(async (event) => {
   );
 
   try {
-    return getRoutes(agencyId);
+    return getRoutesWithHeadsign(agencyId);
   } catch (err: any) {
     throw createError({
       statusCode: 500,
