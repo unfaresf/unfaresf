@@ -72,16 +72,18 @@ self.addEventListener('notificationclick', (event) => {
   let work;
   switch (event.action) {
     case 'post':
-      // Post immediately; on success there's no follow-up notification. On any
-      // failure (401 expired session, 409 already broadcast, network error)
-      // fall back to opening the app so the reviewer can finish in-app.
+      // Post immediately; on success there's no follow-up notification. A 409
+      // (broadcast already exists for this report) is treated as success since
+      // the desired end state is already reached. On other failures (401 expired
+      // session, network error) fall back to opening the app so the reviewer can
+      // finish in-app.
       work = fetch('/api/broadcasts', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message, reportId }),
       })
-        .then(res => (res.ok ? undefined : openReport(reportUrl)))
+        .then(res => (res.ok || res.status === 409 ? undefined : openReport(reportUrl)))
         .catch(() => openReport(reportUrl));
       break;
     case 'dismiss':
