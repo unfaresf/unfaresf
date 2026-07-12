@@ -1,5 +1,5 @@
 <template>
-  <UContainer :ui="{base: 'mx-auto', padding: 'py-4', constrained: 'max-w-lg'}">
+  <UContainer :ui="{ base: 'max-w-lg py-4' }">
     <UForm :schema="mastodonIntegrationFormSchema" :state="state" class="space-y-4 flex flex-col" @submit.prevent="onSubmit">
       <UFormField label="Account Name" name="accountName" description="The account name for which you want mentions." help="Example: unfaresf">
         <UInput v-model="state.options.accountName" :disabled="pendingReq" />

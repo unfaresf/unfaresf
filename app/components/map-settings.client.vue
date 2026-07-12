@@ -1,5 +1,5 @@
 <template>
-  <UContainer :ui="{base: 'mx-auto', padding: 'py-4', constrained: 'max-w-lg'}">
+  <UContainer :ui="{ base: 'max-w-lg py-4' }">
     <UForm :schema="mapIntegrationFormSchema" :state="state" class="space-y-4 flex flex-col" @submit.prevent="onSubmit">
       <UFormField label="Base Map Styles URL" name="options.mapStylesUrl" description="URL (including API key) of base map styles." help="Example: https://api.maptiler.com/maps/basic/style.json?key=abc123">
         <UInput v-model="state.options.mapStylesUrl" :disabled="pendingReq" />

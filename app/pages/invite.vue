@@ -1,7 +1,7 @@
 <template>
   <UCard class="mt-10">
     <p class="mb-4">Click the "Generate Invite" button to get an invite link. Share it privately with the person you want to add. It can only be used once and will expire after 24 hours.</p>
-    <UButtonGroup size="xl" orientation="horizontal" class="mb-4">
+    <UFieldGroup size="xl" orientation="horizontal" class="mb-4">
       <UButton
         @click=getInvite
         label="Generate Invite"
@@ -9,7 +9,7 @@
       />
       <UInput disabled placeholder="example.com" v-model="inviteURL" />
       <UButton icon="i-heroicons-clipboard-document" color="neutral" @click="copyToClipboard" :disabled="!inviteURL"/>
-    </UButtonGroup>
+    </UFieldGroup>
   </UCard>
 </template>
 

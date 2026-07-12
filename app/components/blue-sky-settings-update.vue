@@ -1,5 +1,5 @@
 <template>
-  <UContainer :ui="{base: 'mx-auto', padding: 'py-4', constrained: 'max-w-lg'}">
+  <UContainer :ui="{ base: 'max-w-lg py-4' }">
     <UForm :schema="bskyIntegrationFormSchema" :state="state" class="space-y-4 flex flex-col" @submit.prevent="onSubmit">
       <UFormField label="Account Name" name="handle" description="The account handle to post too." help="Example: unfaresf.bsky.social">
         <UInput v-model="state.options.handle" :disabled="pendingReq" />

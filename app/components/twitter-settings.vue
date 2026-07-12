@@ -1,5 +1,5 @@
 <template>
-    <UContainer :ui="{base: 'mx-auto', padding: 'py-4', constrained: 'max-w-lg'}">
+    <UContainer :ui="{ base: 'max-w-lg py-4' }">
       <UForm :schema="twitterIntegrationFormSchema" :state="state" class="space-y-4 flex flex-col" @submit.prevent="onSubmit">
   
         <UFormField label="Bearer Token" name="bearer-token" Description="The bearer access token for the Twitter API." help="Bearer tokens are generated in the Twitter developer console.">

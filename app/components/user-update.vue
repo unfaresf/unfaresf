@@ -1,5 +1,5 @@
 <template>
-  <UContainer :ui="{base: 'mx-auto', padding: 'py-4', constrained: 'max-w-lg'}">
+  <UContainer :ui="{ base: 'max-w-lg py-4' }">
     <UForm :schema="userUpdateSchema" :state="state" class="space-y-4 flex flex-col" @submit="onSubmit">
       <UFormField label="Username" name="username">
         <UInput disabled v-model="props.user.userName" />
