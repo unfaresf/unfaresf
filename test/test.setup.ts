@@ -34,6 +34,11 @@ beforeAll(() => {
     return defineComponent({
       default: {
         name: "UTooltip",
+        // The real UTooltip declares `text` (and other) props; this passthrough
+        // does not, so those would fall through as attrs onto a fragment root
+        // (`<slot />`) and trigger a Vue "Extraneous non-props attributes"
+        // warning. We only render the trigger content, so drop fallthrough attrs.
+        inheritAttrs: false,
         template: "<slot />",
       },
     });
