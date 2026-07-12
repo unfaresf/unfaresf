@@ -2,26 +2,26 @@
   <UCard>
     <template #header>
       <h3 class="text-lg">Post</h3>
-      <p class="text-xs text-gray-500">
+      <p class="text-xs text-neutral-500">
         What operator, from where, which line, headed which direction.
       </p>
     </template>
 
     <div v-if="!sourceInternal" class="space-y-4">
-      <div class="p-2 rounded bg-gray-100 text-gray-600 text-sm mb-4">
+      <div class="p-2 rounded bg-neutral-100 text-neutral-600 text-sm mb-4">
         <span>{{ props.report.message }}</span>
       </div>
       <ReportForm v-if="!props.report?.reviewedAt" v-model="dummyFormState" class="mb-4" />
     </div>
 
-    <div class="p-2 rounded bg-gray-100 text-gray-600 text-sm">
+    <div class="p-2 rounded bg-neutral-100 text-neutral-600 text-sm">
       <ReportSummary ref="report-summary-ref" :report="reportState" />
     </div>
 
     <template v-if="!props.report?.reviewedAt" #footer>
       <div class="flex flex-col flex-grow md:flex-row md:flex-grow-0 gap-y-3">
         <UButton
-          color="green"
+          color="success"
           class="justify-center md:order-4 md:ml-3"
           @click="postInternalSourceSummary"
           form="internal-source-broadcast-form"
@@ -30,7 +30,7 @@
         >
         <UButton
           id="post-dismiss-button"
-          color="red"
+          color="error"
           class="justify-center md:order-2 md:ml-auto"
           :disabled="pending"
           v-if="report"
@@ -109,13 +109,13 @@ async function postBroadcast(msg: string) {
   } catch (err: any) {
     if (err.statusCode === 409) {
       toast.add({
-        color: "orange",
+        color: 'warning',
         title: "Someone beat you to the punch",
         description: "Someone else created a broadcast for this report.",
       });
     } else {
       toast.add({
-        color: "red",
+        color: "error",
         title: "Error creating new broadcast",
         description: err.data?.message || err.message,
       });
@@ -137,7 +137,7 @@ async function dismiss(reportId: number) {
     emit("success");
   } catch (err: any) {
     toast.add({
-      color: "red",
+      color: "error",
       title: "Error dismissing reprt",
       description: err.data?.message || err.message,
     });

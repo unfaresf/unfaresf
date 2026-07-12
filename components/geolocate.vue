@@ -2,17 +2,17 @@
   <div v-if="!permissionGranted" class="flex">
     <UButton
       class="mr-2"
-      color="fuchsia"
+      color="primary"
       label="Geolocate"
-      @click="fetchLocation"
+      @click="() => { fetchLocation() }"
     />
-    <UPopover mode="hover" :popper="{ placement: 'top-end' }">
+    <UPopover mode="hover" :content="{ side: 'top', align: 'end' }">
       <UButton
-        color="fuchsia"
+        color="primary"
         variant="ghost"
         icon="i-heroicons-question-mark-circle"
       />
-      <template #panel>
+      <template #content>
         <div class="p-4 max-w-md">
           <p class="text-sm">
             <slot name="help"

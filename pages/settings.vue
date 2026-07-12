@@ -1,33 +1,39 @@
 <template>
-  <UCard class="mt-6" :ui="{body:{padding:'px-4 py-0 sm:p-6 sm:py-0 '}}">
+  <UCard class="mt-6" :ui="{ body: 'px-4 py-0 sm:p-6 sm:py-0' }">
     <UTable
-      v-model:expand="usersExpand"
       :loading="usersStatus === 'pending' || users === null"
-      :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Loading...' }"
-      :empty-state="{ icon: 'i-heroicons-circle-stack-20-solid', label: 'No users' }"
-      :columns="[{ key: 'userName', label: 'User' },{ key: 'roles', label: 'Roles' }]"
-      :rows="users?.result"
+      loading-color="primary"
+      empty="No users"
+      :columns="userColumns"
+      :data="users?.result"
     >
-      <template #expand="{ row }">
-        <user-update :user="row" @on-delete-user="onDeleteUser"></user-update>
-      </template>
-      <template #expand-action="{ isExpanded, toggle }">
-        <UButton @click="toggle" :icon="isExpanded ? 'i-heroicons-bars-arrow-up-16-solid' : 'i-heroicons-bars-arrow-down-16-solid'" />
-      </template>
-      <template #roles-data="{ row }">
-        <span>{{ row.roles.join(', ') }}</span>
-      </template>
-      <template #userName-data="{ row }">
+      <template #userName-cell="{ row }">
         <div class="flex">
-          <span>{{ row.userName }}</span>
-          <UIcon v-if="row.hasActiveSubscription" name="i-heroicons-bell" class="w-5 h-5 ml-2" />
+          <span>{{ row.original.userName }}</span>
+          <UIcon v-if="row.original.hasActiveSubscription" name="i-heroicons-bell" class="w-5 h-5 ml-2" />
         </div>
+      </template>
+      <template #roles-cell="{ row }">
+        <span>{{ row.original.roles.join(', ') }}</span>
+      </template>
+      <template #expand-cell="{ row }">
+        <div class="flex justify-end">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            :icon="row.getIsExpanded() ? 'i-heroicons-bars-arrow-up-16-solid' : 'i-heroicons-bars-arrow-down-16-solid'"
+            @click="row.toggleExpanded()"
+          />
+        </div>
+      </template>
+      <template #expanded="{ row }">
+        <user-update :user="row.original" @on-delete-user="onDeleteUser"></user-update>
       </template>
     </UTable>
     <template v-if="users && users.count > limit" #footer>
       <UPagination
-        v-model="page"
-        :page-count="limit"
+        v-model:page="page"
+        :items-per-page="limit"
         :total="users.count"
         class="justify-center"
       />
@@ -39,12 +45,12 @@
     </template>
     <MastodonSettingsUpdate v-if="integrationsStatus === 'success'" :integration="mastoInt" />
     <div v-else-if="integrationsStatus === 'error'" class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
-      <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-      <p class="text-sm text-center text-gray-900 dark:text-white">Error retrieving settings</p>
+      <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 mx-auto text-dimmed mb-4" />
+      <p class="text-sm text-center text-highlighted">Error retrieving settings</p>
     </div>
     <div v-else class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
-      <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4 animate-spin" />
-      <p class="text-sm text-center text-gray-900 dark:text-white">Loading...</p>
+      <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-dimmed mb-4 animate-spin" />
+      <p class="text-sm text-center text-highlighted">Loading...</p>
     </div>
   </UCard>
   <UCard class="my-8">
@@ -53,12 +59,12 @@
     </template>
     <BlueSkySettingsUpdate v-if="integrationsStatus === 'success'" :integration="bskyInt" />
     <div v-else-if="integrationsStatus === 'error'" class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
-      <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-      <p class="text-sm text-center text-gray-900 dark:text-white">Error retrieving settings</p>
+      <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 mx-auto text-dimmed mb-4" />
+      <p class="text-sm text-center text-highlighted">Error retrieving settings</p>
     </div>
     <div v-else class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
-      <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4 animate-spin" />
-      <p class="text-sm text-center text-gray-900 dark:text-white">Loading...</p>
+      <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-dimmed mb-4 animate-spin" />
+      <p class="text-sm text-center text-highlighted">Loading...</p>
     </div>
   </UCard>
   <!-- <UCard class="my-8">
@@ -67,12 +73,12 @@
     </template>
     <TwitterSettings v-if="integrationsStatus === 'success'" :integration="twitterInt" />
     <div v-else-if="integrationsStatus === 'error'" class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
-      <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-      <p class="text-sm text-center text-gray-900 dark:text-white">Error retrieving settings</p>
+      <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 mx-auto text-dimmed mb-4" />
+      <p class="text-sm text-center text-highlighted">Error retrieving settings</p>
     </div>
     <div v-else class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
-      <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4 animate-spin" />
-      <p class="text-sm text-center text-gray-900 dark:text-white">Loading...</p>
+      <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-dimmed mb-4 animate-spin" />
+      <p class="text-sm text-center text-highlighted">Loading...</p>
     </div>
   </UCard> -->
   <UCard class="my-8">
@@ -81,23 +87,31 @@
     </template>
     <MapSettings v-if="integrationsStatus === 'success'" :integration="mapInt" />
     <div v-else-if="integrationsStatus === 'error'" class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
-      <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-      <p class="text-sm text-center text-gray-900 dark:text-white">Error retrieving settings</p>
+      <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 mx-auto text-dimmed mb-4" />
+      <p class="text-sm text-center text-highlighted">Error retrieving settings</p>
     </div>
     <div v-else class="flex flex-col items-center justify-center px-6 py-14 sm:px-14">
-      <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4 animate-spin" />
-      <p class="text-sm text-center text-gray-900 dark:text-white">Loading...</p>
+      <UIcon name="i-heroicons-arrow-path-20-solid" class="w-6 h-6 mx-auto text-dimmed mb-4 animate-spin" />
+      <p class="text-sm text-center text-highlighted">Loading...</p>
     </div>
   </UCard>
 </template>
 
 <script lang="ts" setup>
 import { UButton, UCard, UIcon } from '#components';
+import type { TableColumn } from '@nuxt/ui';
 import MastodonSettingsUpdate from '~/components/mastodon-settings-update.vue';
 
 definePageMeta({
   middleware: ['admin'],
 });
+
+// Cells are rendered via #userName-cell / #roles-cell / #expand-cell slots.
+const userColumns: TableColumn<any>[] = [
+  { accessorKey: 'userName', header: 'User' },
+  { accessorKey: 'roles', header: 'Roles' },
+  { id: 'expand', header: '' },
+];
 
 useHead({
   title: 'UnfareSF - Settings'
@@ -121,7 +135,7 @@ const { data: users, status:usersStatus, refresh } = await useLazyFetch("/api/us
   watch: [page],
   onResponseError({ response }) {
     toast.add({
-      color: 'red',
+      color: 'error',
       title: response.statusText
     });
   }
@@ -134,7 +148,7 @@ const { data: integrations, status:integrationsStatus } = await useLazyFetch('/a
   server: false,
   onResponseError({ response }) {
     toast.add({
-      color: 'red',
+      color: 'error',
       title: response.statusText
     });
   }

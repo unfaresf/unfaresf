@@ -27,6 +27,17 @@ beforeAll(() => {
       },
     });
   });
+  // Nuxt UI v3 UTooltip needs a TooltipProvider from <UApp>, which isn't present
+  // when mounting components in isolation. Render it as a passthrough so the
+  // trigger content (e.g. the relative-time link) still renders.
+  mockComponent("UTooltip", () => {
+    return defineComponent({
+      default: {
+        name: "UTooltip",
+        template: "<slot />",
+      },
+    });
+  });
 });
 
 async function runAppMigrations(db: BetterSQLite3Database) {

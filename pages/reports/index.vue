@@ -5,16 +5,17 @@
         <div class="flex flex-row">
           <div class="basis-3/4">
             <h2 class="text-lg">Reports</h2>
-            <p class="text-xs text-gray-500">
+            <p class="text-xs text-neutral-500">
               Recent reports of cop sightings from various platforms.
             </p>
           </div>
           <div class="basis-1/4 ml-auto">
             <USelect
               v-model="reviewed"
-              :options="reviewedStatuses"
-              option-attribute="name"
-              @change="() => (page = 1)"
+              :items="reviewedStatuses"
+              label-key="name"
+              value-key="value"
+              @update:model-value="() => (page = 1)"
             />
           </div>
         </div>
@@ -32,8 +33,8 @@
       </div>
       <template v-if="unreviewedReports.count > limit" #footer>
         <UPagination
-          v-model="page"
-          :page-count="limit"
+          v-model:page="page"
+          :items-per-page="limit"
           :total="unreviewedReports.count"
           class="justify-center"
         />
@@ -42,7 +43,7 @@
     <UCard class="col-span-6 lg:col-span-2 xs:mt-10 md:mt-0">
       <template #header>
         <h2 class="text-lg">Recent Broadcasts</h2>
-        <p class="text-xs text-gray-500">
+        <p class="text-xs text-neutral-500">
           Check recent broadcasts to avoid duplicate messages.
         </p>
       </template>
@@ -50,7 +51,7 @@
         <ol v-if="broadcasts && broadcasts.result.length">
           <li
             v-for="broadcast in broadcasts.result"
-            class="border-gray-200 dark:border-gray-800 w-full border-b border-solid pb-3 mb-3 last:border-b-0 last:pb-0 last:mb-0"
+            class="border-default w-full border-b border-solid pb-3 mb-3 last:border-b-0 last:pb-0 last:mb-0"
           >
             {{ broadcast.message }}
             <span class="text-xs italic"
@@ -99,7 +100,8 @@ const reviewed = ref(reviewedStatuses[1].value);
 const limit = ref(10);
 const page = ref(1);
 const disabledRows = ref(new Set());
-const modal = useModal();
+const overlay = useOverlay();
+const postModal = overlay.create(PostModal);
 const toast = useToast();
 const {
   public: { shiftLength },
@@ -117,7 +119,7 @@ async function dismiss(row: SelectReport) {
     await refreshReports();
   } catch (err: any) {
     toast.add({
-      color: "red",
+      color: "error",
       title: err.data?.message || err.message,
     });
   } finally {
@@ -126,19 +128,10 @@ async function dismiss(row: SelectReport) {
 }
 
 async function openPostModel(row: SelectReport) {
-  modal.open(PostModal, {
-    report: row,
-    async onClose() {
-      return modal.close();
-    },
-    async onSuccess() {
-      return Promise.all([
-        refreshReports(),
-        refreshBroadcasts(),
-        modal.close(),
-      ]);
-    },
-  });
+  const result = await postModal.open({ report: row });
+  if (result?.success) {
+    await Promise.all([refreshReports(), refreshBroadcasts()]);
+  }
 }
 
 type ReportsGetResp = {
@@ -153,7 +146,7 @@ const { data: unreviewedReports, refresh: refreshReports } =
     watch: [reviewed, page],
     onResponseError({ response }) {
       toast.add({
-        color: "red",
+        color: "error",
         title: response.statusText,
       });
     },

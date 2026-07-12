@@ -3,20 +3,20 @@
   <header>
     <AuthState>
       <template #default="{ loggedIn }">
-        <div v-if="loggedIn" class="w-full border-b border-gray-200 dark:border-gray-800">
+        <div v-if="loggedIn" class="w-full border-b border-default">
           <UContainer>
             <ul class="flex items-center justify-end">
               <li>
                 <NuxtLink to="/" icon="i-heroicons-home"
-                  exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"
-                  class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white">
+                  exactActiveClass="!border-primary-500 text-highlighted dark:hover:bg-neutral-800/50 dark:text-neutral-400 dark:hover:text-white"
+                  class="flex px-2.5 py-3.5 font-medium text-sm text-neutral-500 box-border border-b-2 border-transparent hover:bg-neutral-50 hover:text-neutral-900 dark:hover:bg-neutral-800/50 dark:text-neutral-400 dark:hover:text-white">
                   <UIcon name="i-heroicons-home" class="w-5 h-5 mr-1" />{{ user?.userName || '' }}
                 </NuxtLink>
               </li>
               <li>
                 <NuxtLink to="/reports" icon="i-heroicons-home"
-                  exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"
-                  class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white">
+                  exactActiveClass="!border-primary-500 text-highlighted dark:hover:bg-neutral-800/50 dark:text-neutral-400 dark:hover:text-white"
+                  class="flex px-2.5 py-3.5 font-medium text-sm text-neutral-500 box-border border-b-2 border-transparent hover:bg-neutral-50 hover:text-neutral-900 dark:hover:bg-neutral-800/50 dark:text-neutral-400 dark:hover:text-white">
                   <UIcon name="i-heroicons-document-magnifying-glass" class="w-5 h-5 mr-1" />Reports
                 </NuxtLink>
               </li>
@@ -27,22 +27,22 @@
                 <template #fallback>
                   <!-- this will be rendered on server side -->
                   <li>
-                    <UButton color="gray" class="m-2" icon="i-heroicons-bell-slash" disabled />
+                    <UButton color="neutral" class="m-2" icon="i-heroicons-bell-slash" disabled />
                   </li>
                 </template>
               </ClientOnly>
-              <UPopover :popper="{ placement: 'bottom-end' }">
-                <UButton color="white" icon="i-heroicons-bars-3" class="m-2" />
-                <template #panel="{ close }">
-                  <ul class="p-1 bg-white  dark:bg-gray-800  min-w-44">
+              <UPopover v-model:open="navOpen" :content="{ side: 'bottom', align: 'end' }">
+                <UButton color="neutral" variant="outline" icon="i-heroicons-bars-3" class="m-2" />
+                <template #content>
+                  <ul class="p-1 bg-white  dark:bg-neutral-800  min-w-44">
                     <li v-for="link in authedDropdown" class="flex w-full items-center flex-row-reverse mb-1 last:mb-0">
-                      <UButton v-if="link.click" @click="async () => { close(); return link.click(); }" variant="ghost"
-                        color="gray" class="w-full justify-between dark:hover:bg-gray-900">
+                      <UButton v-if="link.click" @click="() => { navOpen = false; link.click?.(); }" variant="ghost"
+                        color="neutral" class="w-full justify-between dark:hover:bg-neutral-900">
                         <UIcon :name="link.icon" class="ml-2" /><span>{{ link.label }}</span>
                       </UButton>
                       <NuxtLink v-else
-                        class="flex px-2 py-1 w-full rounded-md justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-900"
-                        active-class="bg-gray-50 dark:bg-gray-900" :to="link.to" @click="close">
+                        class="flex px-2 py-1 w-full rounded-md justify-between items-center hover:bg-neutral-50 dark:hover:bg-neutral-900"
+                        active-class="bg-neutral-50 dark:bg-neutral-900" :to="link.to" @click="navOpen = false">
                         <UIcon :name="link.icon" class="ml-2" /><span>{{ link.label }}</span>
                       </NuxtLink>
                     </li>
@@ -52,20 +52,20 @@
             </ul>
           </UContainer>
         </div>
-        <div v-else class="w-full border-b border-gray-200 dark:border-gray-800">
+        <div v-else class="w-full border-b border-default">
           <UContainer>
             <ul class="flex items-center justify-end">
               <li>
                 <NuxtLink to="/" icon="i-heroicons-document"
-                  exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"
-                  class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white">
+                  exactActiveClass="!border-primary-500 text-highlighted dark:hover:bg-neutral-800/50 dark:text-neutral-400 dark:hover:text-white"
+                  class="flex px-2.5 py-3.5 font-medium text-sm text-neutral-500 box-border border-b-2 border-transparent hover:bg-neutral-50 hover:text-neutral-900 dark:hover:bg-neutral-800/50 dark:text-neutral-400 dark:hover:text-white">
                   <UIcon name="i-heroicons-document" class="w-5 h-5 mr-1" />Reports
                 </NuxtLink>
               </li>
               <li>
                 <NuxtLink to="/sign-in" icon='i-heroicons-arrow-right-end-on-rectangle'
-                  exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"
-                  class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white">
+                  exactActiveClass="!border-primary-500 text-highlighted dark:hover:bg-neutral-800/50 dark:text-neutral-400 dark:hover:text-white"
+                  class="flex px-2.5 py-3.5 font-medium text-sm text-neutral-500 box-border border-b-2 border-transparent hover:bg-neutral-50 hover:text-neutral-900 dark:hover:bg-neutral-800/50 dark:text-neutral-400 dark:hover:text-white">
                   <UIcon name="i-heroicons-arrow-right-end-on-rectangle" class="w-5 h-5 mr-1" />Sign In
                 </NuxtLink>
               </li>
@@ -74,27 +74,27 @@
         </div>
       </template>
       <template #placeholder>
-        <div class="w-full border-b border-gray-200 dark:border-gray-800">
+        <div class="w-full border-b border-default">
           <UContainer>
             <ul class="flex items-center justify-end">
               <li>
                 <NuxtLink to="/" icon="i-heroicons-document"
-                  exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"
-                  class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white">
+                  exactActiveClass="!border-primary-500 text-highlighted dark:hover:bg-neutral-800/50 dark:text-neutral-400 dark:hover:text-white"
+                  class="flex px-2.5 py-3.5 font-medium text-sm text-neutral-500 box-border border-b-2 border-transparent hover:bg-neutral-50 hover:text-neutral-900 dark:hover:bg-neutral-800/50 dark:text-neutral-400 dark:hover:text-white">
                   <UIcon name="i-heroicons-document" class="w-5 h-5 mr-1" />Reports
                 </NuxtLink>
               </li>
               <li>
                 <NuxtLink to="/report" icon="i-heroicons-document"
-                  exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"
-                  class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white">
+                  exactActiveClass="!border-primary-500 text-highlighted dark:hover:bg-neutral-800/50 dark:text-neutral-400 dark:hover:text-white"
+                  class="flex px-2.5 py-3.5 font-medium text-sm text-neutral-500 box-border border-b-2 border-transparent hover:bg-neutral-50 hover:text-neutral-900 dark:hover:bg-neutral-800/50 dark:text-neutral-400 dark:hover:text-white">
                   <UIcon name="i-heroicons-document-plus" class="w-5 h-5 mr-1" />Report
                 </NuxtLink>
               </li>
               <li>
                 <NuxtLink to="/sign-in" icon='i-heroicons-arrow-right-end-on-rectangle'
-                  exactActiveClass="!border-primary-500 text-gray-900 dark:text-white dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white"
-                  class="flex px-2.5 py-3.5 font-medium text-sm text-gray-500 box-border border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:text-gray-400 dark:hover:text-white">
+                  exactActiveClass="!border-primary-500 text-highlighted dark:hover:bg-neutral-800/50 dark:text-neutral-400 dark:hover:text-white"
+                  class="flex px-2.5 py-3.5 font-medium text-sm text-neutral-500 box-border border-b-2 border-transparent hover:bg-neutral-50 hover:text-neutral-900 dark:hover:bg-neutral-800/50 dark:text-neutral-400 dark:hover:text-white">
                   <UIcon name="i-heroicons-arrow-right-end-on-rectangle" class="w-5 h-5 mr-1" />Sign In
                 </NuxtLink>
               </li>
@@ -104,12 +104,7 @@
       </template>
     </AuthState>
   </header>
-  <UModals />
-  <UContainer>
-    <NuxtLoadingIndicator />
-    <UNotifications />
-  </UContainer>
-  <NuxtPage />
+  <slot />
 </template>
 
 <style>
@@ -124,6 +119,10 @@ import { computed } from 'vue';
 
 const { clear, user } = useUserSession();
 const { $pwa } = useNuxtApp();
+
+// Controls the nav dropdown popover so items can close it on click (v3 Popover's
+// #content slot no longer exposes a `close` helper).
+const navOpen = ref(false);
 
 // is this really the best way to do this?!
 useHead({

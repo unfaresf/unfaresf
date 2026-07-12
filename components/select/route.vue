@@ -1,5 +1,5 @@
 <template>
-  <UFormGroup
+  <UFormField
     ref="route-select"
     label="Route"
     name="route"
@@ -9,33 +9,25 @@
     <USelectMenu
       class="mt-2"
       v-model="route"
-      v-on:open="onOpen"
+      @update:open="(open: boolean) => open && onOpen()"
       :loading="loading"
-      searchable
-      :search-attributes="['searchString']"
-      :options="options"
+      :filter-fields="['searchString']"
+      :items="(options as any)"
       by="uniqueKey"
+      label-key="displayLabel"
       placeholder="Find a route"
       trailing
-      :popper="{
-        placement: isMobile ? 'top' : 'bottom',
-      }"
+      :content="{ side: isMobile ? 'top' : 'bottom' }"
     >
-      <template #label>
-        <p v-if="route">
-          {{ route.routeShortName }}: {{ route.routeLongName }} -
-          {{ route.headsign }}
-        </p>
-      </template>
-      <template #option="{ option: route }">
-        <p>
-          {{ route.routeShortName }}: {{ route.routeLongName }} -
-          {{ route.headsign }}
-        </p>
+      <template #default="{ modelValue }">
+        <span v-if="modelValue">
+          {{ modelValue.routeShortName }}: {{ modelValue.routeLongName }} -
+          {{ modelValue.headsign }}
+        </span>
       </template>
       <template #empty> No routes </template>
     </USelectMenu>
-  </UFormGroup>
+  </UFormField>
 </template>
 
 <script lang="ts">
@@ -57,6 +49,7 @@ export type Route = z.infer<typeof routeSchema>;
 type RouteWithSearchString = Route & {
   searchString: string;
   uniqueKey: string;
+  displayLabel: string;
 };
 </script>
 
@@ -77,7 +70,7 @@ const route = computed({
   set: (value: Route | RouteWithSearchString | undefined) => {
     if (value) {
       // Remove searchString and uniqueKey before updating model
-      const { searchString, uniqueKey, ...cleanedRoute } = value as RouteWithSearchString;
+      const { searchString, uniqueKey, displayLabel, ...cleanedRoute } = value as RouteWithSearchString;
       model.value = cleanedRoute as Route;
     } else {
       model.value = undefined;
@@ -106,6 +99,7 @@ const getAgencyRoutes = async ({ agencyId }: { agencyId: string }) => {
     ...route,
     searchString: `${route.routeShortName} ${route.routeLongName} ${route.headsign}`,
     uniqueKey: `${route.routeId}-${route.directionId}-${route.headsign}`,
+    displayLabel: `${route.routeShortName}: ${route.routeLongName} - ${route.headsign}`,
   }));
 };
 

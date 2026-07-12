@@ -24,12 +24,18 @@ logs
 .env.*
 !.env.example
 !.env.test
+!.env.e2e
 
 # Other local files
 certs/*.pem
 db/data/*.db*
 gtfs/gtfs.zip
 gtfs/gtfs/
+
+# Playwright E2E artifacts (local-e2e.db already covered by db/data/*.db*)
+/test-results/
+/playwright-report/
+/test/e2e/.auth/
 
 # AI crap
 .claude

@@ -6,14 +6,14 @@
     <UCard class="col-span-6 lg:col-span-2 xs:mt-10 md:mt-0">
       <template #header>
         <h2 class="text-lg">Recent Broadcasts</h2>
-        <p class="text-xs text-gray-500">Check recent broadcasts to avoid duplicate messages.</p>
+        <p class="text-xs text-neutral-500">Check recent broadcasts to avoid duplicate messages.</p>
       </template>
       <div>
         <ol v-if="broadcasts && broadcasts.result.length">
           <li v-for="broadcast in broadcasts?.result" class="">
             {{ broadcast.message }}
             <span class="text-xs italic">{{ formatDistanceToNow(broadcast.createdAt) }} ago</span>
-            <UDivider class="my-2"/>
+            <USeparator class="my-2"/>
           </li>
         </ol>
         <div v-else>

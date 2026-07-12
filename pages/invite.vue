@@ -8,7 +8,7 @@
         size="xl"
       />
       <UInput disabled placeholder="example.com" v-model="inviteURL" />
-      <UButton icon="i-heroicons-clipboard-document" color="gray" @click="copyToClipboard" :disabled="!inviteURL"/>
+      <UButton icon="i-heroicons-clipboard-document" color="neutral" @click="copyToClipboard" :disabled="!inviteURL"/>
     </UButtonGroup>
   </UCard>
 </template>

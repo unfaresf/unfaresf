@@ -7,9 +7,9 @@ export default defineNuxtConfig({
     "nuxt-rate-limit",
     "nuxt-authorization",
     "@nuxtjs/device",
-    "@nuxt/icon",
     "@nuxt/test-utils/module",
   ],
+  css: ['~/assets/css/main.css'],
   app: {
     head: {
       charset: "utf-8",

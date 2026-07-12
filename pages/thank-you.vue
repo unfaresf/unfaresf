@@ -5,7 +5,7 @@
     </template>
     <p>Thank you for submitting a report. We will review and share it as soon as possible.</p>
     <div class="flex">
-      <UButton to="/" color="fuchsia" variant="ghost" class="mt-4 mr-2" icon="i-heroicons-arrow-left" :trailing="false">Back to Map</UButton>
+      <UButton to="/" color="primary" variant="ghost" class="mt-4 mr-2" icon="i-heroicons-arrow-left" :trailing="false">Back to Map</UButton>
       <UButton to="/report" class="mt-4 ml-auto">Make Another Report</UButton>
     </div>
 

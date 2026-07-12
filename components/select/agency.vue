@@ -1,5 +1,5 @@
 <template>
-  <UFormGroup
+  <UFormField
     ref="agency-select"
     label="Agency"
     name="agency"
@@ -10,21 +10,19 @@
       class="mt-2"
       v-if="agencyOptions"
       v-model="agency"
-      v-on:open="onOpen"
+      @update:open="(open: boolean) => open && onOpen()"
       :loading="loading"
-      :options="agencyOptions"
-      searchable
+      :items="(agencyOptions as any)"
       by="agencyId"
       placeholder="Pick transit agency"
-      option-attribute="agencyLabel"
+      label-key="agencyLabel"
+      :filter-fields="['agencyLabel']"
       trailing
-      :popper="{
-        placement: isMobile ? 'top' : 'bottom',
-      }"
+      :content="{ side: isMobile ? 'top' : 'bottom' }"
     >
       <template #empty> Loading agencies... </template>
     </USelectMenu>
-  </UFormGroup>
+  </UFormField>
 </template>
 
 <script lang="ts">

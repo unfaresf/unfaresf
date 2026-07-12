@@ -2,14 +2,14 @@
     <UContainer :ui="{base: 'mx-auto', padding: 'py-4', constrained: 'max-w-lg'}">
       <UForm :schema="twitterIntegrationFormSchema" :state="state" class="space-y-4 flex flex-col" @submit.prevent="onSubmit">
   
-        <UFormGroup label="Bearer Token" name="bearer-token" Description="The bearer access token for the Twitter API." help="Bearer tokens are generated in the Twitter developer console.">
+        <UFormField label="Bearer Token" name="bearer-token" Description="The bearer access token for the Twitter API." help="Bearer tokens are generated in the Twitter developer console.">
           <UInput v-model="state.options.bearerToken" type="password" :disabled="pendingReq" />
-        </UFormGroup>
+        </UFormField>
   
         <div class="flex">
-          <UFormGroup label="Enable" name="enable">
-            <UToggle v-model="state.enable" :disabled="pendingReq" />
-          </UFormGroup>
+          <UFormField label="Enable" name="enable">
+            <USwitch v-model="state.enable" :disabled="pendingReq" />
+          </UFormField>
   
           <UButton type="submit" class="ml-auto my-4" icon="i-heroicons-pencil-square" :loading="pendingReq">
             Save
@@ -21,7 +21,7 @@
   
   <script setup lang="ts">
   import { type SelectIntegration, type TwitterOptions, type Prettify, twitterIntegrationOptionSchema } from '../db/schema';
-  import type { FormSubmitEvent } from '#ui/types';
+  import type { FormSubmitEvent } from '@nuxt/ui';
   import { z } from 'zod';
   
   const twitterIntegrationFormSchema = z.object({
@@ -74,12 +74,12 @@
         await createTwitterOptions(event.data);
       }
       toast.add({
-        color: 'green',
+        color: 'success',
         title: 'Updated twitter settings',
       });
     } catch (err:any) {
       toast.add({
-        color: 'red',
+        color: 'error',
         title: 'Error updating twitter settings',
         description: err.message
       });

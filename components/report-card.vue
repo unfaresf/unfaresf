@@ -20,7 +20,7 @@
       <UButton
         class="mb-auto"
         id="report-card-dismiss"
-        color="red"
+        color="error"
         variant="ghost"
         size="md"
         icon="i-heroicons-x-circle"
@@ -32,7 +32,7 @@
         v-if="props.report.source === 'internal'"
         class="mt-auto"
         id="report-card-approve"
-        color="green"
+        color="success"
         variant="soft"
         size="md"
         icon="i-heroicons-check-circle"
@@ -43,7 +43,7 @@
     </div>
   </div>
   <div v-else>
-    <USkeleton class="h-12 w-12" :ui="{ rounded: 'rounded-full' }" />
+    <USkeleton class="h-12 w-12 rounded-full" />
     <div class="space-y-2">
       <USkeleton class="h-4 w-[250px]" />
       <USkeleton class="h-4 w-[200px]" />

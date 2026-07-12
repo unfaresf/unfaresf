@@ -33,7 +33,7 @@
         <ol v-if="broadcasts && broadcasts.result.length">
           <li
             v-for="broadcast in broadcasts.result"
-            class="border-gray-200 dark:border-gray-800 w-full border-b border-solid pb-3 mb-3 last:border-b-0 last:pb-0 last:mb-0"
+            class="border-default w-full border-b border-solid pb-3 mb-3 last:border-b-0 last:pb-0 last:mb-0"
           >
             {{ broadcast.message }}
             <dl v-if="broadcast.stop.routes" class="flex text-xs italic">
@@ -61,19 +61,19 @@
         <div class="basis-[calc(35dvh)] grow-0 shrink-0 snap-start"></div>
         <div class="basis-[calc(50dvh)] grow-0 shrink-0 snap-start"></div>
         <div
-          class="relative w-full bg-gray-100 dark:bg-gray-900 z-20 p-4 pb-48 shadow-[0px_0px_25px_-10px_rgba(0,0,0,0.75)] rounded-t-xl before:w-8 before:h-1 before:bg-gray-200 before:dark:bg-gray-100 before:rounded before:mx-auto before:block before:-mt-2"
+          class="relative w-full bg-neutral-100 dark:bg-neutral-900 z-20 p-4 pb-48 shadow-[0px_0px_25px_-10px_rgba(0,0,0,0.75)] rounded-t-xl before:w-8 before:h-1 before:bg-neutral-200 before:dark:bg-neutral-100 before:rounded before:mx-auto before:block before:-mt-2"
         >
           <UButton
             class="shadow-lg absolute -top-16 right-8 lg:hidden"
             size="xl"
-            :ui="{ rounded: 'rounded-full' }"
+            :ui="{ base: 'rounded-full' }"
             icon="i-heroicons-pencil-square"
             to="/report"
           />
           <ol v-if="broadcasts && broadcasts.result.length">
             <li
               v-for="broadcast in broadcasts.result"
-              class="border-gray-200 dark:border-gray-800 w-full border-b border-solid pb-3 mb-3 last:border-b-0 last:pb-0 last:mb-0 snap-start scroll-mt-6"
+              class="border-default w-full border-b border-solid pb-3 mb-3 last:border-b-0 last:pb-0 last:mb-0 snap-start scroll-mt-6"
             >
               {{ broadcast.message }}
               <dl v-if="broadcast.stop.routes" class="flex text-xs italic">

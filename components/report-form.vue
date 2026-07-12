@@ -6,25 +6,21 @@
     :schema="reportSchema"
   >
     <SelectAgency v-model="formState.agency" />
-    <UFormGroup
+    <UFormField
       v-if="formState.agency"
       label="Inspectors onboard"
       description="Are fare inspectors currently onboard a transit vehicle?"
       name="passenger"
     >
-      <URadioGroup
-        class="mt-2"
-        v-model="formState.passenger"
-        :ui="{ fieldset: 'flex flex-row justify-between gap-4' }"
-        :ui-radio="{
-          wrapper: 'border border-solid border-gray-700 rounded-md p-2',
-        }"
-        :options="[
-          { label: 'Yes', value: true },
-          { label: 'No', value: false },
-        ]"
-      />
-    </UFormGroup>
+      <div class="mt-2 flex items-center gap-3">
+        <span :class="{ 'text-muted': formState.passenger }">No</span>
+        <USwitch
+          :model-value="formState.passenger ?? false"
+          @update:model-value="(v: boolean) => (formState.passenger = v)"
+        />
+        <span :class="{ 'text-muted': !formState.passenger }">Yes</span>
+      </div>
+    </UFormField>
     <SelectRoute
       v-if="formState.agency && formState.passenger"
       :agency="formState.agency"
@@ -54,7 +50,7 @@ export type ReportPostSchema = z.infer<typeof reportSchema>;
 
 <script lang="ts" setup>
 import { z } from "zod";
-import type { Form } from "#ui/types";
+import type { Form } from "@nuxt/ui";
 import { type Route, routeSchema } from "../components/select/route.vue";
 import { type Stop, stopSchema } from "../components/select/stop.vue";
 import { agencySchema, type Agency } from "./select/agency.vue";

@@ -12,13 +12,13 @@ export const useReportSubmit = () => {
         body: report,
       });
       toast.add({
-        color: "green",
+        color: "success",
         title: "Report successful",
       });
       await navigateTo("/thank-you");
     } catch (err: any) {
       toast.add({
-        color: "red",
+        color: "error",
         title: "Error submitting report",
         description: err.message,
       });

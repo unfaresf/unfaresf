@@ -1,5 +1,5 @@
 <template>
-  <UFormGroup
+  <UFormField
     ref="stop-select"
     label="Stop"
     name="stop"
@@ -10,31 +10,27 @@
       class="mt-2"
       :key="routeId"
       v-model="stop"
-      v-model:query="query"
-      v-on:open="onOpen"
-      :debounce="500"
-      :searchable="routeId ? true : onSearch"
-      searchable-placeholder="Search for a transit stops"
-      :search-attributes="['stopName', 'direction']"
-      :options="options"
+      v-model:search-term="query"
+      @update:open="(open: boolean) => open && onOpen()"
+      :ignore-filter="!routeId"
+      :filter-fields="['stopName', 'direction']"
+      :search-input="{ placeholder: 'Search for a transit stops' }"
+      :items="(options as any)"
       by="stopId"
+      label-key="displayLabel"
       :loading="loading"
       placeholder="Select a stop"
       trailing
-      :popper="{
-        placement: isMobile ? 'top' : 'bottom',
+      :content="{
+        side: isMobile ? 'top' : 'bottom',
       }"
-      :clearSearchOnClose="true"
     >
-      <template #label>
-        <p v-if="stop">{{ stop.stopName }} - {{ stop.direction }}</p>
-      </template>
-      <template #option="{ option: stop }" :loading="loading">
-        <p>{{ stop.stopName }} - {{ stop.direction }}</p>
+      <template #default="{ modelValue }">
+        <span v-if="modelValue">{{ modelValue.stopName }} - {{ modelValue.direction }}</span>
       </template>
       <template #empty> No stops </template>
     </USelectMenu>
-  </UFormGroup>
+  </UFormField>
 </template>
 
 <script lang="ts">
@@ -53,9 +49,31 @@ export type Stop = z.infer<typeof stopSchema>;
 </script>
 
 <script setup lang="ts">
+import { watchDebounced } from "@vueuse/core";
+
+type StopOption = Stop & { displayLabel: string };
+const withLabel = (s: Stop): StopOption => ({
+  ...s,
+  displayLabel: `${s.stopName} - ${s.direction}`,
+});
+
 const loading = ref(false);
 const { isMobile } = useDevice();
-const stop = defineModel<Stop>();
+const model = defineModel<Stop>();
+// The SelectMenu items carry a `displayLabel` used by `label-key`; strip it back
+// off the selected value so the model (and the submitted report body) stays a
+// clean Stop, mirroring the v2 behavior.
+const stop = computed<Stop | StopOption | undefined>({
+  get: () => model.value,
+  set: (value) => {
+    if (value) {
+      const { displayLabel, ...cleaned } = value as StopOption;
+      model.value = cleaned as Stop;
+    } else {
+      model.value = undefined;
+    }
+  },
+});
 const query = ref<string>("");
 const props = defineProps<{
   agency: Agency;
@@ -76,7 +94,7 @@ const agencyId = computed(() => props.agency.agencyId);
 const routeId = computed(() => props.route?.routeId);
 const directionId = computed(() => props.route?.directionId);
 
-const options = ref<Stop[]>([]);
+const options = ref<StopOption[]>([]);
 
 const getRouteStops = async ({
   routeId,
@@ -85,12 +103,13 @@ const getRouteStops = async ({
   routeId: string;
   directionId?: number;
 }) => {
-  return $fetch<Stop[]>("/api/gtfs/stops", {
+  const stops = await $fetch<Stop[]>("/api/gtfs/stops", {
     params: {
       routeId,
       directionId,
     },
   });
+  return stops.map(withLabel);
 };
 
 const getAgencyStops = async ({
@@ -102,7 +121,7 @@ const getAgencyStops = async ({
   query?: string;
   geolocation?: GeolocationPosition;
 }) => {
-  return $fetch<Stop[]>("/api/gtfs/stops/search", {
+  const stops = await $fetch<Stop[]>("/api/gtfs/stops/search", {
     params: {
       q: query?.trim() || undefined,
       agencyId,
@@ -110,26 +129,29 @@ const getAgencyStops = async ({
       longitude: geolocation?.coords.longitude,
     },
   });
+  return stops.map(withLabel);
 };
 
-const onSearch = async (queryString: string) => {
-  if (queryString.length || !options.value.length) {
-    loading.value = true;
-    const stops = await getAgencyStops({
-      query: query.value,
-      agencyId: agencyId.value,
-      geolocation: props.geo,
-    });
-    loading.value = false;
-    options.value = stops;
-    if (queryString === " ") {
-      query.value = "";
-    }
-    return stops;
-  } else {
-    return options.value;
-  }
-};
+// With no route selected, stops are searched agency-wide on the server as the
+// user types (debounced, `:ignore-filter` on). With a route selected, stops come
+// from the route and the SelectMenu filters them client-side.
+async function searchAgencyStops() {
+  loading.value = true;
+  options.value = await getAgencyStops({
+    query: query.value,
+    agencyId: agencyId.value,
+    geolocation: props.geo,
+  });
+  loading.value = false;
+}
+
+watchDebounced(
+  query,
+  () => {
+    if (!routeId.value) searchAgencyStops();
+  },
+  { debounce: 500 }
+);
 
 onMounted(async () => {
   loading.value = true;
@@ -144,7 +166,7 @@ onMounted(async () => {
 
 watch(routeId, async (newRouteId, oldRouteId) => {
   if (newRouteId !== oldRouteId) {
-    stop.value = undefined;
+    model.value = undefined;
     if (newRouteId) {
       loading.value = true;
       options.value = await getRouteStops({
@@ -153,17 +175,15 @@ watch(routeId, async (newRouteId, oldRouteId) => {
       });
       loading.value = false;
     } else {
-      // this triggers the search but the white space is trimmed later
-      query.value = " ";
+      await searchAgencyStops();
     }
   }
 });
 
 watch(agencyId, async (newAgencyId, oldAgencyId) => {
   if (newAgencyId !== oldAgencyId) {
-    stop.value = undefined;
-    // this triggers the search but the white space is trimmed later
-    query.value = " ";
+    model.value = undefined;
+    if (!routeId.value) await searchAgencyStops();
   }
 });
 </script>
