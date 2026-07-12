@@ -53,7 +53,7 @@
 
 <script setup lang="ts">
 import { formatDistanceToNow, format as formatDate } from "date-fns";
-import type { SelectReport } from "../db/schema";
+import type { SelectReport } from "../../db/schema";
 
 function getRouteFromReportId(reportId: number): string {
   return `/reports/${reportId}`;

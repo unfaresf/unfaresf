@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { type SelectIntegration, bskyIntegrationOptionSchema } from '../db/schema';
+import { type SelectIntegration, bskyIntegrationOptionSchema } from '../../db/schema';
 import type { FormSubmitEvent } from '@nuxt/ui';
 import { z } from 'zod';
 

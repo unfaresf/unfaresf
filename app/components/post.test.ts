@@ -1,7 +1,7 @@
 import { vi, it, expect } from "vitest";
 import { mountSuspended, registerEndpoint } from "@nuxt/test-utils/runtime";
 import { Post, ReportSummary, ReportForm } from "#components";
-import type { SelectReport } from "../db/schema";
+import type { SelectReport } from "../../db/schema";
 import { faker } from "@faker-js/faker";
 
 const mockReport: SelectReport = {

@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { type SelectIntegration, mastodonIntegrationOptionSchema } from '../db/schema';
+import { type SelectIntegration, mastodonIntegrationOptionSchema } from '../../db/schema';
 import type { FormSubmitEvent } from '@nuxt/ui';
 import { z } from 'zod';
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { ref, nextTick } from 'vue';
 import type { Feature } from 'geojson';
-import { useMapFeatures } from '../../composable/useMapFeatures';
+import { useMapFeatures } from '../../app/composable/useMapFeatures';
 
 const flush = async () => {
   await nextTick();

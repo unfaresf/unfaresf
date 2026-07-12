@@ -43,7 +43,7 @@
 import {
   MglMap,
 } from "@indoorequal/vue-maplibre-gl";
-import { type SelectIntegration, mapIntegrationOptionSchema } from '../db/schema';
+import { type SelectIntegration, mapIntegrationOptionSchema } from '../../db/schema';
 import type { FormSubmitEvent } from '@nuxt/ui';
 import { z } from 'zod';
 

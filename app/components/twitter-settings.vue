@@ -20,7 +20,7 @@
   </template>
   
   <script setup lang="ts">
-  import { type SelectIntegration, type TwitterOptions, type Prettify, twitterIntegrationOptionSchema } from '../db/schema';
+  import { type SelectIntegration, type TwitterOptions, type Prettify, twitterIntegrationOptionSchema } from '../../db/schema';
   import type { FormSubmitEvent } from '@nuxt/ui';
   import { z } from 'zod';
   

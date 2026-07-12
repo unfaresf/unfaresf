@@ -68,12 +68,12 @@
 </template>
 
 <script lang="ts" setup>
-import { type SelectReport } from "../../db/schema";
+import { type SelectReport } from "../../../db/schema";
 import { PostModal } from "#components";
 import ReportCard from "~/components/report-card.vue";
 import { sub, formatDistanceToNow } from "date-fns";
-import { asWriteable } from "~/shared/types/utils";
-import getDateMinusNHours from "~/shared/utils/get-date-minus-n-hours";
+import { asWriteable } from "#shared/types/utils";
+import getDateMinusNHours from "#shared/utils/get-date-minus-n-hours";
 
 const { $pwa } = useNuxtApp();
 

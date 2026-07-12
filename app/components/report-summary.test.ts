@@ -1,7 +1,7 @@
 import { it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
 import { ReportSummary } from "#components";
-import type { SelectReport } from "../db/schema";
+import type { SelectReport } from "../../db/schema";
 
 const mockReport: SelectReport = {
   id: 123,

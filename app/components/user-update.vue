@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { type GetUser, Roles } from '../db/schema';
+import { type GetUser, Roles } from '../../db/schema';
 import type { FormSubmitEvent } from '@nuxt/ui';
 import { z } from 'zod';
 

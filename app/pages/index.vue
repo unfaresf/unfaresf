@@ -109,10 +109,10 @@ import {
   reportSchema,
   type ReportPostSchema,
 } from "~/components/report-form.vue";
-import type { MapOptions, SelectIntegration, Prettify } from "../db/schema";
+import type { MapOptions, SelectIntegration, Prettify } from "../../db/schema";
 import { formatDistanceToNow } from "date-fns";
 import { useReportSubmit } from "~/composable/reportSubmit";
-import getDateMinusNHours from "~/shared/utils/get-date-minus-n-hours";
+import getDateMinusNHours from "#shared/utils/get-date-minus-n-hours";
 
 definePageMeta({
   layout: "full-screen",

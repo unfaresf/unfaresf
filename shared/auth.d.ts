@@ -1,4 +1,4 @@
-import type { SelectUser as DBuser } from './db/schema';
+import type { SelectUser as DBuser } from '../db/schema';
 
 declare module '#auth-utils' {
   interface User {

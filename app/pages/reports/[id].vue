@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { SelectReport } from '../../db/schema';
+import type { SelectReport } from '../../../db/schema';
 import { sub, formatDistanceToNow } from 'date-fns';
 
 const route = useRoute();

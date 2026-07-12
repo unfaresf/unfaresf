@@ -1,6 +1,5 @@
 {
-  "extends": "../.nuxt/tsconfig.server.json",
-  "compilerOptions": {
-    "noUncheckedIndexedAccess": true
-  }
+  // noUncheckedIndexedAccess is a Nuxt 4 default in the generated server
+  // config, so no local compilerOptions override is needed here.
+  "extends": "../.nuxt/tsconfig.server.json"
 }

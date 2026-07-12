@@ -130,7 +130,7 @@ import type {
   LngLatLike,
 } from "maplibre-gl";
 import type { Route } from "./select/route.vue";
-import type { MapOptions } from "../db/schema";
+import type { MapOptions } from "../../db/schema";
 import { useMapFeatures } from "~/composable/useMapFeatures";
 
 const paint = {

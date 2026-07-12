@@ -1,7 +1,14 @@
 {
   // https://nuxt.com/docs/guide/concepts/typescript
-  "extends": "./.nuxt/tsconfig.json",
-  "compilerOptions": {
-    "noUncheckedIndexedAccess": true
-  }
+  // Nuxt 4 splits types into per-context projects; reference them so
+  // `nuxt typecheck` runs `vue-tsc -b` and checks app + server + shared + node.
+  // `noUncheckedIndexedAccess` is now a Nuxt 4 default in every generated
+  // project config, so the previous manual override is no longer needed.
+  "files": [],
+  "references": [
+    { "path": "./.nuxt/tsconfig.app.json" },
+    { "path": "./.nuxt/tsconfig.server.json" },
+    { "path": "./.nuxt/tsconfig.shared.json" },
+    { "path": "./.nuxt/tsconfig.node.json" }
+  ]
 }

@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import type { SelectReport } from '../db/schema'
+import type { SelectReport } from '../../db/schema'
 
 const props = defineProps<{ report: SelectReport }>()
 const emit = defineEmits<{ close: [payload?: { success?: boolean }] }>()

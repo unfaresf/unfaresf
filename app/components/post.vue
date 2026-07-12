@@ -44,7 +44,7 @@
 
 <script lang="ts" setup>
 import { z } from "zod";
-import type { SelectReport } from "../db/schema";
+import type { SelectReport } from "../../db/schema";
 import { useTemplateRef } from "vue";
 import type { ReportPostSchema } from "./report-form.vue";
 
