@@ -27,29 +27,44 @@ wrapped in a `UCard`, keeping the existing default layout (nav header stays).
         icon="i-heroicons-finger-print"
         title="Sign in"
         description="Use your passkey to sign in to UnfareSF."
-        :submit="{ label: 'Sign in' }"
-        :loading="logging"
-        @submit="signIn"
+        :providers="providers"
       />
     </UCard>
   </div>
 </template>
 ```
 
+```ts
+const providers = computed<ButtonProps[]>(() => [{
+  label: 'Sign in',
+  icon: 'i-heroicons-finger-print',
+  color: 'primary',
+  variant: 'solid',
+  loading: logging.value,
+  onClick: signIn,
+}]);
+```
+
+- **Passkey is modeled as AuthForm's single `provider`, not a form field.** Important
+  gotcha discovered during implementation: `AuthForm` only renders its `<UForm>` (and
+  thus the submit button / `#submit` slot) when `fields` is non-empty
+  (`AuthForm.vue`: `<UForm v-if="props.fields?.length">`). A field-less passkey flow
+  therefore can't use `submit`/`@submit` — the button never appears. The `providers`
+  slot, by contrast, renders whenever `providers` is non-empty, independent of fields.
+  So the passkey CTA is a single provider button whose `onClick` calls `signIn`.
 - **No `fields`.** Passkeys are discoverable (resident-key), so sign-in needs no
-  username. AuthForm renders icon + title + description + submit button — exactly the
-  polished panel the issue wants.
+  username input.
 - **Script logic is unchanged.** `signIn()` still calls
   `authenticate() → fetch() → navigateTo('/reports')` with the same toast error
-  handling; it ignores the emitted `FormSubmitEvent`. The existing `logging` ref now
-  also drives the submit button's loading spinner via `:loading`.
+  handling. The existing `logging` ref drives the provider button's loading spinner
+  via a `computed` provider list.
 - **`UCard` wrapper** matches the rest of the app (`invite.vue`, `sign-up.vue`) for
   visual consistency; `max-w-sm` + `flex justify-center` gives the clean login look
   within the current nav layout.
 
 ## Constraints preserved
 
-- `submit.label: 'Sign in'` keeps the accessible button name so the e2e test
+- The provider `label: 'Sign in'` keeps the accessible button name so the e2e test
   `test/e2e/public.public.spec.ts` — "sign-in page shows a passkey sign-in control"
   (`getByRole('button', { name: /sign in/i })`) still passes.
 - No change to the WebAuthn `authenticate()` flow, so `global-setup.ts` and the authed

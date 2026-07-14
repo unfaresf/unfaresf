@@ -1,21 +1,19 @@
 <template>
-  <UCard class="mt-10">
-    <div class="flex">
-      <form
-        class="flex flex-col gap-2"
-        @submit.prevent="signIn"
-      >
-        <UButton
-          type="submit"
-          color="neutral"
-          label="Sign in"
-        />
-      </form>
-    </div>
-  </UCard>
+  <div class="flex justify-center">
+    <UCard class="mt-10 w-full max-w-sm">
+      <UAuthForm
+        icon="i-heroicons-finger-print"
+        title="Sign in"
+        description="Use your passkey to sign in to UnfareSF."
+        :providers="providers"
+      />
+    </UCard>
+  </div>
 </template>
 
 <script lang="ts" setup>
+import type { ButtonProps } from '@nuxt/ui'
+
 const { fetch } = useUserSession()
 const { authenticate } = useWebAuthn()
 const toast = useToast()
@@ -25,6 +23,18 @@ useHead({
 });
 
 const logging = ref(false);
+
+// Passkey is our only auth method, so we model it as AuthForm's single
+// "provider". AuthForm only renders its form/submit button when `fields` are
+// present; a field-less passkey flow uses the providers slot instead.
+const providers = computed<ButtonProps[]>(() => [{
+  label: 'Sign in',
+  icon: 'i-heroicons-finger-print',
+  color: 'primary',
+  variant: 'solid',
+  loading: logging.value,
+  onClick: signIn,
+}]);
 
 async function signIn() {
   if (logging.value) return
