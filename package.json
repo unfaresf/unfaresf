@@ -13,7 +13,6 @@
     "test:coverage": "vitest --coverage",
     "test:e2e": "rm -f db/data/local-e2e.db* && dotenv -e .env.e2e -- drizzle-kit migrate --config=drizzle.config.ts && playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "tsc": "npx nuxi@latest typecheck",
     "start": "node .output/server/index.mjs",
     "dev": "npx nuxi@latest dev --no-fork",
     "dev:host": "npx nuxi@latest dev --no-fork --host 0.0.0.0",
