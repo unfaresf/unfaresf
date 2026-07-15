@@ -1,4 +1,4 @@
-import { DB as db } from "../../server/sqlite-service"
+import { DB as db } from "../sqlite-service"
 import {
   users as usersTable,
   subscriptions as subscriptionsTable,

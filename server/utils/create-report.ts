@@ -1,4 +1,4 @@
-import { DB as db } from "../../server/sqlite-service"
+import { DB as db } from "../sqlite-service"
 import { reports as reportsTable, type InsertReport, type SelectReport } from "../../db/schema";
 import Notify from "./notify";
 import type { H3Event, EventHandlerRequest } from 'h3';

@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
-  await authorize(event, deleteSubscription, userSub.subscriptions.id);
+  await authorize(event, deleteSubscription, userSub.subscriptions.userId);
   try {
     await db.update(subscriptionsTable).set({deletedAt: new Date()}).where(eq(subscriptionsTable.id, userSub.subscriptions.id));
     setResponseStatus(event, 200, "Deleted");

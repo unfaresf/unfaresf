@@ -1,7 +1,7 @@
 <!-- The style classes and exactActiveClass on links is because nuxt-ui <ULink> prefetch is broken -->
 <template>
-  <UContainer>
-    <header>
+  <UContainer class="pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
+    <header class="hidden lg:block">
       <AuthState>
           <template #default="{ loggedIn }">
             <div v-if="loggedIn" class="flex">
@@ -15,17 +15,9 @@
                     <li><UButton color="neutral" class="m-2" icon="i-heroicons-bell-slash" disabled /></li>
                   </template>
                 </ClientOnly>
-                <UPopover v-model:open="navOpen" :content="{ side: 'bottom', align: 'end' }">
+                <UDropdownMenu :items="authedDropdown" :content="{ side: 'bottom', align: 'end' }">
                   <UButton color="neutral" variant="outline" icon="i-heroicons-bars-3" class="m-2" />
-                  <template #content>
-                    <ul class="p-1 bg-white  dark:bg-neutral-800  min-w-44">
-                      <li v-for="link in authedDropdown" class="flex w-full items-center flex-row-reverse mb-1 last:mb-0">
-                        <UButton v-if="link.click" @click="() => { navOpen = false; link.click?.(); }" variant="ghost" color="neutral" class="w-full justify-between dark:hover:bg-neutral-900"><UIcon :name="link.icon" class="ml-2"/><span>{{ link.label }}</span></UButton>
-                        <NuxtLink v-else-if="!link.disabled" class="flex px-2 py-1 w-full rounded-md justify-between items-center hover:bg-neutral-50 dark:hover:bg-neutral-900" active-class="bg-neutral-50 dark:bg-neutral-900" :to="link.to" @click="navOpen = false"><UIcon :name="link.icon" class="ml-2"/><span>{{ link.label }}</span></NuxtLink>
-                      </li>
-                    </ul>
-                  </template>
-                </UPopover>
+                </UDropdownMenu>
               </ul>
             </div>
             <ul v-else class="w-full flex items-center justify-end border-b border-default">
@@ -45,74 +37,27 @@
     <footer>
       <div class="py-2"></div>
     </footer>
+    <!-- Mobile bottom tab bar -->
+    <nav aria-label="Primary" class="fixed bottom-0 inset-x-0 z-30 lg:hidden border-t border-default bg-default pb-[env(safe-area-inset-bottom)]">
+      <AuthState>
+        <template #default="{ loggedIn }">
+          <UNavigationMenu :items="loggedIn ? authedBarItems : loggedOutBarItems" class="w-full" :ui="barUi" />
+        </template>
+        <template #placeholder>
+          <UNavigationMenu :items="placeholderBarItems" class="w-full" :ui="barUi" />
+        </template>
+      </AuthState>
+    </nav>
   </UContainer>
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
+import type { NavigationMenuItem } from '@nuxt/ui';
+import { useMobileNav } from '~/composable/useMobileNav';
 
-const { clear, user } = useUserSession();
-const { $pwa } = useNuxtApp();
+const { barUi, authedDropdown, authedBarItems, loggedOutBarItems, user } = useMobileNav();
 
-// Controls the nav dropdown popover so items can close it on click (v3 Popover's
-// #content slot no longer exposes a `close` helper).
-const navOpen = ref(false);
-
-async function deleteSubscription(sub:PushSubscription) {
-  return $fetch('/api/subscriptions', {
-    method: 'DELETE',
-    query: {
-      endpoint: sub.endpoint
-    }
-  });
-}
-
-async function getCurrentSubscription():Promise<PushSubscription|null> {
-  const registration = $pwa.registration;
-  if (!registration.value) {
-    throw new Error('service worker not registered');
-  }
-  return registration.value?.pushManager.getSubscription() ?? null;
-}
-
-async function disableNotifications() {
-  const subscriptions = await getCurrentSubscription();
-  if (subscriptions) {
-    await Promise.allSettled([
-      subscriptions.unsubscribe(),
-      deleteSubscription(subscriptions),
-    ]);
-  }
-}
-
-async function logout() {
-  try {
-    await disableNotifications();
-  } catch (err) {
-    console.debug('error disabling notifications during logout', err);
-  }
-
-  await clear();
-  return navigateTo('/sign-in');
-}
-
-const authedDropdown = computed(() => {
-  return [
-    {
-      label: 'Invite',
-      icon: 'i-heroicons-envelope-open',
-      to: '/invite',
-      disabled: user.value ? !user.value.roles.includes('Admin') : true,
-    }, {
-      label: 'Settings',
-      icon: 'i-heroicons-adjustments-horizontal',
-      to: '/settings',
-      disabled: user.value ? !user.value.roles.includes('Admin') : true,
-    }, {
-      label: `Logout`,
-      icon: 'i-heroicons-arrow-right-start-on-rectangle',
-      click: logout
-    }
-  ];
-});
+// SSR placeholder for the mobile bar — mirrors this layout's logged-out desktop
+// placeholder. The bar's authed/logged-out items come from useMobileNav.
+const placeholderBarItems: NavigationMenuItem[] = loggedOutBarItems;
 </script>

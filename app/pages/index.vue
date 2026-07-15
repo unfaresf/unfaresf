@@ -59,9 +59,9 @@
         class="flex lg:hidden flex-col items-center h-lvh overflow-y-scroll overscroll-y-contain z-10 snap-y snap-mandatory scrollbar-none"
       >
         <div class="basis-[calc(35dvh)] grow-0 shrink-0 snap-start"></div>
-        <div class="basis-[calc(50dvh)] grow-0 shrink-0 snap-start"></div>
+        <div class="basis-[calc(45dvh)] grow-0 shrink-0 snap-start"></div>
         <div
-          class="relative w-full bg-neutral-100 dark:bg-neutral-900 z-20 p-4 pb-48 shadow-[0px_0px_25px_-10px_rgba(0,0,0,0.75)] rounded-t-xl before:w-8 before:h-1 before:bg-neutral-200 before:dark:bg-neutral-100 before:rounded before:mx-auto before:block before:-mt-2"
+          class="relative w-full bg-neutral-100 dark:bg-neutral-900 z-20 p-4 pb-[calc(12rem+env(safe-area-inset-bottom))] shadow-[0px_0px_25px_-10px_rgba(0,0,0,0.75)] rounded-t-xl before:w-8 before:h-1 before:bg-neutral-200 before:dark:bg-neutral-100 before:rounded before:mx-auto before:block before:-mt-2"
         >
           <UButton
             class="shadow-lg absolute -top-16 right-8 lg:hidden"
@@ -110,7 +110,6 @@ import {
   type ReportPostSchema,
 } from "~/components/report-form.vue";
 import type { MapOptions, SelectIntegration, Prettify } from "../../db/schema";
-import { formatDistanceToNow } from "date-fns";
 import { useReportSubmit } from "~/composable/reportSubmit";
 import getDateMinusNHours from "#shared/utils/get-date-minus-n-hours";
 
