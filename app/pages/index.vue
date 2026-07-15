@@ -36,9 +36,9 @@
             class="border-default w-full border-b border-solid pb-3 mb-3 last:border-b-0 last:pb-0 last:mb-0"
           >
             {{ broadcast.message }}
-            <dl v-if="broadcast.stop.routes" class="flex text-xs italic">
+            <dl v-if="broadcast.stop?.routes" class="flex text-xs italic">
               <dt class="mr-1">Affected routes: </dt>
-              <dd>{{ broadcast.stop.routes?.join(', ') }}</dd>
+              <dd>{{ broadcast.stop?.routes?.join(', ') }}</dd>
             </dl>
           </li>
         </ol>
@@ -76,9 +76,9 @@
               class="border-default w-full border-b border-solid pb-3 mb-3 last:border-b-0 last:pb-0 last:mb-0 snap-start scroll-mt-6"
             >
               {{ broadcast.message }}
-              <dl v-if="broadcast.stop.routes" class="flex text-xs italic">
+              <dl v-if="broadcast.stop?.routes" class="flex text-xs italic">
                 <dt class="mr-1">Affected routes: </dt>
-                <dd>{{ broadcast.stop.routes?.join(', ') }}</dd>
+                <dd>{{ broadcast.stop?.routes?.join(', ') }}</dd>
               </dl>
             </li>
           </ol>

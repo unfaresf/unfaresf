@@ -96,7 +96,6 @@ export const reports = sqliteTable(
       headsign: string;
     }>(),
     stop: text({ mode: "json" })
-      .notNull()
       .$type<{ stopId: string; stopName: string; direction: string; routes?: string[] }>(),
     direction: text({ mode: "json" }).$type<{
       routeId: string;

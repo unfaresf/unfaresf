@@ -1,5 +1,5 @@
 import { DB as db } from "../../sqlite-service";
-import { integrations as integrationsTable, integrationOptionsSchema, IntegrationOptions } from "../../../db/schema";
+import { integrations as integrationsTable, integrationOptionsSchema } from "../../../db/schema";
 import { updateIntegrations } from "../../../shared/utils/abilities";
 import { z } from 'zod';
 

@@ -52,7 +52,7 @@ export default defineEventHandler(async (event) => {
       .from(stopTimesTable)
       .innerJoin(tripsTable, eq(tripsTable.tripId, stopTimesTable.tripId))
       .innerJoin(routesTable, eq(routesTable.routeId, tripsTable.routeId))
-      .where(inArray(stopTimesTable.stopId, broadcasts.map(r => r.stop.stopId)));
+      .where(inArray(stopTimesTable.stopId, broadcasts.map(r => r.stop?.stopId).filter((id): id is string => !!id)));
 
     const stopRoutesObj = stopRoutesIntersection.reduce<Record<string, string[]>>((accum, stop) => {
       if (stop.routeShortName !== null) {
@@ -67,8 +67,8 @@ export default defineEventHandler(async (event) => {
     }, {});
 
     const result = broadcasts.map(broadcast => {
-      const stopId = broadcast.stop.stopId;
-      if (stopId && stopRoutesObj[stopId]) {
+      const stopId = broadcast.stop?.stopId;
+      if (broadcast.stop && stopId && stopRoutesObj[stopId]) {
         broadcast.stop.routes = stopRoutesObj[stopId];
       }
       return broadcast;

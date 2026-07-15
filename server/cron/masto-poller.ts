@@ -15,7 +15,7 @@ async function getLatestMentionId(): Promise<string|null> {
   if (!latestUri) return null;
 
   const latesetUriPathParts = new URL(latestUri).pathname.split('/')
-  return latesetUriPathParts[latesetUriPathParts.length-1];
+  return latesetUriPathParts[latesetUriPathParts.length-1] ?? null;
 }
 
 export default defineCronHandler('everyMinute', async () => {
