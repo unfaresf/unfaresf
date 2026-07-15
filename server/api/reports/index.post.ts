@@ -1,6 +1,6 @@
 import { reportInsertSchema } from "../../../db/schema";
 import { createReports } from "../../../shared/utils/abilities";
-import CreateReport from "#shared/utils/create-report";
+import CreateReport from "../../utils/create-report";
 
 export default defineEventHandler(async (event) => {
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263

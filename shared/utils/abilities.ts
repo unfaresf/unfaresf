@@ -1,6 +1,4 @@
-import { users, subscriptions } from '../../db/schema';
-import { DB as db } from "../../server/sqlite-service";
-import { eq } from 'drizzle-orm';
+import { users } from '../../db/schema';
 
 type User = typeof users.$inferSelect;
 
@@ -44,14 +42,10 @@ export const getPublicIntegrations = defineAbility({ allowGuest: true }, (user: 
 
 // user subscription abilities
 export const createSubscription = defineAbility(() => true);
-export const deleteSubscription = defineAbility(async (user: User, targetSubscriptionId: number) => {
-  const sub = await db.query.subscriptions.findFirst({
-    columns: {
-      userId: true
-    },
-    where: eq(subscriptions.id, targetSubscriptionId)
-  });
-
-  if (sub === undefined) return false;
-  return user.id === sub.userId;
+export const deleteSubscription = defineAbility((user: User, subscriptionUserId: number | null) => {
+  // Ownership check. The subscription's owner is looked up in the route handler
+  // (server/api/subscriptions/*.delete.ts) and passed in, so this shared ability
+  // stays free of the server-only DB (shared/ must not import Nitro code).
+  if (subscriptionUserId === null) return false;
+  return user.id === subscriptionUserId;
 });

@@ -1,169 +1,27 @@
 <template>
   <div v-if="supported">
-    <UTooltip v-if="permissionGranted" :text="tooltipText">
-      <UButton v-if="currentSubscription" :loading="loading" color="neutral" variant="outline" class="m-2" icon="i-heroicons-bell" @click="toggleNotifications" />
-      <UButton v-else :loading="loading" color="neutral" variant="outline" class="m-2" icon="i-heroicons-bell-snooze" @click="toggleNotifications" />
-    </UTooltip>
-    <UTooltip v-else text="Enable new report notifications">
-      <UButton :loading="loading" color="primary" class="m-2" icon="i-heroicons-bell-slash" @click="setupNotifications" />
+    <UTooltip :text="tooltipText">
+      <UButton
+        :loading="loading"
+        :color="permissionGranted ? 'neutral' : 'primary'"
+        :variant="permissionGranted ? 'outline' : 'solid'"
+        class="m-2"
+        :icon="bellIcon"
+        @click="toggle"
+      />
     </UTooltip>
   </div>
 </template>
 
 <script setup lang="ts">
-const {public: {vapidPublicKey}} = useRuntimeConfig();
-const { $pwa } = useNuxtApp();
-const toast = useToast();
+import { useNotifications } from '~/composable/useNotifications';
 
-const loading = ref(false);
-const supported = ref<boolean>(isSupported());
-const permissionGranted = ref<boolean>(Notification.permission !== "denied");
-const currentSubscription = shallowRef<PushSubscription|null>(null);
-const tooltipText = computed(() => {
-  return currentSubscription.value ? 'Notifications enabled' : 'Notifications disabled'
-});
-function isSupported() {
-  try {
-    if (!('serviceWorker' in navigator)) {
-      return false;
-    }
-
-    if (!('PushManager' in window)) {
-      return false;
-    }
-
-    if (!("Notification" in window)) {
-      return false;
-    }
-  } catch (err:any) {
-    return false;
-  }
-  return true;
-}
-
-async function askPermission() {
-  // The API recently changed from taking a callback to returning a Promise. The
-  // problem with this, is that we can't tell what version of the API is
-  // implemented by the current browser, so you have to implement both and handle both.
-  const permission = await new Promise<NotificationPermission>((resolve, reject) => {
-    const permissionResult = Notification.requestPermission(function (result) {
-      resolve(result);
-    });
-
-    if (permissionResult) {
-      permissionResult.then(resolve, reject);
-    }
-  });
-  if (permission === 'granted') {
-    permissionGranted.value = true;
-  }
-  return permission;
-}
-
-function urlBase64ToUint8Array(s:string) {
-  const padding = '='.repeat((4 - s.length % 4) % 4);
-  const base64 = (s + padding)
-      .replace(/\-/g, '+')
-      .replace(/_/g, '/');
-
-  const rawData = atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-
-  for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
-
-async function subscribeUserToPush() {
-  if (!$pwa.isRegistered || !$pwa.registration.value) {
-    throw new Error('service worker not registered');
-  }
-
-  const subscribeOptions = {
-    userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(String(vapidPublicKey)),
-  };
-
-  return $pwa.registration.value.pushManager.subscribe(subscribeOptions);
-}
-
-async function saveSubscription(sub:PushSubscription) {
-  await $fetch('/api/subscriptions', {
-    method: 'POST',
-    body: {
-      details: sub
-    }
-  });
-}
-
-async function deleteSubscription(sub:PushSubscription) {
-  return $fetch('/api/subscriptions', {
-    method: 'DELETE',
-    query: {
-      endpoint: sub.endpoint
-    }
-  });
-}
-
-async function toggleNotifications() {
-  if (currentSubscription.value) {
-    await tearDownNotifications();
-  } else {
-    await setupNotifications();
-  }
-}
-
-async function setupNotifications() {
-  loading.value = true;
-  await askPermission();
-  try {
-    const pushSubscription = await subscribeUserToPush();
-    await saveSubscription(pushSubscription);
-    currentSubscription.value = pushSubscription;
-    toast.add({
-      color: 'success',
-      title: 'Notification enabled',
-      description: 'Notifications are enabled for this device/browser.'
-    });
-  } catch (err:any) {
-    toast.add({
-      color: 'error',
-      title: 'Error disabling notifications',
-      description: err.message
-    });
-  } finally {
-    loading.value = false;
-  }
-}
-
-async function tearDownNotifications() {
-  if (currentSubscription.value) {
-    await Promise.allSettled([
-      await currentSubscription.value?.unsubscribe(),
-      await deleteSubscription(currentSubscription.value),
-    ]);
-    currentSubscription.value = null;
-    toast.add({
-      color: 'success',
-      title: 'Notification disabled',
-      description: 'Notifications are disabled for this device/browser.'
-    });
-  }
-}
-
-async function checkForCurrentSubscription() {
-  if ($pwa.isRegistered) {
-    try {
-      return $pwa.registration.value?.pushManager.getSubscription() ?? null;
-    } catch (err:any) {
-      console.warn('error retrieving current subscriptions', err);
-    }
-  }
-  return null;
-}
-
-onMounted(async () => {
-  currentSubscription.value = await checkForCurrentSubscription();
-});
+const {
+  loading,
+  supported,
+  permissionGranted,
+  tooltipText,
+  bellIcon,
+  toggle,
+} = useNotifications();
 </script>

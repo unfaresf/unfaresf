@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { formatReportAsNotification } from './notify';
-import getPlainTextSummary from './get-plain-text-summary';
+import getPlainTextSummary from '#shared/utils/get-plain-text-summary';
 import type { SelectReport } from '../../db/schema';
 
 const report = {

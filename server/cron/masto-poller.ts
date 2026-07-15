@@ -6,7 +6,7 @@ import { eq, desc } from 'drizzle-orm';
 import unfareLogger from '../../shared/utils/unfareLogger';
 import { URL } from 'node:url';
 import sanitizeHtml from 'sanitize-html';
-import CreateReport from "#shared/utils/create-report";
+import CreateReport from "../utils/create-report";
 
 async function getLatestMentionId(): Promise<string|null> {
   const reportsUris = await db.select({uri: reports.uri}).from(reports).where(eq(reports.source, 'mastodon')).orderBy(desc(reports.createdAt)).limit(1);
