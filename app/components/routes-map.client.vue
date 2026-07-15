@@ -126,12 +126,22 @@ import {
 } from "@indoorequal/vue-maplibre-gl";
 import type {
   CircleLayerSpecification,
-  LineLayerSpecification,
+  SymbolLayerSpecification,
   LngLatLike,
 } from "maplibre-gl";
 import type { Route } from "./select/route.vue";
 import type { MapOptions } from "../../db/schema";
 import { useMapFeatures } from "~/composable/useMapFeatures";
+
+// The layer components' `filter` prop expects maplibre's expression/legacy
+// filter union. Annotating with the broad `FilterSpecification` fails because
+// vue-maplibre-gl ships pre-compiled types whose recursive `ExpressionSpecification`
+// has drifted from the installed maplibre-gl. These are the exact filter shapes
+// this component produces, and they match the prop's stable legacy/`all` members.
+type MapFeatureFilter =
+  | ["==", string, string]
+  | ["in", string, ...string[]]
+  | ["all", false];
 
 const paint = {
   "line-width": 2,
@@ -154,7 +164,7 @@ const routeSymbolLayout = {
   "text-rotation-alignment": "map",
   "text-letter-spacing": 0.15,
   "symbol-spacing": 5,
-};
+} satisfies SymbolLayerSpecification["layout"];
 const routeSymbolPaint = {
   "text-color": "#e6e6e6",
   "text-halo-color": "#1a1a1a",
@@ -216,30 +226,30 @@ const { routesData, stopsData } = useMapFeatures({
   stopIds: neededStopIds,
 });
 
-const tripFilter = computed(() => {
+const tripFilter = computed((): MapFeatureFilter => {
   return props.route ? ["==", "route_id", props.route.routeId] : ["all", false];
 });
-const stopFilter = computed((): CircleLayerSpecification["filter"] => {
+const stopFilter = computed((): MapFeatureFilter => {
   return props.stopId ? ["==", "stop_id", props.stopId] : ["all", false];
 });
 
-const hotTrips = computed((): LineLayerSpecification["filter"] => {
+const hotTrips = computed((): MapFeatureFilter => {
   return props.showBroadcasts
     ? ["in", "route_id", ...visibleRouteIds.value]
     : ["all", false];
 });
-const hotStops = computed((): CircleLayerSpecification["filter"] => {
+const hotStops = computed((): MapFeatureFilter => {
   return props.showBroadcasts
     ? ["in", "stop_id", ...visibleStopIds.value]
     : ["all", false];
 });
-const warmStops = computed((): LineLayerSpecification["filter"] => {
+const warmStops = computed((): MapFeatureFilter => {
   return props.showBroadcasts
     ? ["in", "route_id", ...warmRouteIds.value]
     : ["all", false];
 });
 
-const routeLabels = computed((): LineLayerSpecification["filter"] => {
+const routeLabels = computed((): MapFeatureFilter => {
   const routeIds = [...visibleRouteIds.value, ...warmRouteIds.value, props.route?.routeId].filter(
     (r): r is string => !!r
   );
