@@ -2,13 +2,6 @@ import { defineComponent } from "vue";
 import { mockComponent } from "@nuxt/test-utils/runtime";
 import { beforeAll, vi } from "vitest";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import {
-  drizzle,
-  type BetterSQLite3Database,
-} from "drizzle-orm/better-sqlite3";
-import Database from "better-sqlite3";
-import { useRuntimeConfig } from "#imports";
-import * as schema from "../db/schema";
 
 beforeAll(() => {
   mockComponent("RoutesMap", () => {
@@ -45,43 +38,17 @@ beforeAll(() => {
   });
 });
 
-async function runAppMigrations(db: BetterSQLite3Database) {
-  await migrate(db, { migrationsFolder: "./db/migrations" });
-}
-
-// the app DB client connects before this file runs. If this simply deletes
-// the sqlite file the tests fails because the DB is unlinked. It would be nice
-// if we could loop over all the tables an do this but i didnt feel like writing
-// that code so right now this just deletes the tables contents lead to root in
-// terms of foreign key deps.
-async function destroyTestDB(db: BetterSQLite3Database) {
-  // wrapped in a try so if the DB/tables dont exists this doesn't throw
-  try {
-    await db.delete(schema.broadcasts);
-    await db.delete(schema.reports);
-    await db.delete(schema.credentials);
-  } catch (e) {}
-}
-
+// Each test file runs in its own isolated Vitest module context, so
+// server/sqlite-service instantiates a fresh SQLite connection per file. With
+// DB_FILE_NAME=:memory: that is a private, empty in-memory database per file —
+// clean isolation with no shared state, which lets test files run in parallel.
+//
+// Import the singleton lazily: sqlite-service reads useRuntimeConfig() at module
+// load, which only works once the Nuxt test context exists (inside a hook, not
+// at setup-file top level). This resolves to the same per-file :memory:
+// connection the app code uses, so migrating it here creates the schema before
+// any test queries it — a separate :memory: connection would be a different DB.
 beforeAll(async () => {
-  const config = useRuntimeConfig();
-  const sqlite = new Database(config.dbFileName!, {
-    readonly: false,
-  });
-  const db = drizzle(sqlite);
-
-  await destroyTestDB(db);
-
-  try {
-    await runAppMigrations(db);
-  } catch (err: any) {
-    if (
-      err.code !== "SQLITE_ERROR" ||
-      !err.message.includes("already exists")
-    ) {
-      throw err;
-    }
-  }
-
-  sqlite.close();
+  const { DB } = await import("../server/sqlite-service");
+  migrate(DB, { migrationsFolder: "./db/migrations" });
 });
