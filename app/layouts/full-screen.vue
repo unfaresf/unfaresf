@@ -94,7 +94,7 @@
   <nav aria-label="Primary" class="fixed bottom-0 inset-x-0 z-30 lg:hidden border-t border-default bg-default pb-[env(safe-area-inset-bottom)]">
     <AuthState>
       <template #default="{ loggedIn }">
-        <UNavigationMenu :items="loggedIn ? authedBarItems : loggedOutBarItems" class="w-full" :ui="barUi" />
+        <UNavigationMenu :items="loggedIn ? authedBarItems : loggedOutBarItems" class="w-full" :ui="barUi" highlight />
       </template>
       <template #placeholder>
         <UNavigationMenu :items="placeholderBarItems" class="w-full" :ui="barUi" />
