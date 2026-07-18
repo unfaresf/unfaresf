@@ -23,6 +23,7 @@ nixPkgs = [
     'npm-11_x',
     'openssl',
     'minio-client',
+    'sqlite',
 ]
 nixLibs = [
     'gcc-unwrapped',

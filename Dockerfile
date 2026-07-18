@@ -3,7 +3,7 @@ FROM node:${NODE_VERSION}-slim AS base
 ARG PORT=3000
 ARG TARGETARCH
 WORKDIR /src
-RUN apt-get update && apt-get install -y curl
+RUN apt-get update && apt-get install -y curl sqlite3
 RUN curl https://dl.min.io/client/mc/release/linux-${TARGETARCH}/mc --create-dirs -o /usr/local/bin/mc
 RUN chmod +x /usr/local/bin/mc
 
