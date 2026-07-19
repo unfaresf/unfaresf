@@ -1,14 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: [
-    "@nuxt/ui",
-    "nuxt-auth-utils",
-    "nuxt-cron",
-    "nuxt-rate-limit",
-    "nuxt-authorization",
-    "@nuxtjs/device",
-    "@nuxt/test-utils/module",
-  ],
+  modules: ["@nuxt/ui", "nuxt-auth-utils", "nuxt-cron", "nuxt-authorization", "@nuxtjs/device", "@nuxt/test-utils/module", "nuxt-security"],
   css: ['~/assets/css/main.css'],
   app: {
     head: {
@@ -346,16 +338,23 @@ export default defineNuxtConfig({
   auth: {
     webAuthn: true,
   },
-  nuxtRateLimit: {
-    routes: {
-      "/api/*": {
-        maxRequests: 100,
-        intervalSeconds: 60,
-      },
-      "/api/reports": {
-        maxRequests: 20,
-        intervalSeconds: 60,
-      },
+
+  routeRules: {
+    "/api/*": {
+      security: {
+        rateLimiter: {
+          tokensPerInterval: 100,
+          interval: 60000,
+        }
+      }
+    },
+    "/api/reports": {
+      security: {
+        rateLimiter: {
+          tokensPerInterval: 20,
+          interval: 60000,
+        }
+      }
     },
   },
 });
