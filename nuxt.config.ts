@@ -323,10 +323,24 @@ export default defineNuxtConfig({
     },
   },
   devtools: {
-    enabled: true,
+    enabled: false,
     timeline: {
       enabled: false,
     },
+  },
+  vite: {
+    optimizeDeps: {
+      include: [
+        '@indoorequal/vue-maplibre-gl',
+        '@vueuse/core',
+        'date-fns',
+        'date-fns/format',
+        'drizzle-orm',
+        'drizzle-orm/sqlite-core',
+        'drizzle-zod',
+        'zod',
+      ]
+    }
   },
   compatibilityDate: "2024-12-25",
   devServer: {
