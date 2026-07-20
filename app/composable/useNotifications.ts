@@ -189,7 +189,13 @@ export function useNotifications() {
 
   onMounted(async () => {
     supported.value = isSupported();
-    permissionGranted.value = Notification.permission !== 'denied';
+    // iOS Safari has no `Notification` global; reading `Notification.permission`
+    // unguarded here throws `ReferenceError: Can't find variable: Notification`
+    // during this layout's hydration, which Nuxt turns into a fatal 500 error
+    // page on initial load. Guard the access the same way `isSupported()` does.
+    permissionGranted.value = ('Notification' in window)
+      ? Notification.permission !== 'denied'
+      : false;
     subscribed.value = !!(await checkForCurrentSubscription());
     ready.value = true;
   });

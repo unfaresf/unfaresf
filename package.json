@@ -19,6 +19,8 @@
     "dev:inspect": "npx nuxi@latest dev --inspect",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
+    "preview:https": "dotenv -e .env -- bash -c 'NITRO_SSL_KEY=\"$(cat \"$LOCAL_DEV_TLS_KEY_PATH\")\" NITRO_SSL_CERT=\"$(cat \"$LOCAL_DEV_TLS_CERT_PATH\")\" nuxt preview'",
+    "preview:https:host": "dotenv -e .env -- bash -c 'NITRO_HOST=0.0.0.0 NITRO_SSL_KEY=\"$(cat \"$LOCAL_DEV_TLS_KEY_PATH\")\" NITRO_SSL_CERT=\"$(cat \"$LOCAL_DEV_TLS_CERT_PATH\")\" nuxt preview'",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
     "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
