@@ -35,6 +35,7 @@ export const agencySchema = z.object({
   agencyName: z.string(),
 });
 export type Agency = z.infer<typeof agencySchema>;
+type AgencyOption = Agency & { agencyLabel: string };
 </script>
 
 <script setup lang="ts">
@@ -49,7 +50,21 @@ onMounted(() => {
   }
 });
 
-const agency = defineModel<Agency>();
+const model = defineModel<Agency>();
+// The SelectMenu items carry an `agencyLabel` used by `label-key`; strip it back
+// off the selected value so the model (and the submitted report body) stays a
+// clean Agency, mirroring the route/stop selects.
+const agency = computed<Agency | AgencyOption | undefined>({
+  get: () => model.value,
+  set: (value) => {
+    if (value) {
+      const { agencyLabel, ...cleaned } = value as AgencyOption;
+      model.value = cleaned as Agency;
+    } else {
+      model.value = undefined;
+    }
+  },
+});
 const agencyAltNames = useAgencyAltNames();
 
 const { data: agencyOptions } = await useFetch("/api/gtfs/agencies", {

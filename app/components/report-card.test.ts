@@ -49,7 +49,7 @@ it("should emit an approved event with approved report when approve button click
       report: mockReport,
     },
   });
-  component.find("#report-card-approve").trigger("click");
+  await component.find("#report-card-approve").trigger("click");
 
   expect(component.emitted()).toHaveProperty("onApprove");
 });
@@ -60,7 +60,7 @@ it("should emit an dismiss event with dismissed report when dismiss button click
       report: mockReport,
     },
   });
-  component.find("#report-card-dismiss").trigger("click");
+  await component.find("#report-card-dismiss").trigger("click");
 
   expect(component.emitted()).toHaveProperty("onDismiss");
 });

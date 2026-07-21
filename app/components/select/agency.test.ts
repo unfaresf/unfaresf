@@ -50,6 +50,8 @@ describe("SelectAgency", () => {
 
     const emitted = component.emitted("update:modelValue");
     expect(emitted).toBeTruthy();
-    expect(emitted![0]![0]).toMatchObject({ agencyId: "bart", agencyName: "BART" });
+    // `agencyLabel` is a menu-only display field; the model must stay a clean
+    // Agency with no derived field leaking through to the parent.
+    expect(emitted![0]![0]).toEqual({ agencyId: "bart", agencyName: "BART" });
   });
 });

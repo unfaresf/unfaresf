@@ -90,7 +90,13 @@ describe("SelectStop", () => {
 
     // The search term is a v-model on the inner menu; typing updates it.
     component.findComponent(USelectMenu).vm.$emit("update:searchTerm", "miss");
-    await vi.advanceTimersByTimeAsync(500); // debounce window
+
+    // The search is debounced: it must NOT fire before the 500ms window elapses.
+    await vi.advanceTimersByTimeAsync(499);
+    expect(queries).toHaveLength(0);
+
+    // Once the debounce window passes, the agency-wide search fires.
+    await vi.advanceTimersByTimeAsync(1);
     await flushPromises();
 
     expect(queries).toEqual([{ q: "miss", agencyId: "muni" }]);
