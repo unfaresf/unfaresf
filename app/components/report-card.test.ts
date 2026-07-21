@@ -76,8 +76,8 @@ it("should return a skeleton the report is omitted", async () => {
     "<div>
       <div aria-busy="true" aria-label="loading" aria-live="polite" role="alert" class="animate-pulse bg-elevated h-12 w-12 rounded-full"></div>
       <div class="space-y-2">
-        <div aria-busy="true" aria-label="loading" aria-live="polite" role="alert" class="animate-pulse rounded-md bg-elevated h-4 w-[250px]"></div>
-        <div aria-busy="true" aria-label="loading" aria-live="polite" role="alert" class="animate-pulse rounded-md bg-elevated h-4 w-[200px]"></div>
+        <div aria-busy="true" aria-label="loading" aria-live="polite" role="alert" class="animate-pulse rounded-md bg-elevated h-4 w-62.5"></div>
+        <div aria-busy="true" aria-label="loading" aria-live="polite" role="alert" class="animate-pulse rounded-md bg-elevated h-4 w-50"></div>
       </div>
     </div>"
   `);
