@@ -49,7 +49,7 @@ it("should emit an approved event with approved report when approve button click
       report: mockReport,
     },
   });
-  component.find("#report-card-approve").trigger("click");
+  await component.find("#report-card-approve").trigger("click");
 
   expect(component.emitted()).toHaveProperty("onApprove");
 });
@@ -60,7 +60,7 @@ it("should emit an dismiss event with dismissed report when dismiss button click
       report: mockReport,
     },
   });
-  component.find("#report-card-dismiss").trigger("click");
+  await component.find("#report-card-dismiss").trigger("click");
 
   expect(component.emitted()).toHaveProperty("onDismiss");
 });
@@ -76,8 +76,8 @@ it("should return a skeleton the report is omitted", async () => {
     "<div>
       <div aria-busy="true" aria-label="loading" aria-live="polite" role="alert" class="animate-pulse bg-elevated h-12 w-12 rounded-full"></div>
       <div class="space-y-2">
-        <div aria-busy="true" aria-label="loading" aria-live="polite" role="alert" class="animate-pulse rounded-md bg-elevated h-4 w-[250px]"></div>
-        <div aria-busy="true" aria-label="loading" aria-live="polite" role="alert" class="animate-pulse rounded-md bg-elevated h-4 w-[200px]"></div>
+        <div aria-busy="true" aria-label="loading" aria-live="polite" role="alert" class="animate-pulse rounded-md bg-elevated h-4 w-62.5"></div>
+        <div aria-busy="true" aria-label="loading" aria-live="polite" role="alert" class="animate-pulse rounded-md bg-elevated h-4 w-50"></div>
       </div>
     </div>"
   `);
