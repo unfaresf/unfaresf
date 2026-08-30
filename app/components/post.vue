@@ -15,7 +15,7 @@
     </div>
 
     <div class="p-2 rounded bg-neutral-100 text-neutral-600 text-sm">
-      <ReportSummary ref="report-summary-ref" :report="reportState" />
+      <ReportSummary :summary="summary" />
     </div>
 
     <template v-if="!props.report?.reviewedAt" #footer>
@@ -45,7 +45,7 @@
 <script lang="ts" setup>
 import { z } from "zod";
 import type { SelectReport } from "../../db/schema";
-import { useTemplateRef } from "vue";
+import getPlainTextSummary from "#shared/utils/get-plain-text-summary";
 import type { ReportPostSchema } from "./report-form.vue";
 
 const dummyFormState = ref<Partial<ReportPostSchema>>({});
@@ -65,11 +65,10 @@ const internalSourceBroadcast = reactive<
 >({
   message: undefined,
 });
-const reportState = toRef(() => props.report);
+const summary = computed(() => getPlainTextSummary(props.report));
 
 const toast = useToast();
 const pending = ref(false);
-const reportSummRef = useTemplateRef("report-summary-ref");
 // const externalSourceBroadcastSchema = z.object({
 //   message: z.string().min(8).max(400).trim(),
 //   route: routeSchema.required(),
@@ -88,8 +87,8 @@ type InternalSourceBroadcastSchema = z.output<
 >;
 
 async function postInternalSourceSummary() {
-  if (reportSummRef.value?.summary?.innerText) {
-    await postBroadcast(reportSummRef.value?.summary?.innerText);
+  if (summary.value) {
+    await postBroadcast(summary.value);
     emit("success");
   }
 }
