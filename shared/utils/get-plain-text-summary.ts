@@ -1,5 +1,13 @@
 import type { SelectReport } from "../../db/schema";
 import { formatDate } from "date-fns/format";
+import { tz } from "@date-fns/tz";
+
+// Report times are always Bay Area local time. This summary is built on the
+// server for push notification bodies (server/utils/notify.ts) and reused
+// verbatim as the public broadcast message, so it must not render in whatever
+// time zone the formatting process happens to run in — production runs UTC,
+// which is what made a 1:15 PM report arrive as "8:15 PM".
+export const REPORT_TIME_ZONE = "America/Los_Angeles";
 
 export type PartialReport = Omit<
   SelectReport,
@@ -12,7 +20,9 @@ export type PartialReport = Omit<
 export default function (report: PartialReport) {
   if (!report) return "";
 
-  const formattedDate = formatDate(report.createdAt, "p");
+  const formattedDate = formatDate(report.createdAt, "p", {
+    in: tz(REPORT_TIME_ZONE),
+  });
 
   let summary;
   if (report.message) {
