@@ -2,7 +2,8 @@ import { it, expect, describe, afterEach } from "vitest";
 import { mountSuspended, registerEndpoint } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
 import { getQuery, type H3Event } from "h3";
-import { SelectRoute, USelectMenu } from "#components";
+import { SelectRoute } from "#components";
+import { USelectMenu } from "~~/test/nuxt-ui";
 import type { Agency } from "./agency.vue";
 
 const cleanups: Array<() => void> = [];

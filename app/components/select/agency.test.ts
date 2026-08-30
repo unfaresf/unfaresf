@@ -1,7 +1,8 @@
 import { it, expect, describe, afterEach } from "vitest";
 import { mountSuspended, registerEndpoint } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
-import { SelectAgency, USelectMenu } from "#components";
+import { SelectAgency } from "#components";
+import { USelectMenu } from "~~/test/nuxt-ui";
 
 // registerEndpoint handlers live on the shared test app for the whole file;
 // collect each registration's unregister fn so a handler never leaks into the

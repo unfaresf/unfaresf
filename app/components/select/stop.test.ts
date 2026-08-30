@@ -2,7 +2,8 @@ import { vi, it, expect, describe, afterEach } from "vitest";
 import { mountSuspended, registerEndpoint } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
 import { getQuery, type H3Event } from "h3";
-import { SelectStop, USelectMenu } from "#components";
+import { SelectStop } from "#components";
+import { USelectMenu } from "~~/test/nuxt-ui";
 import type { Agency } from "./agency.vue";
 import type { Route } from "./route.vue";
 
