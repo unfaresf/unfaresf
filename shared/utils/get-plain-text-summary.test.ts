@@ -49,6 +49,16 @@ describe("getPlainTextSummary", () => {
     }
   );
 
+  // Moved here from report-summary.test.ts, which used to reach this branch by
+  // rendering the component; the component no longer builds the string.
+  it("summarizes a non-passenger report using the stop and its direction", () => {
+    const stopReport = { ...report, passenger: false } as SelectReport;
+
+    expect(getPlainTextSummary(stopReport)).toBe(
+      "1:15 PM: Fare inspectors at Mcallister St & Van Ness Ave west"
+    );
+  });
+
   it("uses Pacific standard time outside of DST", () => {
     vi.stubEnv("TZ", "UTC");
 

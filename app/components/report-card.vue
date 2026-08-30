@@ -14,7 +14,7 @@
           >{{ formatDistanceToNow(props.report.createdAt) }} ago</ULink
         >
       </UTooltip>
-      <ReportSummary :report="props.report" class="mt-2"></ReportSummary>
+      <ReportSummary :summary="summary" class="mt-2"></ReportSummary>
     </div>
     <div v-if="!props.report.reviewedAt" class="flex flex-col ml-auto">
       <UButton
@@ -54,7 +54,9 @@
 <script setup lang="ts">
 import { formatDistanceToNow, format as formatDate } from "date-fns";
 import { tz } from "@date-fns/tz";
-import { REPORT_TIME_ZONE } from "#shared/utils/get-plain-text-summary";
+import getPlainTextSummary, {
+  REPORT_TIME_ZONE,
+} from "#shared/utils/get-plain-text-summary";
 import type { SelectReport } from "../../db/schema";
 
 function getRouteFromReportId(reportId: number): string {
@@ -69,6 +71,10 @@ const emit = defineEmits<{
   (e: "onApprove", report: SelectReport): void;
   (e: "onDismiss", report: SelectReport): void;
 }>();
+
+const summary = computed(() =>
+  props.report ? getPlainTextSummary(props.report) : ""
+);
 
 // Pin the tooltip to Bay Area time so it matches the summary below it, and so
 // the server-rendered pass agrees with the browser's.
