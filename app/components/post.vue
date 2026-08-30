@@ -49,8 +49,6 @@ import getPlainTextSummary from "#shared/utils/get-plain-text-summary";
 import type { ReportPostSchema } from "./report-form.vue";
 
 const dummyFormState = ref<Partial<ReportPostSchema>>({});
-// import { routeSchema } from "../components/select/route.vue";
-// import { stopSchema } from "../components/select/stop.vue";
 
 const emit = defineEmits<{
   success: [];
@@ -65,7 +63,7 @@ const internalSourceBroadcast = reactive<
 >({
   message: undefined,
 });
-const summary = computed(() => getPlainTextSummary(props.report));
+const summary = ref(getPlainTextSummary(props.report));
 
 const toast = useToast();
 const pending = ref(false);
