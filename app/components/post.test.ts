@@ -6,7 +6,8 @@ import { faker } from "@faker-js/faker";
 
 const mockReport: SelectReport = {
   id: 123,
-  createdAt: new Date("May 15, 2025 04:00:00"),
+  // 4:00 AM Pacific, pinned as an instant so it renders the same anywhere.
+  createdAt: new Date("2025-05-15T11:00:00Z"),
   source: "internal",
   uri: null,
   reviewedAt: null,
@@ -75,7 +76,8 @@ it("should show internal report broadcast form if report is from internal source
 
 const externalReport: SelectReport = {
   id: 456,
-  createdAt: new Date("May 15, 2025 04:00:00"),
+  // 4:00 AM Pacific, pinned as an instant so it renders the same anywhere.
+  createdAt: new Date("2025-05-15T11:00:00Z"),
   source: "mastodon",
   uri: null,
   reviewedAt: null,

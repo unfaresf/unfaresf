@@ -6,7 +6,7 @@
     <UAvatar src="unfaresf-logo.svg" alt="Avatar" class="mt-2" />
     <div class="mx-2">
       <p class="capitalize">{{ props.report.source }}</p>
-      <UTooltip :text="formatDate(props.report.createdAt, 'PPpp')">
+      <UTooltip :text="createdAtLabel">
         <ULink
           :to="getRouteFromReportId(props.report.id)"
           class="text-sm italic"
@@ -53,6 +53,8 @@
 
 <script setup lang="ts">
 import { formatDistanceToNow, format as formatDate } from "date-fns";
+import { tz } from "@date-fns/tz";
+import { REPORT_TIME_ZONE } from "#shared/utils/get-plain-text-summary";
 import type { SelectReport } from "../../db/schema";
 
 function getRouteFromReportId(reportId: number): string {
@@ -67,4 +69,12 @@ const emit = defineEmits<{
   (e: "onApprove", report: SelectReport): void;
   (e: "onDismiss", report: SelectReport): void;
 }>();
+
+// Pin the tooltip to Bay Area time so it matches the summary below it, and so
+// the server-rendered pass agrees with the browser's.
+const createdAtLabel = computed(() =>
+  props.report
+    ? formatDate(props.report.createdAt, "PPpp", { in: tz(REPORT_TIME_ZONE) })
+    : ""
+);
 </script>

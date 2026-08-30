@@ -5,7 +5,8 @@ import type { SelectReport } from "../../db/schema";
 
 const mockReport: SelectReport = {
   id: 123,
-  createdAt: new Date("May 15, 2025 04:00:00"),
+  // 4:00 AM Pacific, pinned as an instant so it renders the same anywhere.
+  createdAt: new Date("2025-05-15T11:00:00Z"),
   source: "test",
   uri: null,
   reviewedAt: null,
