@@ -8,7 +8,7 @@
     </template>
 
     <div v-if="!sourceInternal" class="space-y-4">
-      <div class="p-2 rounded bg-neutral-100 text-neutral-600 text-sm mb-4">
+      <div class="p-2 rounded bg-neutral-100 text-neutral-600 text-sm mb-4 break-words">
         <span>{{ props.report.message }}</span>
       </div>
       <ReportForm v-if="!props.report?.reviewedAt" v-model="dummyFormState" class="mb-4" />
