@@ -1,5 +1,5 @@
 <template>
-  <div v-if="props.summary">
+  <div v-if="props.summary" class="break-words">
     <span>{{ props.summary }}</span>
   </div>
   <div v-else class="space-y-2">
