@@ -13,10 +13,12 @@
 
 <script lang="ts" setup>
 import type { ButtonProps } from '@nuxt/ui'
+import { useAuthRedirect } from '~/composable/useAuthRedirect'
 
 const { fetch } = useUserSession()
 const { authenticate } = useWebAuthn()
 const toast = useToast()
+const { target } = useAuthRedirect()
 
 useHead({
   title: 'UnfareSF - Sign In'
@@ -42,7 +44,7 @@ async function signIn() {
   await authenticate()
     .then(fetch)
     .then(async () => {
-      await navigateTo('/reports');
+      await navigateTo(target());
     })
     .catch(err => {
       toast.add({
