@@ -1,6 +1,6 @@
 // Resolves a safe post-auth destination from `?redirect=`. Accepts only
-// same-origin, app-internal paths; rejects protocol-relative (`//host`), absolute
-// URLs, and loops back to an auth page.
+// same-origin, app-internal paths; rejects protocol-relative (`//host` and the
+// `/\host` backslash form), absolute URLs, and loops back to an auth page.
 export function useAuthRedirect(fallback = '/reports') {
   const route = useRoute();
 
@@ -9,7 +9,7 @@ export function useAuthRedirect(fallback = '/reports') {
     if (
       typeof r === 'string' &&
       r.startsWith('/') &&
-      !r.startsWith('//') &&
+      !/^\/[\\/]/.test(r) &&           // reject //host and /\host
       !r.startsWith('/sign-in') &&
       !r.startsWith('/sign-up')
     ) {

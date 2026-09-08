@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { mockNuxtImport } from '@nuxt/test-utils/runtime';
-import { reportNonAuthError } from '../../app/composable/apiErrorToast';
+import { reportNonAuthError, isAuthStatus } from '../../app/composable/apiErrorToast';
 import { handleApiAuthError } from '../../app/composable/authErrorGuard';
 
 vi.mock('../../app/composable/authErrorGuard', () => ({
-  handleApiAuthError: vi.fn(),
+  // async, matching the real signature: apiErrorToast now `.catch`es the returned promise
+  handleApiAuthError: vi.fn(async () => {}),
   isAuthExemptUrl: vi.fn(),
 }));
 
@@ -45,6 +46,27 @@ describe('reportNonAuthError', () => {
     expect(toastAdd).toHaveBeenCalledWith(
       expect.objectContaining({ description: 'Bad thing' }),
     );
+  });
+});
+
+describe('isAuthStatus', () => {
+  it('is true for a 401 statusCode', () => {
+    expect(isAuthStatus({ statusCode: 401 })).toBe(true);
+  });
+  it('is true for a 403 statusCode', () => {
+    expect(isAuthStatus({ statusCode: 403 })).toBe(true);
+  });
+  it('is true for a nested response.status of 401', () => {
+    expect(isAuthStatus({ response: { status: 401 } })).toBe(true);
+  });
+  it('is false for a 500 statusCode', () => {
+    expect(isAuthStatus({ statusCode: 500 })).toBe(false);
+  });
+  it('is false for a plain Error', () => {
+    expect(isAuthStatus(new Error('boom'))).toBe(false);
+  });
+  it('is false for undefined', () => {
+    expect(isAuthStatus(undefined)).toBe(false);
   });
 });
 

@@ -15,11 +15,11 @@ import { test, expect } from '@playwright/test'
 //
 // The trigger is the ReportCard "Dismiss" button on /reports. Its handler
 // (app/pages/reports/index.vue `dismiss()`) makes a *bare*
-// $fetch('/api/reports/:id', { method: 'PUT' }) with no per-call
-// onResponseError, so the 401 is handled by the global $fetch interceptor. The
-// page's list/broadcast fetches each pass their own onResponseError
-// (reportNonAuthError) which returns early on 401, so those would NOT exercise
-// the guard.
+// $fetch('/api/reports/:id', { method: 'PUT' }) — no per-call onResponseError —
+// so the 401 goes straight through the global $fetch interceptor. (The page's
+// list fetch also reaches the guard now, via reportNonAuthError forwarding, but
+// re-running it means driving the status-filter/pagination watch, which is more
+// brittle than one button click.)
 
 test('expired session on a client-side API call bounces to sign-in with redirect param + toast', async ({ page }) => {
   // Seed one un-reviewed report so the list renders a ReportCard with a Dismiss

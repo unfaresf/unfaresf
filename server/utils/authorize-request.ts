@@ -28,6 +28,8 @@ export async function authorizeRequest<Ability extends BouncerAbility<any>>(
     await checkAbility(ability, user ?? null, ...args);
   } catch (err) {
     if (err instanceof AuthorizationError) {
+      // Abilities return 403 today. If one ever emits 401 via deny({statusCode})
+      // it would force-logout an authenticated user — clamp here if that changes.
       throw createError({ statusCode: err.statusCode, message: err.message });
     }
     throw err;

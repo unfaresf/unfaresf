@@ -12,7 +12,7 @@ export function isAuthExemptUrl(request: unknown, response?: Response): boolean 
         ? request.url
         : (response?.url ?? '');
   try {
-    const path = new URL(raw, window.location.origin).pathname;
+    const path = new URL(raw, 'http://localhost').pathname;
     return AUTH_EXEMPT.some((p) => path.startsWith(p));
   } catch {
     return false; // unparseable -> not exempt -> safer to force logout

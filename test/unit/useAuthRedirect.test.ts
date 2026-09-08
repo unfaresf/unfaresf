@@ -25,6 +25,11 @@ describe('useAuthRedirect', () => {
     expect(useAuthRedirect().target()).toBe('/reports');
   });
 
+  it('rejects the backslash protocol-relative form', () => {
+    withQuery({ redirect: '/\\evil.com' });
+    expect(useAuthRedirect().target()).toBe('/reports');
+  });
+
   it('rejects absolute URLs', () => {
     withQuery({ redirect: 'https://evil.com' });
     expect(useAuthRedirect().target()).toBe('/reports');

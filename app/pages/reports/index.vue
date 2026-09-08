@@ -74,7 +74,7 @@ import ReportCard from "~/components/report-card.vue";
 import { sub, formatDistanceToNow } from "date-fns";
 import { asWriteable } from "#shared/types/utils";
 import getDateMinusNHours from "#shared/utils/get-date-minus-n-hours";
-import { reportNonAuthError } from '~/composable/apiErrorToast';
+import { reportNonAuthError, isAuthStatus } from '~/composable/apiErrorToast';
 
 const { $pwa } = useNuxtApp();
 
@@ -119,6 +119,7 @@ async function dismiss(row: SelectReport) {
     });
     await refreshReports();
   } catch (err: any) {
+    if (isAuthStatus(err)) return; // 401 handled by the global guard; 403 not ours to toast
     toast.add({
       color: "error",
       title: err.data?.message || err.message,
