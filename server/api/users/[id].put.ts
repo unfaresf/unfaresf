@@ -15,7 +15,7 @@ function validateRoles(newRoles:string[]):boolean {
 export default defineEventHandler(async (event) => {
   const userId = Number(getRouterParam(event, 'id'));
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
-  await authorize(event, updateUsers, userId);
+  await authorizeRequest(event, updateUsers, userId);
 
   const { roles } = await readValidatedBody(event, userUpdateSchema.parse);
 

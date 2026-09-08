@@ -5,7 +5,7 @@ import { createInvites } from "../../shared/utils/abilities";
 
 export default defineEventHandler(async (event) => {
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
-  await authorize(event, createInvites);
+  await authorizeRequest(event, createInvites);
 
   const id = uuidv4();
 

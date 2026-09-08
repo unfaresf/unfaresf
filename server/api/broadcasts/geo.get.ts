@@ -66,7 +66,7 @@ async function fetchStopsById(stopIds:string[]):Promise<StopById[]> {
 
 export default defineEventHandler(async (event) => {
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
-  await authorize(event, listBroadcastsGeo);
+  await authorizeRequest(event, listBroadcastsGeo);
   const { public: {shiftLength} } = useRuntimeConfig();
 
   try {

@@ -10,7 +10,7 @@ const reportsGetRouteParamSchema = z.object({
 
 export default defineEventHandler(async (event) => {
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
-  await authorize(event, getReport);
+  await authorizeRequest(event, getReport);
 
   const { id } = await getValidatedRouterParams(event, reportsGetRouteParamSchema.parse);
 

@@ -4,7 +4,7 @@ import { createSubscription } from "../../../shared/utils/abilities";
 
 export default defineEventHandler(async (event) => {
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
-  await authorize(event, createSubscription);
+  await authorizeRequest(event, createSubscription);
 
   const body = await readValidatedBody(event, subscriptionsInsertSchema.omit({userId: true}).parse);
   const { user } = await getUserSession(event);

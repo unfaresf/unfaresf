@@ -11,7 +11,7 @@ import { getPublicIntegrations } from "../../../shared/utils/abilities";
 
 export default defineEventHandler(async (event) => {
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
-  await authorize(event, getPublicIntegrations);
+  await authorizeRequest(event, getPublicIntegrations);
 
   // For some reason parameterizing the name doesnt work. so i hard coded this route
   // until we need more things like this.

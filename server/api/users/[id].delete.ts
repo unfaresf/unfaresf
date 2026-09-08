@@ -6,7 +6,7 @@ import { deleteUsers } from "../../../shared/utils/abilities";
 export default defineEventHandler(async (event) => {
   const userId = Number(getRouterParam(event, 'id'));
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
-  await authorize(event, deleteUsers, userId);
+  await authorizeRequest(event, deleteUsers, userId);
 
   if (isNaN(userId)) {
     throw createError({

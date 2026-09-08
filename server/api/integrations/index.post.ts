@@ -11,7 +11,7 @@ const integrationBodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
-  await authorize(event, updateIntegrations);
+  await authorizeRequest(event, updateIntegrations);
 
   const integrationBody = await readValidatedBody(event, integrationBodySchema.parse);
 

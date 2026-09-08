@@ -13,7 +13,7 @@ const getAgencies = () => {
 
 export default defineEventHandler(async (event) => {
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
-  await authorize(event, getGtfs);
+  await authorizeRequest(event, getGtfs);
 
   try {
     return getAgencies();
