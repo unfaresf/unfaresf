@@ -6,7 +6,7 @@ import { handleApiAuthError } from '../../app/composable/authErrorGuard';
 vi.mock('../../app/composable/authErrorGuard', () => ({
   // async, matching the real signature: apiErrorToast now `.catch`es the returned promise
   handleApiAuthError: vi.fn(async () => {}),
-  isAuthExemptUrl: vi.fn(),
+  isGuardedApiUrl: vi.fn(),
 }));
 
 const { toastAdd } = vi.hoisted(() => ({ toastAdd: vi.fn() }));

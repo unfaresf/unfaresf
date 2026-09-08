@@ -196,20 +196,26 @@ middleware, and SSR local `useFetch` bypasses `globalThis.$fetch` anyway
 ```ts
 import type { FetchContext } from 'ofetch';
 
+// The app's own API paths, minus the prefixes nuxt-auth-utils owns: `clear()`
+// DELETEs `/api/_auth/session` through the patched $fetch, and the webauthn
+// sign-in flows live under `/api/webauthn/`.
 const AUTH_EXEMPT = ['/api/_auth/', '/api/webauthn/'];
 
-// Prefer the request URL passed to $fetch; fall back to response.url. Parse to a
-// pathname before prefix-matching so a query param can't spoof the check.
-export function isAuthExemptUrl(request: unknown, response?: Response): boolean {
+// Only a 401 from the app's own guarded API means "your session is gone"; a
+// 401 from any other URL (a third-party host, some other module's endpoint)
+// is not a session-expiry signal and must not force a logout. Prefer the
+// request URL passed to $fetch; fall back to response.url. Parse to a pathname
+// before prefix-matching so a query param can't spoof the check.
+export function isGuardedApiUrl(request: unknown, response?: Response): boolean {
   const raw =
     typeof request === 'string' ? request
     : request instanceof Request ? request.url
     : response?.url ?? '';
   try {
-    const path = new URL(raw, window.location.origin).pathname;
-    return AUTH_EXEMPT.some((p) => path.startsWith(p));
+    const path = new URL(raw, 'http://localhost').pathname;
+    return path.startsWith('/api/') && !AUTH_EXEMPT.some((p) => path.startsWith(p));
   } catch {
-    return false; // unparseable → not exempt → safer to force logout
+    return false; // unparseable → not ours → don't force logout
   }
 }
 
@@ -219,7 +225,7 @@ let handling = false; // dedupe: N concurrent 401s → one logout
 // composables below resolve.
 export async function handleApiAuthError({ request, response }: FetchContext): Promise<void> {
   if (response?.status !== 401) return;
-  if (isAuthExemptUrl(request, response)) return;
+  if (!isGuardedApiUrl(request, response)) return;
   if (handling) return;
   handling = true;
   try {
@@ -417,7 +423,7 @@ onResponseError(ctx) { reportNonAuthError(ctx); }
 
 **Create**
 - `server/utils/authorize-request.ts` — `authorizeRequest` wrapper (§5.1)
-- `app/composable/authErrorGuard.ts` — `handleApiAuthError` + `isAuthExemptUrl` (§5.2)
+- `app/composable/authErrorGuard.ts` — `handleApiAuthError` + `isGuardedApiUrl` (§5.2)
 - `app/plugins/api-auth-guard.client.ts` — thin plugin wiring the handler onto `$fetch` (§5.2)
 - `app/composable/useAuthRedirect.ts` — shared `?redirect=` guard (§5.4)
 - `app/composable/apiErrorToast.ts` — `reportNonAuthError` shared handler (§6)
@@ -425,8 +431,10 @@ onResponseError(ctx) { reportNonAuthError(ctx); }
 - `test/nuxt/api-auth-guard.test.ts` — `handleApiAuthError` + plugin wire tests (§9.2)
 - `test/unit/useAuthRedirect.test.ts` — redirect-guard unit tests (§9.4)
 - `test/nuxt/apiErrorToast.test.ts` — `reportNonAuthError` tests (§9.7)
-- `test/unit/authorize-request-drift.test.ts` — no raw `authorize(event,` left in
-  `server/api/**` (§9.5)
+- `test/unit/authorize-request-drift.test.ts` — no raw `authorize(event,` anywhere
+  under `server/**`; every `server/api/**` handler calls `authorizeRequest`
+  (webauthn allow-listed); client `onResponseError` overrides forward 401s via
+  `reportNonAuthError` (§9.5)
 - `test/e2e/session-expiry.auth.spec.ts` — Playwright e2e; `.auth.` infix so it
   runs with the stored logged-in `storageState` (§9.3)
 
@@ -503,7 +511,7 @@ Calling `handleApiAuthError(ctx)` directly:
   **not** called
 - `clear()` rejects → `session.value` set to `null`, flow still redirects
 - `response` undefined (network error) → nothing happens
-- `isAuthExemptUrl`: `Request` object, plain string, and `undefined` request all
+- `isGuardedApiUrl`: `Request` object, plain string, and `undefined` request all
   resolve correctly
 
 Plumbing test (plugin actually wired): run the plugin default with a fake
@@ -529,12 +537,19 @@ Stub `useRoute` with a `query`. Assert `target()` returns:
 - fallback for `?redirect=//evil.com`
 - fallback for `?redirect=https://evil.com`
 - fallback for `?redirect=/sign-in` and `?redirect=/sign-up` (no loop)
+- fallback for control-character smuggles (`?redirect=/\t/evil.com`, `\n`, `\r`
+  forms that parse to `//evil.com`)
 - fallback for array-valued `redirect` (`?redirect=a&redirect=b`)
 - the passed fallback (`/`) is honoured when constructed as `useAuthRedirect('/')`
 
 ### 9.5 Drift guard — `test/unit/authorize-request-drift.test.ts`
-Read every `server/api/**/*.ts`; fail if any file matches `/\bauthorize\s*\(\s*event\b/`
-(i.e. still calls the raw helper). Keeps future routes on `authorizeRequest`.
+Three invariants: (1) no `server/**/*.ts` matches `/\bauthorize\s*\(\s*event\b/`
+(i.e. no raw helper anywhere, not just `server/api`); (2) every `server/api/**/*.ts`
+handler calls `authorizeRequest(event,` — except the intentionally-unauthenticated
+webauthn sign-in handlers; (3) any `app/**` file that overrides
+`onResponseError(` must route 401s through `reportNonAuthError`, because a
+per-call hook replaces the global guard. Keeps future routes on
+`authorizeRequest` and future per-call hooks on the forwarding helper.
 
 ### 9.6 Regression
 - `npm run test` (vitest) green

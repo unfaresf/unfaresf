@@ -10,6 +10,7 @@ export function useAuthRedirect(fallback = '/reports') {
       typeof r === 'string' &&
       r.startsWith('/') &&
       !/^\/[\\/]/.test(r) &&           // reject //host and /\host
+      !/[\u0000-\u001f\u007f]/.test(r) && // control chars smuggle //host past URL parsers
       !r.startsWith('/sign-in') &&
       !r.startsWith('/sign-up')
     ) {

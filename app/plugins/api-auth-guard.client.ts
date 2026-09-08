@@ -5,6 +5,10 @@ import { handleApiAuthError } from '~/composable/authErrorGuard';
 // and bare $fetch() uses it directly.
 export default defineNuxtPlugin((nuxtApp) => {
   globalThis.$fetch = $fetch.create({
-    onResponseError: (ctx) => nuxtApp.runWithContext(() => handleApiAuthError(ctx)),
+    onResponseError: (ctx) => {
+      // Contain guard rejections: a throw here would replace the original 401
+      // FetchError at the call site (ofetch awaits hooks).
+      void nuxtApp.runWithContext(() => handleApiAuthError(ctx)).catch(() => {});
+    },
   });
 });

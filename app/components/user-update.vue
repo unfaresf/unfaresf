@@ -30,6 +30,7 @@
 import { type GetUser, Roles } from '../../db/schema';
 import type { FormSubmitEvent } from '@nuxt/ui';
 import { z } from 'zod';
+import { isAuthStatus } from '~/composable/apiErrorToast';
 
 const props = defineProps<{
   user: GetUser,
@@ -63,6 +64,7 @@ async function deleteUser(userId:number) {
     });
     emit('onDeleteUser', userId);
   } catch (err:any) {
+    if (isAuthStatus(err)) return; // 401 handled by the global guard; 403 not ours to toast
     toast.add({
       color: 'error',
       title: 'Error deleting user',
@@ -88,6 +90,7 @@ async function onSubmit(event: FormSubmitEvent<userUpdateSchema>) {
       title: 'Update successful'
     });
   } catch (err:any) {
+    if (isAuthStatus(err)) return; // 401 handled by the global guard; 403 not ours to toast
     toast.add({
       color: 'error',
       title: 'Error updating user',

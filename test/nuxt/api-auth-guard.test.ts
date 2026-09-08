@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mockNuxtImport, registerEndpoint } from '@nuxt/test-utils/runtime';
 import { createError } from 'h3';
-import { handleApiAuthError, isAuthExemptUrl } from '../../app/composable/authErrorGuard';
+import { handleApiAuthError, isGuardedApiUrl } from '../../app/composable/authErrorGuard';
 import authGuardPlugin from '../../app/plugins/api-auth-guard.client';
 
 const { state } = vi.hoisted(() => ({
@@ -38,15 +38,17 @@ beforeEach(() => {
   state.navigate.mockClear();
 });
 
-describe('isAuthExemptUrl', () => {
-  it('exempts the session + webauthn prefixes (string, Request, undefined)', () => {
-    expect(isAuthExemptUrl('/api/_auth/session')).toBe(true);
-    expect(isAuthExemptUrl(new Request('https://x.test/api/webauthn/authenticate'))).toBe(true);
-    expect(isAuthExemptUrl('/api/reports')).toBe(false);
-    expect(isAuthExemptUrl(undefined, { url: '/api/_auth/session' } as any)).toBe(true);
+describe('isGuardedApiUrl', () => {
+  it('guards app API paths and exempts session + webauthn (string, Request, undefined)', () => {
+    expect(isGuardedApiUrl('/api/reports')).toBe(true);
+    expect(isGuardedApiUrl(new Request('https://x.test/api/reports'))).toBe(true);
+    expect(isGuardedApiUrl('/api/_auth/session')).toBe(false);
+    expect(isGuardedApiUrl(new Request('https://x.test/api/webauthn/authenticate'))).toBe(false);
+    expect(isGuardedApiUrl(undefined, { url: '/api/_auth/session' } as any)).toBe(false);
   });
-  it('is not fooled by a query param', () => {
-    expect(isAuthExemptUrl('/api/reports?foo=/api/_auth/x')).toBe(false);
+  it('does not guard non-API urls (other hosts, other app paths)', () => {
+    expect(isGuardedApiUrl('https://api.example.com/v1/thing')).toBe(false);
+    expect(isGuardedApiUrl('/api/reports?foo=/api/_auth/x')).toBe(true);
   });
 });
 
@@ -72,6 +74,12 @@ describe('handleApiAuthError', () => {
   it('ignores 401 on exempt urls', async () => {
     await handleApiAuthError(ctx(401, '/api/_auth/session'));
     await handleApiAuthError(ctx(401, '/api/webauthn/authenticate'));
+    expect(state.clear).not.toHaveBeenCalled();
+    expect(state.navigate).not.toHaveBeenCalled();
+  });
+
+  it('ignores 401 on non-API urls (a third-party 401 is not session expiry)', async () => {
+    await handleApiAuthError(ctx(401, 'https://api.example.com/v1/thing'));
     expect(state.clear).not.toHaveBeenCalled();
     expect(state.navigate).not.toHaveBeenCalled();
   });

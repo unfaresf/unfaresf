@@ -24,6 +24,7 @@
 import { type SelectIntegration, bskyIntegrationOptionSchema } from '../../db/schema';
 import type { FormSubmitEvent } from '@nuxt/ui';
 import { z } from 'zod';
+import { isAuthStatus } from '~/composable/apiErrorToast';
 
 const bskyIntegrationFormSchema = z.object({
   enable: z.boolean(),
@@ -79,6 +80,7 @@ async function onSubmit(event: FormSubmitEvent<BskyIntegrationFormData>) {
       title: 'Updated Blue Sky settings',
     });
   } catch (err:any) {
+    if (isAuthStatus(err)) return; // 401 handled by the global guard; 403 not ours to toast
     toast.add({
       color: 'error',
       title: 'Error updating Blue Sky settings',

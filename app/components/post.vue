@@ -47,6 +47,7 @@ import { z } from "zod";
 import type { SelectReport } from "../../db/schema";
 import getPlainTextSummary from "#shared/utils/get-plain-text-summary";
 import type { ReportPostSchema } from "./report-form.vue";
+import { isAuthStatus } from "~/composable/apiErrorToast";
 
 const dummyFormState = ref<Partial<ReportPostSchema>>({});
 
@@ -104,6 +105,7 @@ async function postBroadcast(msg: string) {
     });
     internalSourceBroadcast.message = undefined;
   } catch (err: any) {
+    if (isAuthStatus(err)) return; // 401 handled by the global guard; 403 not ours to toast
     if (err.statusCode === 409) {
       toast.add({
         color: 'warning',
@@ -133,6 +135,7 @@ async function dismiss(reportId: number) {
     });
     emit("success");
   } catch (err: any) {
+    if (isAuthStatus(err)) return; // 401 handled by the global guard; 403 not ours to toast
     toast.add({
       color: "error",
       title: "Error dismissing reprt",

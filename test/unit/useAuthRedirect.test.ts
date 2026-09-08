@@ -35,6 +35,15 @@ describe('useAuthRedirect', () => {
     expect(useAuthRedirect().target()).toBe('/reports');
   });
 
+  it('rejects control characters smuggling a protocol-relative url', () => {
+    withQuery({ redirect: '/\t/evil.com' });
+    expect(useAuthRedirect().target()).toBe('/reports');
+    withQuery({ redirect: '/\n/evil.com' });
+    expect(useAuthRedirect().target()).toBe('/reports');
+    withQuery({ redirect: '/\r/evil.com' });
+    expect(useAuthRedirect().target()).toBe('/reports');
+  });
+
   it('rejects loops back to auth pages', () => {
     withQuery({ redirect: '/sign-in' });
     expect(useAuthRedirect().target()).toBe('/reports');
