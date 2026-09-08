@@ -32,3 +32,21 @@ describe('reportNonAuthError', () => {
     );
   });
 });
+
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
+
+describe('call sites no longer toast response.statusText', () => {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const files = [
+    '../../app/pages/settings.vue',
+    '../../app/pages/reports/index.vue',
+  ];
+  for (const rel of files) {
+    it(`${rel} has no title: response.statusText`, () => {
+      const src = readFileSync(resolve(here, rel), 'utf8');
+      expect(src).not.toMatch(/title:\s*response\.statusText/);
+    });
+  }
+});
