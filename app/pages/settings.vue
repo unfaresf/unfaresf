@@ -133,8 +133,8 @@ const { data: users, status:usersStatus, refresh } = await useLazyFetch("/api/us
   server: false,
   query: { page: page, limit: limit },
   watch: [page],
-  onResponseError({ response }) {
-    reportNonAuthError(response);
+  onResponseError(ctx) {
+    reportNonAuthError(ctx);
   }
 });
 async function onDeleteUser() {
@@ -143,8 +143,8 @@ async function onDeleteUser() {
 
 const { data: integrations, status:integrationsStatus } = await useLazyFetch('/api/integrations', {
   server: false,
-  onResponseError({ response }) {
-    reportNonAuthError(response);
+  onResponseError(ctx) {
+    reportNonAuthError(ctx);
   }
 });
 watch(integrations, (newIntegrations) => {

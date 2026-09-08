@@ -145,8 +145,8 @@ const { data: unreviewedReports, refresh: refreshReports } =
     query: { page: page, limit: limit, reviewed: reviewed },
     default: () => ({ count: 0, result: [] }),
     watch: [reviewed, page],
-    onResponseError({ response }) {
-      reportNonAuthError(response);
+    onResponseError(ctx) {
+      reportNonAuthError(ctx);
     },
   });
 
