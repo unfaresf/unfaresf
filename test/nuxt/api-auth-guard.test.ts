@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mockNuxtImport } from '@nuxt/test-utils/runtime';
+import { mockNuxtImport, registerEndpoint } from '@nuxt/test-utils/runtime';
+import { createError } from 'h3';
 import { handleApiAuthError, isAuthExemptUrl } from '../../app/composable/authErrorGuard';
+import authGuardPlugin from '../../app/plugins/api-auth-guard.client';
 
 const { state } = vi.hoisted(() => ({
   state: {
@@ -114,5 +116,22 @@ describe('handleApiAuthError', () => {
     await handleApiAuthError(ctx(401));
     expect(state.session.value).toBeNull();
     expect(state.navigate).toHaveBeenCalled();
+  });
+});
+
+describe('api-auth-guard plugin wiring', () => {
+  it('routes a real 401 through handleApiAuthError', async () => {
+    registerEndpoint('/api/reports', () => { throw createError({ statusCode: 401 }); });
+    const original = globalThis.$fetch;
+    try {
+      // @ts-expect-error minimal fake nuxtApp
+      await authGuardPlugin({ runWithContext: (fn: () => unknown) => fn() });
+      await globalThis.$fetch('/api/reports').catch(() => {});
+      expect(state.navigate).toHaveBeenCalledWith(
+        expect.objectContaining({ path: '/sign-in' }),
+      );
+    } finally {
+      globalThis.$fetch = original;
+    }
   });
 });
