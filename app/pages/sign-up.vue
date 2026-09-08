@@ -26,10 +26,13 @@
 </template>
 
 <script lang="ts" setup>
+import { useAuthRedirect } from '~/composable/useAuthRedirect'
+
 const { fetch } = useUserSession()
 const { register } = useWebAuthn()
 const toast = useToast()
 const { query } = useRoute();
+const { target } = useAuthRedirect('/')
 
 useHead({
   title: 'UnfareSF - Sign Up'
@@ -49,7 +52,7 @@ async function signUp() {
       inviteId: query['invite-id']
     });
     await fetch();
-    await navigateTo('/');
+    await navigateTo(target());
   } catch (err: any) {
     toast.add({
       color: 'error',

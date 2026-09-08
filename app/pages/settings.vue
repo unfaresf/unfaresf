@@ -101,6 +101,7 @@
 import { UButton, UCard, UIcon } from '#components';
 import type { TableColumn } from '@nuxt/ui';
 import MastodonSettingsUpdate from '~/components/mastodon-settings-update.vue';
+import { reportNonAuthError } from '~/composable/apiErrorToast';
 
 definePageMeta({
   middleware: ['admin'],
@@ -119,7 +120,6 @@ useHead({
 
 const limit = ref(10);
 const page = ref(1);
-const toast = useToast();
 const usersExpand = ref({
   openedRows: [],
   row: {}
@@ -133,11 +133,8 @@ const { data: users, status:usersStatus, refresh } = await useLazyFetch("/api/us
   server: false,
   query: { page: page, limit: limit },
   watch: [page],
-  onResponseError({ response }) {
-    toast.add({
-      color: 'error',
-      title: response.statusText
-    });
+  onResponseError(ctx) {
+    reportNonAuthError(ctx);
   }
 });
 async function onDeleteUser() {
@@ -146,11 +143,8 @@ async function onDeleteUser() {
 
 const { data: integrations, status:integrationsStatus } = await useLazyFetch('/api/integrations', {
   server: false,
-  onResponseError({ response }) {
-    toast.add({
-      color: 'error',
-      title: response.statusText
-    });
+  onResponseError(ctx) {
+    reportNonAuthError(ctx);
   }
 });
 watch(integrations, (newIntegrations) => {

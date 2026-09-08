@@ -13,7 +13,7 @@ const reportsPutRouteParamSchema = z.object({
 
 export default defineEventHandler(async (event) => {
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
-  await authorize(event, updateReports);
+  await authorizeRequest(event, updateReports);
 
   const { id } = await getValidatedRouterParams(
     event,

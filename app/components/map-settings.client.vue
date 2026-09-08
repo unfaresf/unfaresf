@@ -46,6 +46,7 @@ import {
 import { type SelectIntegration, mapIntegrationOptionSchema } from '../../db/schema';
 import type { FormSubmitEvent } from '@nuxt/ui';
 import { z } from 'zod';
+import { isAuthStatus } from '~/composable/apiErrorToast';
 
 const mapIntegrationFormSchema = z.object({
   enable: z.boolean(),
@@ -126,6 +127,7 @@ async function onSubmit(event: FormSubmitEvent<MapIntegrationFormData>) {
       title: 'Updated map settings',
     });
   } catch (err:any) {
+    if (isAuthStatus(err)) return; // 401 handled by the global guard; 403 not ours to toast
     toast.add({
       color: 'error',
       title: 'Error updating map settings',

@@ -14,7 +14,7 @@ const broadcastsGetQuerySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
-  await authorize(event, listBroadcasts);
+  await authorizeRequest(event, listBroadcasts);
 
   try {
     const { page, limit, from, to } = await getValidatedQuery(event, broadcastsGetQuerySchema.parse);

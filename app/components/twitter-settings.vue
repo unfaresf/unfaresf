@@ -23,6 +23,7 @@
   import { type SelectIntegration, type TwitterOptions, type Prettify, twitterIntegrationOptionSchema } from '../../db/schema';
   import type { FormSubmitEvent } from '@nuxt/ui';
   import { z } from 'zod';
+  import { isAuthStatus } from '~/composable/apiErrorToast';
   
   const twitterIntegrationFormSchema = z.object({
     enable: z.boolean(),
@@ -78,6 +79,7 @@
         title: 'Updated twitter settings',
       });
     } catch (err:any) {
+      if (isAuthStatus(err)) return; // 401 handled by the global guard; 403 not ours to toast
       toast.add({
         color: 'error',
         title: 'Error updating twitter settings',

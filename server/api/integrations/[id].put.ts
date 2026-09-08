@@ -27,7 +27,7 @@ const postMapBodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
-  await authorize(event, updateIntegrations);
+  await authorizeRequest(event, updateIntegrations);
 
   const { id } = await getValidatedRouterParams(event, putParamsSchema.parse);
   const { name } = await readBody(event);

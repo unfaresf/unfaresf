@@ -4,7 +4,7 @@ import CreateReport from "../../utils/create-report";
 
 export default defineEventHandler(async (event) => {
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
-  await authorize(event, createReports);
+  await authorizeRequest(event, createReports);
 
   const defaultRepost = {
     source: 'internal',

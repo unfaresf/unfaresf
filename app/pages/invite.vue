@@ -14,6 +14,8 @@
 </template>
 
 <script lang="ts" setup>
+import { isAuthStatus } from '~/composable/apiErrorToast';
+
 const inviteURL = ref('');
 
 definePageMeta({
@@ -25,11 +27,20 @@ useHead({
 });
 
 async function getInvite() {
-  const res = await $fetch('/api/invite', {
-    method: 'POST'
-  });
-  const currentUrl = useRequestURL();
-  inviteURL.value = `${currentUrl.origin}/sign-up?invite-id=${res.id}`;
+  try {
+    const res = await $fetch('/api/invite', {
+      method: 'POST'
+    });
+    const currentUrl = useRequestURL();
+    inviteURL.value = `${currentUrl.origin}/sign-up?invite-id=${res.id}`;
+  } catch (err: any) {
+    if (isAuthStatus(err)) return; // 401 handled by the global guard; 403 not ours to toast
+    useToast().add({
+      color: 'error',
+      title: 'Error creating invite',
+      description: err.message
+    });
+  }
 }
 
 async function copyToClipboard() {

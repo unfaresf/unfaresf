@@ -11,7 +11,7 @@ const usersGetQuerySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
-  await authorize(event, getUsers);
+  await authorizeRequest(event, getUsers);
 
   try {
     const { page, limit } = await getValidatedQuery(event, usersGetQuerySchema.parse);
