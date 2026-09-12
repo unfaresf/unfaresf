@@ -184,6 +184,11 @@ const {
   refresh: refreshBroadcastsFetch,
 } = await useLazyFetch(`/api/broadcasts`, {
   server: false,
+  // watch: false — refreshBroadcasts() below is the sole trigger. Without
+  // this, useFetch's own default reactive watch on `query` would *also*
+  // re-fetch as soon as broadcastFrom.value changes, racing the explicit
+  // refresh() call below and aborting/duplicating it every time.
+  watch: false,
   query: { from: broadcastFrom },
   onResponseError(ctx) {
     reportNonAuthError(ctx);

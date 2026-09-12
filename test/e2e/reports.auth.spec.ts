@@ -70,6 +70,33 @@ test('refresh advances the broadcasts "from" window instead of reusing the mount
   expect(new Date(nextFrom!).getTime()).toBeGreaterThan(new Date(initialFrom!).getTime())
 })
 
+test('refresh triggers exactly one broadcasts request, not a duplicate watch-triggered one', async ({ page }) => {
+  const initialBroadcasts = waitForBroadcastsFetch(page)
+  await page.goto('/reports')
+  await initialBroadcasts
+
+  // broadcastFrom is a ref fed into useLazyFetch's `query`; reassigning it
+  // alone is enough to trip Nuxt's own default reactive-query watcher, which
+  // would fire a *second*, redundant fetch (racing and aborting the explicit
+  // refresh() call) unless the broadcasts fetch opts out with `watch: false`.
+  const broadcastsRequests: string[] = []
+  page.on('request', (req) => {
+    if (req.url().includes('/api/broadcasts') && req.method() === 'GET') {
+      broadcastsRequests.push(req.url())
+    }
+  })
+
+  const refreshButton = page.getByRole('button', { name: /refresh/i })
+  const broadcastsResponse = waitForBroadcastsFetch(page)
+  await refreshButton.click()
+  await broadcastsResponse
+  // Give a redundant watch-triggered re-fetch a moment to show up if present
+  // (it's scheduled on Vue's next tick, not synchronous with the click).
+  await page.waitForTimeout(200)
+
+  expect(broadcastsRequests).toHaveLength(1)
+})
+
 test('coming back to the foreground refreshes reports and broadcasts', async ({ page }) => {
   // Registered before goto (see note in the previous test).
   const initialReports = waitForReportsFetch(page)
