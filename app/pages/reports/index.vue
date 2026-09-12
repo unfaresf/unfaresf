@@ -9,7 +9,15 @@
               Recent reports of cop sightings from various platforms.
             </p>
           </div>
-          <div class="basis-1/4 ml-auto">
+          <div class="basis-1/4 ml-auto flex flex-row gap-2 justify-end">
+            <UButton
+              icon="i-heroicons-arrow-path"
+              aria-label="Refresh"
+              color="neutral"
+              variant="ghost"
+              :loading="reportsPending || broadcastsPending"
+              @click="refreshAll"
+            />
             <USelect
               v-model="reviewed"
               :items="reviewedStatuses"
@@ -74,7 +82,8 @@ import ReportCard from "~/components/report-card.vue";
 import { sub, formatDistanceToNow } from "date-fns";
 import { asWriteable } from "#shared/types/utils";
 import getDateMinusNHours from "#shared/utils/get-date-minus-n-hours";
-import { reportNonAuthError, isAuthStatus } from '~/composable/apiErrorToast';
+import { reportNonAuthError, isAuthStatus } from "~/composable/apiErrorToast";
+import { useDocumentVisibility } from "@vueuse/core";
 
 const { $pwa } = useNuxtApp();
 
@@ -132,34 +141,49 @@ async function dismiss(row: SelectReport) {
 async function openPostModel(row: SelectReport) {
   const result = await postModal.open({ report: row });
   if (result?.success) {
-    await Promise.all([refreshReports(), refreshBroadcasts()]);
+    await refreshAll();
   }
+}
+
+async function refreshAll() {
+  await Promise.allSettled([refreshReports(), refreshBroadcasts()]);
 }
 
 type ReportsGetResp = {
   count: number;
   result: SelectReport[];
 };
-const { data: unreviewedReports, refresh: refreshReports } =
-  await useLazyFetch<ReportsGetResp>("/api/reports", {
-    server: false,
-    query: { page: page, limit: limit, reviewed: reviewed },
-    default: () => ({ count: 0, result: [] }),
-    watch: [reviewed, page],
-    onResponseError(ctx) {
-      reportNonAuthError(ctx);
-    },
-  });
+const {
+  data: unreviewedReports,
+  pending: reportsPending,
+  refresh: refreshReports,
+} = await useLazyFetch<ReportsGetResp>("/api/reports", {
+  server: false,
+  query: { page: page, limit: limit, reviewed: reviewed },
+  default: () => ({ count: 0, result: [] }),
+  watch: [reviewed, page],
+  onResponseError(ctx) {
+    reportNonAuthError(ctx);
+  },
+});
 
-const { data: broadcasts, refresh: refreshBroadcasts } = await useLazyFetch(
-  `/api/broadcasts`,
-  {
-    server: false,
-    query: {
-      from: getDateMinusNHours(shiftLength).toISOString(),
-    },
+const {
+  data: broadcasts,
+  pending: broadcastsPending,
+  refresh: refreshBroadcasts,
+} = await useLazyFetch(`/api/broadcasts`, {
+  server: false,
+  query: {
+    from: getDateMinusNHours(shiftLength).toISOString(),
+  },
+});
+
+const documentVisibility = useDocumentVisibility();
+watch(documentVisibility, (current, previous) => {
+  if (current === "visible" && previous === "hidden") {
+    refreshAll();
   }
-);
+});
 
 if (import.meta.client) {
   try {
