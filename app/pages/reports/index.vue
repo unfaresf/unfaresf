@@ -145,6 +145,11 @@ async function openPostModel(row: SelectReport) {
   }
 }
 
+// refreshReports() and refreshBroadcasts() are two separate useLazyFetch
+// instances, so they already update independently of each other; allSettled
+// here only means one rejecting can't stop us from awaiting the other to
+// completion (useAsyncData's refresh() doesn't actually reject on a fetch
+// error, but this stays correct if that ever changes).
 async function refreshAll() {
   await Promise.allSettled([refreshReports(), refreshBroadcasts()]);
 }
@@ -167,16 +172,28 @@ const {
   },
 });
 
+// A plain ref, re-assigned in refreshBroadcasts() below right before each
+// fetch: a bare `computed(() => getDateMinusNHours(...))` would look
+// reactive but has no tracked dependency, so Vue would cache its first
+// value forever and the window would still drift on later refreshes.
+const broadcastFrom = ref(getDateMinusNHours(shiftLength).toISOString());
+
 const {
   data: broadcasts,
   pending: broadcastsPending,
-  refresh: refreshBroadcasts,
+  refresh: refreshBroadcastsFetch,
 } = await useLazyFetch(`/api/broadcasts`, {
   server: false,
-  query: {
-    from: getDateMinusNHours(shiftLength).toISOString(),
+  query: { from: broadcastFrom },
+  onResponseError(ctx) {
+    reportNonAuthError(ctx);
   },
 });
+
+function refreshBroadcasts() {
+  broadcastFrom.value = getDateMinusNHours(shiftLength).toISOString();
+  return refreshBroadcastsFetch();
+}
 
 const documentVisibility = useDocumentVisibility();
 watch(documentVisibility, (current, previous) => {

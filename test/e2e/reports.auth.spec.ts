@@ -26,10 +26,15 @@ function waitForBroadcastsFetch(page: import('@playwright/test').Page) {
 }
 
 test('refresh button re-fetches reports and broadcasts independently', async ({ page }) => {
+  // Registered before goto: the client-side fetch (useLazyFetch, server:false)
+  // can resolve before goto's load event does, and waitForResponse only ever
+  // catches responses that happen after it's registered.
+  const initialReports = waitForReportsFetch(page)
+  const initialBroadcasts = waitForBroadcastsFetch(page)
   await page.goto('/reports')
-  // Let the initial client-side fetch (useLazyFetch, server:false) settle first,
-  // so it can't be mistaken for the response triggered by the click below.
-  await Promise.all([waitForReportsFetch(page), waitForBroadcastsFetch(page)])
+  // Let the initial fetch settle first, so it can't be mistaken for the
+  // response triggered by the click below.
+  await Promise.all([initialReports, initialBroadcasts])
 
   const refreshButton = page.getByRole('button', { name: /refresh/i })
   await expect(refreshButton).toBeVisible()
@@ -44,11 +49,35 @@ test('refresh button re-fetches reports and broadcasts independently', async ({ 
   await Promise.all([reportsResponse, broadcastsResponse])
 })
 
+test('refresh advances the broadcasts "from" window instead of reusing the mount-time value', async ({ page }) => {
+  const initialBroadcasts = waitForBroadcastsFetch(page)
+  await page.goto('/reports')
+  const initialResponse = await initialBroadcasts
+  const initialFrom = new URL(initialResponse.url()).searchParams.get('from')
+  expect(initialFrom).not.toBeNull()
+
+  // Force a detectable gap: `from` is millisecond-precision, but a same-tick
+  // refresh could land on the same millisecond as mount and look unchanged
+  // even if the underlying bug (a frozen computed) were still present.
+  await page.waitForTimeout(50)
+
+  const refreshButton = page.getByRole('button', { name: /refresh/i })
+  const nextBroadcasts = waitForBroadcastsFetch(page)
+  await refreshButton.click()
+  const nextResponse = await nextBroadcasts
+  const nextFrom = new URL(nextResponse.url()).searchParams.get('from')
+
+  expect(new Date(nextFrom!).getTime()).toBeGreaterThan(new Date(initialFrom!).getTime())
+})
+
 test('coming back to the foreground refreshes reports and broadcasts', async ({ page }) => {
+  // Registered before goto (see note in the previous test).
+  const initialReports = waitForReportsFetch(page)
+  const initialBroadcasts = waitForBroadcastsFetch(page)
   await page.goto('/reports')
   await expect(page.getByRole('heading', { name: 'Reports', exact: true })).toBeVisible()
-  // Let the initial client-side fetch settle first (see note above).
-  await Promise.all([waitForReportsFetch(page), waitForBroadcastsFetch(page)])
+  // Let the initial client-side fetch settle first.
+  await Promise.all([initialReports, initialBroadcasts])
 
   // Simulate the PWA being backgrounded then foregrounded: override
   // document.visibilityState and dispatch the event the app listens to,
