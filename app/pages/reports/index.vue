@@ -9,7 +9,15 @@
               Recent reports of cop sightings from various platforms.
             </p>
           </div>
-          <div class="basis-1/4 ml-auto">
+          <div class="basis-1/4 ml-auto flex flex-row gap-2 justify-end">
+            <UButton
+              icon="i-heroicons-arrow-path"
+              aria-label="Refresh"
+              color="neutral"
+              variant="ghost"
+              :loading="reportsPending || broadcastsPending"
+              @click="refreshAll"
+            />
             <USelect
               v-model="reviewed"
               :items="reviewedStatuses"
@@ -74,7 +82,8 @@ import ReportCard from "~/components/report-card.vue";
 import { sub, formatDistanceToNow } from "date-fns";
 import { asWriteable } from "#shared/types/utils";
 import getDateMinusNHours from "#shared/utils/get-date-minus-n-hours";
-import { reportNonAuthError, isAuthStatus } from '~/composable/apiErrorToast';
+import { reportNonAuthError, isAuthStatus } from "~/composable/apiErrorToast";
+import { useDocumentVisibility } from "@vueuse/core";
 
 const { $pwa } = useNuxtApp();
 
@@ -132,34 +141,71 @@ async function dismiss(row: SelectReport) {
 async function openPostModel(row: SelectReport) {
   const result = await postModal.open({ report: row });
   if (result?.success) {
-    await Promise.all([refreshReports(), refreshBroadcasts()]);
+    await refreshAll();
   }
+}
+
+// refreshReports() and refreshBroadcasts() are two separate useLazyFetch
+// instances, so they already update independently of each other; allSettled
+// here only means one rejecting can't stop us from awaiting the other to
+// completion (useAsyncData's refresh() doesn't actually reject on a fetch
+// error, but this stays correct if that ever changes).
+async function refreshAll() {
+  await Promise.allSettled([refreshReports(), refreshBroadcasts()]);
 }
 
 type ReportsGetResp = {
   count: number;
   result: SelectReport[];
 };
-const { data: unreviewedReports, refresh: refreshReports } =
-  await useLazyFetch<ReportsGetResp>("/api/reports", {
-    server: false,
-    query: { page: page, limit: limit, reviewed: reviewed },
-    default: () => ({ count: 0, result: [] }),
-    watch: [reviewed, page],
-    onResponseError(ctx) {
-      reportNonAuthError(ctx);
-    },
-  });
+const {
+  data: unreviewedReports,
+  pending: reportsPending,
+  refresh: refreshReports,
+} = await useLazyFetch<ReportsGetResp>("/api/reports", {
+  server: false,
+  query: { page: page, limit: limit, reviewed: reviewed },
+  default: () => ({ count: 0, result: [] }),
+  watch: [reviewed, page],
+  onResponseError(ctx) {
+    reportNonAuthError(ctx);
+  },
+});
 
-const { data: broadcasts, refresh: refreshBroadcasts } = await useLazyFetch(
-  `/api/broadcasts`,
-  {
-    server: false,
-    query: {
-      from: getDateMinusNHours(shiftLength).toISOString(),
-    },
+// A plain ref, re-assigned in refreshBroadcasts() below right before each
+// fetch: a bare `computed(() => getDateMinusNHours(...))` would look
+// reactive but has no tracked dependency, so Vue would cache its first
+// value forever and the window would still drift on later refreshes.
+const broadcastFrom = ref(getDateMinusNHours(shiftLength).toISOString());
+
+const {
+  data: broadcasts,
+  pending: broadcastsPending,
+  refresh: refreshBroadcastsFetch,
+} = await useLazyFetch(`/api/broadcasts`, {
+  server: false,
+  // watch: false — refreshBroadcasts() below is the sole trigger. Without
+  // this, useFetch's own default reactive watch on `query` would *also*
+  // re-fetch as soon as broadcastFrom.value changes, racing the explicit
+  // refresh() call below and aborting/duplicating it every time.
+  watch: false,
+  query: { from: broadcastFrom },
+  onResponseError(ctx) {
+    reportNonAuthError(ctx);
+  },
+});
+
+function refreshBroadcasts() {
+  broadcastFrom.value = getDateMinusNHours(shiftLength).toISOString();
+  return refreshBroadcastsFetch();
+}
+
+const documentVisibility = useDocumentVisibility();
+watch(documentVisibility, (current, previous) => {
+  if (current === "visible" && previous === "hidden") {
+    refreshAll();
   }
-);
+});
 
 if (import.meta.client) {
   try {
