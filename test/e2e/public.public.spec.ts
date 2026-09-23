@@ -33,3 +33,15 @@ test('thank-you page renders the success message', async ({ page }) => {
   await page.goto('/thank-you')
   await expect(page.getByRole('heading', { name: /success/i })).toBeVisible()
 })
+
+test('a report created by a guest still requires review', async ({ page }) => {
+  const createResponse = await page.request.post('/api/reports', {
+    data: {
+      passenger: false,
+      stop: { stopId: 'guest-post', stopName: `Guest Post Station ${Date.now()}`, direction: 'Northbound' },
+    },
+  })
+  expect(createResponse.ok()).toBe(true)
+  const [report] = await createResponse.json()
+  expect(report.reviewedAt).toBeNull()
+})

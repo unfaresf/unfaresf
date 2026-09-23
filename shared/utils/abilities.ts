@@ -13,6 +13,8 @@ export const createInvites = defineAbility((user: User) => user.roles.includes('
 
 // broadcasts abilities
 export const createBroadcasts = defineAbility(() => true);
+// reports created by these users skip review and are broadcast immediately
+export const broadcastReportsDirectly = defineAbility((user: User) => user.roles.includes('Admin') || user.roles.includes('Editor'));
 export const listBroadcasts = defineAbility({ allowGuest: true }, (user: User | null) => true);
 export const listBroadcastsGeo = defineAbility({ allowGuest: true }, (user: User | null) => true);
 
