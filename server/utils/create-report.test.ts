@@ -39,12 +39,20 @@ describe('default (review required)', () => {
 });
 
 describe('with the broadcast option', () => {
-  it('creates the report already reviewed', async () => {
-    const [created] = await CreateReport({ reports: [report], options: { broadcast: true } });
+  it('creates the report reviewed as of now', async () => {
+    // whole second: timestamp columns are stored at second precision
+    const now = new Date('2026-09-22T20:15:00Z');
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(now);
+    try {
+      const [created] = await CreateReport({ reports: [report], options: { broadcast: true } });
 
-    expect(created!.reviewedAt).toBeInstanceOf(Date);
-    const [stored] = await DB.select().from(reportsTable);
-    expect(stored!.reviewedAt).toBeInstanceOf(Date);
+      expect(created!.reviewedAt).toEqual(now);
+      const [stored] = await DB.select().from(reportsTable);
+      expect(stored!.reviewedAt).toEqual(now);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('creates a broadcast for the report using its plain-text summary', async () => {
@@ -64,5 +72,19 @@ describe('with the broadcast option', () => {
     await CreateReport({ reports: [report], options: { broadcast: true } });
 
     expect(Notify).not.toHaveBeenCalled();
+  });
+
+  it('does not keep the report if its broadcast fails to insert', async () => {
+    DB.$client.exec(`CREATE TRIGGER fail_broadcast_insert BEFORE INSERT ON broadcasts
+      BEGIN SELECT RAISE(ABORT, 'broadcast insert failed'); END`);
+    try {
+      await expect(CreateReport({ reports: [report], options: { broadcast: true } }))
+        .rejects.toThrow('broadcast insert failed');
+
+      await expect(DB.select().from(reportsTable)).resolves.toEqual([]);
+      await expect(DB.select().from(broadcastsTable)).resolves.toEqual([]);
+    } finally {
+      DB.$client.exec('DROP TRIGGER fail_broadcast_insert');
+    }
   });
 });
