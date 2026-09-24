@@ -1,4 +1,8 @@
 import { test, expect } from '@playwright/test'
+import Database from 'better-sqlite3'
+
+// Matches DB_FILE_NAME in .env.e2e.
+const E2E_DB_FILE = 'db/data/local-e2e.db'
 
 // Auth project: starts logged-in via storageState saved by global-setup
 // (an Admin+Editor passkey user). Assertions target server-rendered headings
@@ -123,4 +127,27 @@ test('coming back to the foreground refreshes reports and broadcasts', async ({ 
   })
 
   await Promise.all([reportsResponse, broadcastsResponse])
+})
+
+test('a report created by an authed editor is approved and broadcast immediately', async ({ page }) => {
+  const stopName = `Direct Post Station ${Date.now()}`
+  const createResponse = await page.request.post('/api/reports', {
+    data: {
+      passenger: false,
+      stop: { stopId: 'direct-post', stopName, direction: 'Northbound' },
+    },
+  })
+  expect(createResponse.ok()).toBe(true)
+  const [report] = await createResponse.json()
+  expect(report.reviewedAt).not.toBeNull()
+
+  // Read the broadcast straight from the e2e DB: GET /api/broadcasts joins
+  // against GTFS stop data, and the e2e GTFS DB is empty, so it 400s here.
+  const db = new Database(E2E_DB_FILE, { readonly: true })
+  try {
+    const broadcast = db.prepare('SELECT message FROM broadcasts WHERE report_id = ?').get(report.id) as { message: string } | undefined
+    expect(broadcast?.message).toContain(stopName)
+  } finally {
+    db.close()
+  }
 })

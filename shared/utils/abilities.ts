@@ -7,6 +7,8 @@ export const createReports = defineAbility({ allowGuest: true }, (user: User | n
 export const listReports = defineAbility(() => true); // Only authenticated users can list reports
 export const getReport = defineAbility(() => true); // Only authenticated users can list reports
 export const updateReports = defineAbility(() => true);
+// reports created by these users skip review and are broadcast immediately
+export const broadcastReportsDirectly = defineAbility((user: User) => user.roles.includes('Admin') || user.roles.includes('Editor'));
 
 // invite abilities
 export const createInvites = defineAbility((user: User) => user.roles.includes('Admin'));

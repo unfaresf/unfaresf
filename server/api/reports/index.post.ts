@@ -1,5 +1,6 @@
+import { allows } from "nuxt-authorization/utils";
 import { reportInsertSchema } from "../../../db/schema";
-import { createReports } from "../../../shared/utils/abilities";
+import { createReports, broadcastReportsDirectly } from "../../../shared/utils/abilities";
 import CreateReport from "../../utils/create-report";
 
 export default defineEventHandler(async (event) => {
@@ -19,8 +20,14 @@ export default defineEventHandler(async (event) => {
     ...defaultRepost,
     ...body
   };
+
+  // Admins/editors can approve reports anyway, so theirs skip review and are
+  // broadcast immediately (without pushing a notification to reviewers).
+  const user = await event.context.$authorization.resolveServerUser();
+  const broadcast = !!user && await allows(broadcastReportsDirectly, user);
+
   try {
-    return CreateReport({event, reports: [report]});
+    return await CreateReport({event, reports: [report], options: { broadcast }});
   } catch (e: any) {
     throw createError({
       statusCode: 400,
