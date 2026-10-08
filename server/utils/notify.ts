@@ -64,6 +64,9 @@ export function formatReportAsNotification(reports:SelectReport, totalOutstandin
     tag: 'new-report',
     reportUrl: `/reports/${reports.id}`,
     unhandledReportsCount: totalOutstanding,
+    // An external-source (e.g. Mastodon) report's summary is its scraped text,
+    // which must not be broadcast; it needs the in-app review form instead.
+    canPost: reports.source === 'internal',
   }
 }
 

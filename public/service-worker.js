@@ -14,10 +14,13 @@ self.addEventListener('push', function(event) {
       // global scope, and only attach as many buttons as the platform allows.
       // When no buttons render, the notification still shows and tapping it
       // opens the app (see the default branch in notificationclick).
+      // Post is only offered when the server says the body can be broadcast
+      // as-is; other reports must be reviewed in the app first.
       const maxActions = (typeof Notification !== 'undefined' && Notification.maxActions) || 0;
-      const actions = [];
-      if (maxActions >= 1) actions.push({ action: 'post', title: 'Post' });
-      if (maxActions >= 2) actions.push({ action: 'dismiss', title: 'Dismiss' });
+      const actions = [
+        ...(pushBody.canPost ? [{ action: 'post', title: 'Post' }] : []),
+        { action: 'dismiss', title: 'Dismiss' },
+      ].slice(0, maxActions);
 
       promises.push(
         self.registration.showNotification(pushBody.title, {
@@ -31,6 +34,7 @@ self.addEventListener('push', function(event) {
             // == getPlainTextSummary(report); reused verbatim as the broadcast
             // message by the 'post' action so no separate lookup is needed.
             message: pushBody.body,
+            canPost: pushBody.canPost,
           }
         })
       );
@@ -65,13 +69,19 @@ function reportIdFromUrl(reportUrl) {
 
 self.addEventListener('notificationclick', (event) => {
   const notification = event.notification;
-  const { reportUrl, message } = notification.data || {};
+  const { reportUrl, message, canPost } = notification.data || {};
   const reportId = reportIdFromUrl(reportUrl);
   notification.close();
 
   let work;
   switch (event.action) {
     case 'post':
+      // A notification shown without canPost (needs review, or shown by an
+      // older worker) only gets as far as opening the report.
+      if (!canPost) {
+        work = openReport(reportUrl);
+        break;
+      }
       // Post immediately; on success there's no follow-up notification. A 409
       // (broadcast already exists for this report) is treated as success since
       // the desired end state is already reached. On other failures (401 expired

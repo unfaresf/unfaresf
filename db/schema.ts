@@ -239,6 +239,8 @@ export type NotificationDetail = {
   title: string;
   body: string;
   tag: string;
+  // Whether body can be broadcast as-is from the notification's Post action.
+  canPost: boolean;
 };
 
 export const notifications = sqliteTable(

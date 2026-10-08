@@ -1,30 +1,34 @@
-import { DB as db } from "../../sqlite-service";
-import { eq } from 'drizzle-orm';
-import { broadcasts as broadcastsTable, reports as reportsTable } from "../../../db/schema";
+import { reportInsertSchema } from "../../../db/schema";
 import { z } from "zod";
 import { createBroadcasts } from "../../../shared/utils/abilities";
+import CreateBroadcast, { ReportAlreadyReviewedError } from "../../utils/create-broadcast";
 
 const broadcastPostBodySchema = z.object({
   message: z.string().min(8).max(400).trim(),
   reportId: z.number({coerce: true}).int().positive(),
+  // Reviewed details for an external-source report, saved with the broadcast.
+  ...reportInsertSchema.pick({
+    route: true,
+    stop: true,
+    passenger: true,
+  }).partial().shape,
 });
 
 export default defineEventHandler(async (event) => {
   // @ts-ignore TODO https://github.com/nuxt/nuxt/issues/29263
   await authorizeRequest(event, createBroadcasts);
 
-  const { message, reportId } = await readValidatedBody(event, broadcastPostBodySchema.parse);
+  const { message, reportId, ...details } = await readValidatedBody(event, broadcastPostBodySchema.parse);
 
   try {
-    await db.insert(broadcastsTable).values({ message, reportId });
-    await db.update(reportsTable).set({reviewedAt: new Date()}).where(eq(reportsTable.id, reportId));
+    CreateBroadcast({ reportId, message, details });
 
     setResponseStatus(event, 201);
   } catch (err:any) {
-    if (err.message === 'UNIQUE constraint failed: broadcasts.report_id') {
+    if (err instanceof ReportAlreadyReviewedError || err.message === 'UNIQUE constraint failed: broadcasts.report_id') {
       throw createError({
         statusCode: 409,
-        statusMessage: 'Broadcast already created for report',
+        statusMessage: 'Report already reviewed',
       });
     }
     throw createError({

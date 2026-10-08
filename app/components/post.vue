@@ -11,7 +11,7 @@
       <div class="p-2 rounded bg-neutral-100 text-neutral-600 text-sm mb-4 break-words">
         <span>{{ props.report.message }}</span>
       </div>
-      <ReportForm v-if="!props.report?.reviewedAt" v-model="dummyFormState" class="mb-4" />
+      <ReportForm v-if="!props.report?.reviewedAt" v-model="reviewFormState" class="mb-4" />
     </div>
 
     <div class="p-2 rounded bg-neutral-100 text-neutral-600 text-sm">
@@ -23,7 +23,8 @@
         <UButton
           color="success"
           class="justify-center md:order-4 md:ml-3"
-          @click="postInternalSourceSummary"
+          :disabled="pending || !canPost"
+          @click="postSummary"
           form="internal-source-broadcast-form"
           id="broadcast-form-submit-btn"
           >Post</UButton
@@ -46,10 +47,12 @@
 import { z } from "zod";
 import type { SelectReport } from "../../db/schema";
 import getPlainTextSummary from "#shared/utils/get-plain-text-summary";
-import type { ReportPostSchema } from "./report-form.vue";
+import { reportSchema, type ReportPostSchema } from "./report-form.vue";
 import { isAuthStatus } from "~/composable/apiErrorToast";
 
-const dummyFormState = ref<Partial<ReportPostSchema>>({});
+// What the reviewer fills in for an external-source (e.g. Mastodon) report.
+// Starts with passenger off, like the report page, so the stop select shows.
+const reviewFormState = ref<Partial<ReportPostSchema>>({ passenger: false });
 
 const emit = defineEmits<{
   success: [];
@@ -64,7 +67,25 @@ const internalSourceBroadcast = reactive<
 >({
   message: undefined,
 });
-const summary = ref(getPlainTextSummary(props.report));
+const sourceInternal = props.report.source === "internal";
+// An external-source report's message is scraped free text, shown above for
+// the reviewer only. Its broadcast is built from the review form instead, so
+// it gets the same structured template as internal reports.
+const summary = computed(() => {
+  if (sourceInternal) return getPlainTextSummary(props.report);
+  const { route, stop, passenger } = reviewFormState.value;
+  return getPlainTextSummary({
+    createdAt: props.report.createdAt,
+    source: props.report.source,
+    message: null,
+    route: route ?? null,
+    stop: stop ?? null,
+    passenger: passenger ?? null,
+  });
+});
+const canPost = computed(
+  () => sourceInternal || reportSchema.safeParse(reviewFormState.value).success
+);
 
 const toast = useToast();
 const pending = ref(false);
@@ -74,7 +95,6 @@ const pending = ref(false);
 //   stop: stopSchema.required(),
 //   passenger: z.boolean({ coerce: true }),
 // });
-const sourceInternal = props.report.source === "internal";
 // type ExternalSourceBroadcastSchema = z.output<
 //   typeof externalSourceBroadcastSchema
 // >;
@@ -85,15 +105,19 @@ type InternalSourceBroadcastSchema = z.output<
   typeof internalSourceBroadcastSchema
 >;
 
-async function postInternalSourceSummary() {
-  if (summary.value) {
-    await postBroadcast(summary.value);
-    emit("success");
-  }
+async function postSummary() {
+  if (!summary.value || !canPost.value) return;
+  // On failure stay open so the reviewer can retry; the report is only marked
+  // reviewed once its broadcast exists.
+  if (await postBroadcast(summary.value)) emit("success");
 }
 
-async function postBroadcast(msg: string) {
-  if (!props.report) return;
+// Resolves true once the report is handled: broadcast now, or already
+// reviewed by someone else.
+async function postBroadcast(msg: string): Promise<boolean> {
+  if (!props.report) return false;
+  // An external-source report's reviewed details are saved with its broadcast.
+  const { route, stop, passenger } = reviewFormState.value;
   pending.value = true;
   try {
     await $fetch("/api/broadcasts", {
@@ -101,24 +125,27 @@ async function postBroadcast(msg: string) {
       body: {
         message: msg,
         reportId: props.report.id,
+        ...(sourceInternal ? {} : { route, stop, passenger }),
       },
     });
     internalSourceBroadcast.message = undefined;
+    return true;
   } catch (err: any) {
-    if (isAuthStatus(err)) return; // 401 handled by the global guard; 403 not ours to toast
+    if (isAuthStatus(err)) return false; // 401 handled by the global guard; 403 not ours to toast
     if (err.statusCode === 409) {
       toast.add({
         color: 'warning',
         title: "Someone beat you to the punch",
-        description: "Someone else created a broadcast for this report.",
+        description: "Someone else already reviewed this report.",
       });
-    } else {
-      toast.add({
-        color: "error",
-        title: "Error creating new broadcast",
-        description: err.data?.message || err.message,
-      });
+      return true;
     }
+    toast.add({
+      color: "error",
+      title: "Error creating new broadcast",
+      description: err.data?.message || err.message,
+    });
+    return false;
   } finally {
     pending.value = false;
   }

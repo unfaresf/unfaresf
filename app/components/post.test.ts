@@ -1,5 +1,7 @@
 import { vi, it, expect } from "vitest";
 import { mountSuspended, registerEndpoint } from "@nuxt/test-utils/runtime";
+import { flushPromises } from "@vue/test-utils";
+import { createError } from "h3";
 import { Post, ReportSummary, ReportForm } from "#components";
 import type { SelectReport } from "../../db/schema";
 import { faker } from "@faker-js/faker";
@@ -159,4 +161,110 @@ it("should mark the report as approved with the API", async () => {
       reportId: mockReport.id,
     },
   });
+});
+
+// Values shaped like the ReportForm selects emit them (select/agency.vue,
+// select/route.vue, select/stop.vue).
+const muni = { agencyId: "muni", agencyName: "Muni" };
+const geary = {
+  routeId: "r38",
+  routeShortName: "38",
+  routeLongName: "Geary",
+  direction: "east",
+  directionId: 0,
+  headsign: "Downtown",
+};
+const powell = { stopId: "s1", stopName: "Powell", direction: "Eastbound", directionId: 0 };
+
+// The form's child selects fetch their options once they render; stub them so
+// filling the form never reaches the network.
+function registerGtfs() {
+  registerEndpoint("/api/gtfs/agencies", () => [muni]);
+  registerEndpoint("/api/gtfs/routes", () => [geary]);
+  registerEndpoint("/api/gtfs/stops", () => [powell]);
+  registerEndpoint("/api/gtfs/stops/search", () => [powell]);
+}
+
+// Mount the external report and fill in the review form as a reviewer would.
+async function mountReviewedExternalReport() {
+  const component = await mountSuspended(Post, {
+    props: {
+      report: externalReport,
+    },
+  });
+  const form = component.findComponent(ReportForm);
+  // Toggling passenger clears route/stop (report-form.vue), so pick it first.
+  await form.setValue({ agency: muni, passenger: true });
+  await form.setValue({ agency: muni, passenger: true, route: geary, stop: powell });
+  return component;
+}
+
+it("should broadcast the summary built from the review form, not the scraped message", async () => {
+  registerGtfs();
+  registerEndpoint(`/api/broadcasts`, { method: "POST", handler: () => null });
+  const mockFetch = vi.spyOn(global, "$fetch");
+  mockFetch.mockClear();
+
+  const component = await mountReviewedExternalReport();
+
+  const summary = "4:00 AM: Fare inspectors on 38 (Downtown) from Powell";
+  expect(component.findComponent(ReportSummary).text()).toBe(summary);
+
+  await component.find("#broadcast-form-submit-btn").trigger("click");
+  await flushPromises();
+
+  // The reviewed details go with the broadcast, so the server saves both in
+  // one transaction rather than marking the report reviewed beforehand.
+  expect(mockFetch).toHaveBeenCalledWith(`/api/broadcasts`, {
+    method: "POST",
+    body: {
+      message: summary,
+      reportId: externalReport.id,
+      route: geary,
+      stop: powell,
+      passenger: true,
+    },
+  });
+  expect(mockFetch).not.toHaveBeenCalledWith(`/api/reports/${externalReport.id}`, expect.anything());
+  expect(component.emitted("success")).toHaveLength(1);
+});
+
+it("should stay open for a retry when the broadcast fails", async () => {
+  registerGtfs();
+  const unregister = registerEndpoint(`/api/broadcasts`, {
+    method: "POST",
+    handler: () => {
+      throw createError({ statusCode: 500, statusMessage: "Broadcast failed" });
+    },
+  });
+
+  try {
+    const component = await mountReviewedExternalReport();
+    await component.find("#broadcast-form-submit-btn").trigger("click");
+    await flushPromises();
+
+    expect(component.emitted("success")).toBeUndefined();
+    expect(component.find("#broadcast-form-submit-btn").attributes("disabled")).toBeUndefined();
+  } finally {
+    unregister();
+  }
+});
+
+it("should not broadcast an external-source report until the review form is complete", async () => {
+  registerGtfs();
+  const mockFetch = vi.spyOn(global, "$fetch");
+  mockFetch.mockClear();
+
+  const component = await mountSuspended(Post, {
+    props: {
+      report: externalReport,
+    },
+  });
+  await component.findComponent(ReportForm).setValue({ agency: muni, passenger: false });
+
+  expect(component.findComponent(ReportSummary).text()).not.toContain(externalReport.message);
+  await component.find("#broadcast-form-submit-btn").trigger("click");
+  await flushPromises();
+
+  expect(mockFetch).not.toHaveBeenCalledWith(`/api/broadcasts`, expect.anything());
 });
