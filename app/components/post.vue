@@ -107,47 +107,17 @@ type InternalSourceBroadcastSchema = z.output<
 
 async function postSummary() {
   if (!summary.value || !canPost.value) return;
-  if (!sourceInternal && !(await saveReviewedReport())) return;
-  await postBroadcast(summary.value);
-  emit("success");
+  // On failure stay open so the reviewer can retry; the report is only marked
+  // reviewed once its broadcast exists.
+  if (await postBroadcast(summary.value)) emit("success");
 }
 
-// Store the reviewer's structured details on the report (and mark it reviewed)
-// before broadcasting. Resolves false if the broadcast shouldn't go out.
-async function saveReviewedReport(): Promise<boolean> {
+// Resolves true once the report is handled: broadcast now, or already
+// reviewed by someone else.
+async function postBroadcast(msg: string): Promise<boolean> {
+  if (!props.report) return false;
+  // An external-source report's reviewed details are saved with its broadcast.
   const { route, stop, passenger } = reviewFormState.value;
-  pending.value = true;
-  try {
-    const updated = await $fetch(`/api/reports/${props.report.id}`, {
-      method: "PUT",
-      body: { route, stop, passenger },
-    });
-    // The update only applies to unreviewed reports; an empty result means
-    // someone else already posted or dismissed this one.
-    if (!updated.length) {
-      toast.add({
-        color: "warning",
-        title: "Someone beat you to the punch",
-        description: "Someone else already reviewed this report.",
-      });
-      return false;
-    }
-    return true;
-  } catch (err: any) {
-    if (isAuthStatus(err)) return false; // 401 handled by the global guard; 403 not ours to toast
-    toast.add({
-      color: "error",
-      title: "Error saving report",
-      description: err.data?.message || err.message,
-    });
-    return false;
-  } finally {
-    pending.value = false;
-  }
-}
-
-async function postBroadcast(msg: string) {
-  if (!props.report) return;
   pending.value = true;
   try {
     await $fetch("/api/broadcasts", {
@@ -155,24 +125,27 @@ async function postBroadcast(msg: string) {
       body: {
         message: msg,
         reportId: props.report.id,
+        ...(sourceInternal ? {} : { route, stop, passenger }),
       },
     });
     internalSourceBroadcast.message = undefined;
+    return true;
   } catch (err: any) {
-    if (isAuthStatus(err)) return; // 401 handled by the global guard; 403 not ours to toast
+    if (isAuthStatus(err)) return false; // 401 handled by the global guard; 403 not ours to toast
     if (err.statusCode === 409) {
       toast.add({
         color: 'warning',
         title: "Someone beat you to the punch",
-        description: "Someone else created a broadcast for this report.",
+        description: "Someone else already reviewed this report.",
       });
-    } else {
-      toast.add({
-        color: "error",
-        title: "Error creating new broadcast",
-        description: err.data?.message || err.message,
-      });
+      return true;
     }
+    toast.add({
+      color: "error",
+      title: "Error creating new broadcast",
+      description: err.data?.message || err.message,
+    });
+    return false;
   } finally {
     pending.value = false;
   }

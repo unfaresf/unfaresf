@@ -1,6 +1,7 @@
 import { vi, it, expect } from "vitest";
 import { mountSuspended, registerEndpoint } from "@nuxt/test-utils/runtime";
 import { flushPromises } from "@vue/test-utils";
+import { createError } from "h3";
 import { Post, ReportSummary, ReportForm } from "#components";
 import type { SelectReport } from "../../db/schema";
 import { faker } from "@faker-js/faker";
@@ -184,16 +185,8 @@ function registerGtfs() {
   registerEndpoint("/api/gtfs/stops/search", () => [powell]);
 }
 
-it("should broadcast the summary built from the review form, not the scraped message", async () => {
-  registerGtfs();
-  registerEndpoint(`/api/reports/${externalReport.id}`, {
-    method: "PUT",
-    handler: () => [{ id: externalReport.id, reviewedAt: new Date() }],
-  });
-  registerEndpoint(`/api/broadcasts`, { method: "POST", handler: () => null });
-  const mockFetch = vi.spyOn(global, "$fetch");
-  mockFetch.mockClear();
-
+// Mount the external report and fill in the review form as a reviewer would.
+async function mountReviewedExternalReport() {
   const component = await mountSuspended(Post, {
     props: {
       report: externalReport,
@@ -203,6 +196,16 @@ it("should broadcast the summary built from the review form, not the scraped mes
   // Toggling passenger clears route/stop (report-form.vue), so pick it first.
   await form.setValue({ agency: muni, passenger: true });
   await form.setValue({ agency: muni, passenger: true, route: geary, stop: powell });
+  return component;
+}
+
+it("should broadcast the summary built from the review form, not the scraped message", async () => {
+  registerGtfs();
+  registerEndpoint(`/api/broadcasts`, { method: "POST", handler: () => null });
+  const mockFetch = vi.spyOn(global, "$fetch");
+  mockFetch.mockClear();
+
+  const component = await mountReviewedExternalReport();
 
   const summary = "4:00 AM: Fare inspectors on 38 (Downtown) from Powell";
   expect(component.findComponent(ReportSummary).text()).toBe(summary);
@@ -210,14 +213,41 @@ it("should broadcast the summary built from the review form, not the scraped mes
   await component.find("#broadcast-form-submit-btn").trigger("click");
   await flushPromises();
 
-  expect(mockFetch).toHaveBeenCalledWith(`/api/reports/${externalReport.id}`, {
-    method: "PUT",
-    body: { route: geary, stop: powell, passenger: true },
-  });
+  // The reviewed details go with the broadcast, so the server saves both in
+  // one transaction rather than marking the report reviewed beforehand.
   expect(mockFetch).toHaveBeenCalledWith(`/api/broadcasts`, {
     method: "POST",
-    body: { message: summary, reportId: externalReport.id },
+    body: {
+      message: summary,
+      reportId: externalReport.id,
+      route: geary,
+      stop: powell,
+      passenger: true,
+    },
   });
+  expect(mockFetch).not.toHaveBeenCalledWith(`/api/reports/${externalReport.id}`, expect.anything());
+  expect(component.emitted("success")).toHaveLength(1);
+});
+
+it("should stay open for a retry when the broadcast fails", async () => {
+  registerGtfs();
+  const unregister = registerEndpoint(`/api/broadcasts`, {
+    method: "POST",
+    handler: () => {
+      throw createError({ statusCode: 500, statusMessage: "Broadcast failed" });
+    },
+  });
+
+  try {
+    const component = await mountReviewedExternalReport();
+    await component.find("#broadcast-form-submit-btn").trigger("click");
+    await flushPromises();
+
+    expect(component.emitted("success")).toBeUndefined();
+    expect(component.find("#broadcast-form-submit-btn").attributes("disabled")).toBeUndefined();
+  } finally {
+    unregister();
+  }
 });
 
 it("should not broadcast an external-source report until the review form is complete", async () => {
