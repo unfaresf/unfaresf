@@ -1,5 +1,6 @@
 import { vi, it, expect } from "vitest";
 import { mountSuspended, registerEndpoint } from "@nuxt/test-utils/runtime";
+import { flushPromises } from "@vue/test-utils";
 import { Post, ReportSummary, ReportForm } from "#components";
 import type { SelectReport } from "../../db/schema";
 import { faker } from "@faker-js/faker";
@@ -159,4 +160,81 @@ it("should mark the report as approved with the API", async () => {
       reportId: mockReport.id,
     },
   });
+});
+
+// Values shaped like the ReportForm selects emit them (select/agency.vue,
+// select/route.vue, select/stop.vue).
+const muni = { agencyId: "muni", agencyName: "Muni" };
+const geary = {
+  routeId: "r38",
+  routeShortName: "38",
+  routeLongName: "Geary",
+  direction: "east",
+  directionId: 0,
+  headsign: "Downtown",
+};
+const powell = { stopId: "s1", stopName: "Powell", direction: "Eastbound", directionId: 0 };
+
+// The form's child selects fetch their options once they render; stub them so
+// filling the form never reaches the network.
+function registerGtfs() {
+  registerEndpoint("/api/gtfs/agencies", () => [muni]);
+  registerEndpoint("/api/gtfs/routes", () => [geary]);
+  registerEndpoint("/api/gtfs/stops", () => [powell]);
+  registerEndpoint("/api/gtfs/stops/search", () => [powell]);
+}
+
+it("should broadcast the summary built from the review form, not the scraped message", async () => {
+  registerGtfs();
+  registerEndpoint(`/api/reports/${externalReport.id}`, {
+    method: "PUT",
+    handler: () => [{ id: externalReport.id, reviewedAt: new Date() }],
+  });
+  registerEndpoint(`/api/broadcasts`, { method: "POST", handler: () => null });
+  const mockFetch = vi.spyOn(global, "$fetch");
+  mockFetch.mockClear();
+
+  const component = await mountSuspended(Post, {
+    props: {
+      report: externalReport,
+    },
+  });
+  const form = component.findComponent(ReportForm);
+  // Toggling passenger clears route/stop (report-form.vue), so pick it first.
+  await form.setValue({ agency: muni, passenger: true });
+  await form.setValue({ agency: muni, passenger: true, route: geary, stop: powell });
+
+  const summary = "4:00 AM: Fare inspectors on 38 (Downtown) from Powell";
+  expect(component.findComponent(ReportSummary).text()).toBe(summary);
+
+  await component.find("#broadcast-form-submit-btn").trigger("click");
+  await flushPromises();
+
+  expect(mockFetch).toHaveBeenCalledWith(`/api/reports/${externalReport.id}`, {
+    method: "PUT",
+    body: { route: geary, stop: powell, passenger: true },
+  });
+  expect(mockFetch).toHaveBeenCalledWith(`/api/broadcasts`, {
+    method: "POST",
+    body: { message: summary, reportId: externalReport.id },
+  });
+});
+
+it("should not broadcast an external-source report until the review form is complete", async () => {
+  registerGtfs();
+  const mockFetch = vi.spyOn(global, "$fetch");
+  mockFetch.mockClear();
+
+  const component = await mountSuspended(Post, {
+    props: {
+      report: externalReport,
+    },
+  });
+  await component.findComponent(ReportForm).setValue({ agency: muni, passenger: false });
+
+  expect(component.findComponent(ReportSummary).text()).not.toContain(externalReport.message);
+  await component.find("#broadcast-form-submit-btn").trigger("click");
+  await flushPromises();
+
+  expect(mockFetch).not.toHaveBeenCalledWith(`/api/broadcasts`, expect.anything());
 });

@@ -32,4 +32,14 @@ describe('formatReportAsNotification', () => {
     expect(detail.tag).toBe('new-report');
     expect(detail.unhandledReportsCount).toBe(3);
   });
+
+  it('lets an internal report be posted straight from the notification', () => {
+    const detail = formatReportAsNotification(report, 3);
+    expect(detail.canPost).toBe(true);
+  });
+
+  it('does not let an external-source report be posted from the notification (its body is the scraped text)', () => {
+    const detail = formatReportAsNotification({ ...report, source: 'mastodon' }, 3);
+    expect(detail.canPost).toBe(false);
+  });
 });
