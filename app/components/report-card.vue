@@ -3,7 +3,7 @@
     v-if="props.report"
     class="flex border-b last:border-none last:pb-0 py-4 first:pt-0"
   >
-    <UAvatar src="unfaresf-logo.svg" alt="Avatar" class="mt-2" />
+    <UAvatar src="unfaresf-icon.svg" alt="Avatar" class="mt-2" />
     <div class="mx-2 min-w-0">
       <p class="capitalize">{{ props.report.source }}</p>
       <UTooltip :text="createdAtLabel">
