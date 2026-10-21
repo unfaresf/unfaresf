@@ -27,6 +27,7 @@
     "db:migrate": "drizzle-kit up --config=drizzle.config.ts",
     "gtfs:init": "node ./gtfs/init.js",
     "gtfs:migrate": "drizzle-kit up --config=drizzle-gtfs.config.ts",
+    "generate-icons": "pwa-assets-generator",
     "prepare": "husky"
   },
   "devDependencies": {

@@ -27,15 +27,13 @@ export default defineNuxtConfig({
         { rel: "icon", href: "/favicon.ico", sizes: "48x48" },
         {
           rel: "icon",
-          href: "/unfaresf-logo.svg",
+          href: "/unfaresf-icon.svg",
           sizes: "any",
           type: "image/svg+xml",
         },
-        { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
-        {
-          rel: "apple-touch-icon-precomposed",
-          href: "/apple-touch-icon-precomposed.png",
-        },
+        // Keep this the only apple-touch-icon link. iOS builds the dark,
+        // clear and tinted home screen icons from it. See pwa-assets.config.ts.
+        { rel: "apple-touch-icon", href: "/apple-touch-icon-180x180.png" },
         {
           rel: "apple-touch-startup-image",
           media:
