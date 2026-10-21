@@ -1,5 +1,5 @@
 <template>
-  <UModal :ui="{ content: 'items-start' }">
+  <UModal>
     <template #content>
       <post
         :report="props.report"
